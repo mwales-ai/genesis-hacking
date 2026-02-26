@@ -3,5 +3,5 @@
 rm -rf build
 mkdir build
 cd build
-qmake ../SpriteEditor.pro
+qmake6 ../SpriteEditor.pro
 make -j4
