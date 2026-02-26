@@ -2,13 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Refer to the readme for guidance on the point of this project and goals.
+
 ## Repository Overview
 
 This is a collection of 3 independent top-level projects focused on security research and SEGA Genesis ROM hacking:
 
-- **bn-genesis/**: Binary Ninja plugin for SEGA Genesis/Megadrive ROM analysis
-- **genesis-hacking/**: Documentation and notes for Genesis ROM hacking
-- **security/**: Security toolkit with CTF solutions, reverse engineering utilities, and analysis scripts
+- **bn-genesis/**: Binary Ninja plugin for SEGA Genesis/Megadrive ROM analysis.
+  This is a fork of an existing repo that we can use and expand on if we want
+  to expand the features of.
+- **genesis-hacking/**: Documentation and notes for Genesis ROM hacking.  This
+  be the main repo we want to work in for our Sega Genesis ROM hacking tools
+  and patches.
+- **security/**: Security toolkit with CTF solutions, reverse engineering
+  utilities, and analysis scripts.  This should be use just to get an example
+  of how I like to make tools (small python scripts, C or C++ applications,
+  with GUI development in Qt or SDL)
 
 ## Build Commands
 
