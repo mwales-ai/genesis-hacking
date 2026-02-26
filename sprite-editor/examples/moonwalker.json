@@ -1,0 +1,56 @@
+{
+  "game_name": "Michael Jackson's Moonwalker",
+  "game_id": "moonwalker_us",
+  "notes": "Offsets are TBD. Use the Raw Tile Browser to identify sprite locations, then update this file. The US version ROM is Moonwalker.md in the roms/ folder.",
+
+  "sprite_groups": [
+    {
+      "name": "MJ - Walk / Standing",
+      "palettes": [
+        {
+          "name": "MJ Main Palette",
+          "rom_offset": "0x000000",
+          "_note": "Palette offset TBD. Find via BlastEm debugger: trace CRAM DMA writes at startup."
+        }
+      ],
+      "sprites": [
+        {
+          "name": "Walk Frame 0 (placeholder)",
+          "rom_offset": "0x000200",
+          "width_tiles": 2,
+          "height_tiles": 4,
+          "palette_index": 0,
+          "compression": "none",
+          "notes": "Offset TBD. Use Raw Tile Browser starting at 0x200 to find recognizable MJ tile data."
+        }
+      ]
+    }
+  ],
+
+  "tile_ranges": [
+    {
+      "label": "ROM start - 0x10000 (likely header/data area)",
+      "start_offset": "0x000200",
+      "end_offset":   "0x010000",
+      "default_palette_group": 0
+    },
+    {
+      "label": "0x10000 - 0x30000 (early graphics)",
+      "start_offset": "0x010000",
+      "end_offset":   "0x030000",
+      "default_palette_group": 0
+    },
+    {
+      "label": "0x30000 - 0x60000 (mid-ROM graphics)",
+      "start_offset": "0x030000",
+      "end_offset":   "0x060000",
+      "default_palette_group": 0
+    },
+    {
+      "label": "0x60000 - end (late graphics / music)",
+      "start_offset": "0x060000",
+      "end_offset":   "0x080000",
+      "default_palette_group": 0
+    }
+  ]
+}
