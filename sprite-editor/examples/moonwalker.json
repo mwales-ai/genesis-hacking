@@ -41,6 +41,33 @@
           "notes": "CONFIRMED SPRITES. Identical across ROM revisions. Zero-tile boundary analysis found 43 consecutive 2x5 sprites. Visual inspection: humanoid figures in motion — dark jacket body with gold face/hands. 43 frames suggests main character animation set. Sprites 0-42 occupy 0x023800-0x02672C."
         },
         {
+          "name": "Character sprites - large set (2x4, 73 frames at 0x01D760)",
+          "rom_offset": "0x01D760",
+          "width_tiles": 2,
+          "height_tiles": 4,
+          "palette_index": 0,
+          "compression": "none",
+          "notes": "CONFIRMED SPRITES. 73 sprites of 2x4 tiles (584 tiles + 3 padding tiles). Visual inspection shows humanoid figures with gray jacket + gold skin, matching MJ palette. Mix of character poses — some resemble MJ, others may be enemies (gangsters). Likely the main character/enemy sprite bank. Occupies 0x01D760-0x022060 (587 tiles). Uses same palette as groups A and B."
+        },
+        {
+          "name": "Characters - chunk D (2x4, 13 frames at 0x026DE0)",
+          "rom_offset": "0x026DE0",
+          "width_tiles": 2,
+          "height_tiles": 4,
+          "palette_index": 0,
+          "compression": "none",
+          "notes": "13 sprites of 2x4. Follows group B (zero tile separator at 0x026DC0). Humanoid figures in MJ palette. Occupies 0x026DE0-0x027B20 (107 tiles, 3 leftover)."
+        },
+        {
+          "name": "Characters - chunk E (2x4, 21 frames at 0x027B60)",
+          "rom_offset": "0x027B60",
+          "width_tiles": 2,
+          "height_tiles": 4,
+          "palette_index": 0,
+          "compression": "none",
+          "notes": "21 sprites of 2x4. Starts after zero tile at 0x027B40. Mixed character types — some large gray figures (possibly enemies), others typical MJ proportions. Occupies 0x027B60-0x029060 (169 tiles, 1 leftover)."
+        },
+        {
           "name": "Character sprites group C (3x5, 3 frames at 0x0290A0)",
           "rom_offset": "0x0290A0",
           "width_tiles": 3,
@@ -48,6 +75,15 @@
           "palette_index": 0,
           "compression": "none",
           "notes": "3 sprites of 3x5 tiles. Larger character sprites, possibly special poses or boss/cutscene frames. Preceded by zero tile at 0x029080."
+        },
+        {
+          "name": "Characters - chunk F (2x4, 13 frames at 0x029660)",
+          "rom_offset": "0x029660",
+          "width_tiles": 2,
+          "height_tiles": 4,
+          "palette_index": 0,
+          "compression": "none",
+          "notes": "13 sprites of 2x4 after group C. Last chunk in main sprite bank. Some sprites have bright green pixels (palette index 15) — may include UI elements or a different character type. 5 leftover tiles at end. Bank ends at 0x02A400."
         }
       ]
     },
