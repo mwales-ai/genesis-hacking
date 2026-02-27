@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QString>
 #include <QPoint>
+#include <QKeyEvent>
 
 struct SpriteThumb
 {
@@ -33,11 +34,13 @@ signals:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private:
     void recalcLayout();
     int itemIndexAt(const QPoint & pos) const;
+    void selectItem(int idx);
 
     QVector<SpriteThumb> theSprites;
     int                  theThumbZoom;

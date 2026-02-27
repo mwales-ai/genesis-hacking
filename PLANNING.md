@@ -86,12 +86,10 @@ blastem roms/Moonwalker.md
 
 ### 4. Sprite Editor UX Improvements
 Things to improve once the core functionality is verified:
+- ~~Add a "jump to offset" field in Raw Tile Browser~~ DONE
 - Add "Export PNG" button to dump the current sprite as a PNG
 - Add tile grid overlay toggle to PaletteWidget
-- Show hex offset in status bar when hovering Raw Tile Browser
-- Add a "jump to offset" field in Raw Tile Browser
 - Keyboard navigation in SpriteSheetWidget (arrow keys)
-- Zoom controls for Raw Tile Browser (currently fixed)
 
 ### 5. Identify and Document MJ Sprites in moonwalker.json
 Using the sprite editor + BlastEm debugger, map out:
@@ -121,9 +119,7 @@ Add a Binary Ninja plugin command that:
 
 | Issue | Severity | Notes |
 |-------|----------|-------|
-| Nemesis decompressor is a stub | High | Blocks most of Moonwalker sprite access |
 | moonwalker.json palette/sprite offsets unverified | Medium | Need visual confirmation via app |
-| `QMouseEvent::x()` deprecated in Qt6 | Low | Warning only, not an error; fix: use `position().x()` |
 | Kosinski decompressor is a stub | Low | Not needed for Moonwalker |
 
 ---

@@ -11,6 +11,7 @@ SpriteSheetWidget::SpriteSheetWidget(QWidget *parent)
     , theCellHeight(80)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    setFocusPolicy(Qt::ClickFocus);
 }
 
 void SpriteSheetWidget::setSprites(const QVector<SpriteThumb> & sprites)
@@ -142,11 +143,45 @@ void SpriteSheetWidget::mousePressEvent(QMouseEvent *event)
 {
     int idx = itemIndexAt(event->pos());
     if (idx >= 0 && idx < theSprites.size())
+        selectItem(idx);
+}
+
+void SpriteSheetWidget::keyPressEvent(QKeyEvent *event)
+{
+    if (theSprites.isEmpty())
     {
-        theSelectedIndex = idx;
-        update();
-        emit spriteSelected(theSprites[idx].groupIndex, theSprites[idx].spriteIndex);
+        QWidget::keyPressEvent(event);
+        return;
     }
+
+    int cols = qMax(1, (theCellWidth > 0) ? (width() / theCellWidth) : 1);
+    int cur  = (theSelectedIndex >= 0) ? theSelectedIndex : 0;
+
+    int next = cur;
+    switch (event->key())
+    {
+    case Qt::Key_Right: next = cur + 1; break;
+    case Qt::Key_Left:  next = cur - 1; break;
+    case Qt::Key_Down:  next = cur + cols; break;
+    case Qt::Key_Up:    next = cur - cols; break;
+    case Qt::Key_Home:  next = 0; break;
+    case Qt::Key_End:   next = theSprites.size() - 1; break;
+    default:
+        QWidget::keyPressEvent(event);
+        return;
+    }
+
+    next = qBound(0, next, theSprites.size() - 1);
+    if (next != cur || theSelectedIndex < 0)
+        selectItem(next);
+}
+
+void SpriteSheetWidget::selectItem(int idx)
+{
+    if (idx < 0 || idx >= theSprites.size()) return;
+    theSelectedIndex = idx;
+    update();
+    emit spriteSelected(theSprites[idx].groupIndex, theSprites[idx].spriteIndex);
 }
 
 void SpriteSheetWidget::resizeEvent(QResizeEvent *)

@@ -209,6 +209,16 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QPushButton" name="theExportButton">
+               <property name="text">
+                <string>Export PNG</string>
+               </property>
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>

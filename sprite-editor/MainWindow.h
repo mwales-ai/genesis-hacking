@@ -42,6 +42,7 @@ private slots:
     void onZoomChanged(int value);
     void onGridToggled(bool checked);
     void replaceSprite();
+    void exportSprite();
 
     // Raw Tile Browser tab
     void onRawRangeChanged(int index);

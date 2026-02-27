@@ -13,6 +13,8 @@ public:
     void setSprite(const QImage & image);
     void clearSprite();
 
+    const QImage & sprite() const { return theSprite; }
+
     void setZoom(int factor);
     int zoom() const;
 

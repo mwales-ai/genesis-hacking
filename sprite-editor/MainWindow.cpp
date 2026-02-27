@@ -11,6 +11,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QCloseEvent>
@@ -80,6 +81,8 @@ void MainWindow::setupConnections()
             this,               &MainWindow::onGridToggled);
     connect(ui->theReplaceButton, &QPushButton::clicked,
             this,               &MainWindow::replaceSprite);
+    connect(ui->theExportButton, &QPushButton::clicked,
+            this,               &MainWindow::exportSprite);
 
     connect(ui->theRawRangeCombo,   SIGNAL(currentIndexChanged(int)),
             this,                   SLOT(onRawRangeChanged(int)));
@@ -271,6 +274,7 @@ void MainWindow::displaySpriteGroup(int groupIndex)
     ui->theSpriteName->setText(group.name);
     ui->theOffsetLabel->clear();
     ui->theReplaceButton->setEnabled(false);
+    ui->theExportButton->setEnabled(false);
     ui->actionReplaceSprite->setEnabled(false);
 
     // Show palette of first sprite in group
@@ -323,6 +327,7 @@ void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx)
         .arg(entry.compression));
 
     ui->theReplaceButton->setEnabled(true);
+    ui->theExportButton->setEnabled(true);
     ui->actionReplaceSprite->setEnabled(true);
 }
 
@@ -385,6 +390,41 @@ void MainWindow::replaceSprite()
     displaySpriteGroup(theCurrentGroupIndex);
     updateWindowTitle();
     statusBar()->showMessage("Sprite replaced. Use File > Save ROM to save changes.");
+}
+
+void MainWindow::exportSprite()
+{
+    const QImage & img = theSpriteDetail->sprite();
+    if (img.isNull())
+        return;
+
+    QString suggestedName;
+    if (theDef.isLoaded() && theCurrentGroupIndex >= 0 && theCurrentSpriteIndex >= 0)
+    {
+        const SpriteEntry & e = theDef.spriteGroups()[theCurrentGroupIndex].sprites[theCurrentSpriteIndex];
+        suggestedName = e.name;
+        suggestedName.replace(QRegularExpression("[^A-Za-z0-9_\\-]"), "_");
+        suggestedName += ".png";
+    }
+    else
+    {
+        suggestedName = "sprite.png";
+    }
+
+    QString path = QFileDialog::getSaveFileName(
+        this, "Export Sprite as PNG", suggestedName,
+        "PNG Images (*.png);;All Files (*)");
+
+    if (path.isEmpty())
+        return;
+
+    if (!img.save(path, "PNG"))
+    {
+        QMessageBox::critical(this, "Export Failed", "Could not save PNG to: " + path);
+        return;
+    }
+
+    statusBar()->showMessage("Exported sprite to: " + path);
 }
 
 // ---------------------------------------------------------------------------
