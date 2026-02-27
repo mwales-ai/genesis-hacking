@@ -1,82 +1,73 @@
 {
   "game_name": "Michael Jackson's Moonwalker",
   "game_id": "moonwalker_us",
-  "notes": "US version (JUE). ROM is 512KB (0x80000 bytes). Tile data appears to be UNCOMPRESSED (direct ROM-to-VRAM DMA, no Nemesis). Code area runs 0x200-~0x15000. Tile data regions found at 0x02D6CC, 0x032D8A, 0x05A000-0x05E800. Use Raw Tile Browser to scan. Palettes stored uncompressed; candidates at 0x0082DA (MJ), 0x00C770 (fire), 0x002D3C (environment).",
+  "notes": "US version (JUE). ROM is 512KB (0x80000 bytes). Tile format is 4bpp Genesis standard (8x8px, 32 bytes/tile). ROM layout from density analysis: code/compressed 0x200-0x1A000; MAIN SPRITE BANK 0x01B000-0x02A400 (~1952 uncompressed tiles); mixed/compressed 0x02A800-0x052FFF; secondary sprites 0x053000-0x05F400 (~1568 tiles); audio samples 0x05F800+. Palettes at 0x0082DA (MJ gray suit - HIGH confidence), 0x00C770 (fire/explosion animation), 0x002D3C (environment), 0x0033E4 (vivid/cutscene).",
 
   "sprite_groups": [
     {
       "name": "MJ - Player Character",
-      "notes": "Main player sprite. Palette at 0x0082DA has grayscale gradient (MJ gray suit) plus skin tones and gold. Sprite tile data is likely Nemesis compressed in the 0x003000-0x00A000 region. Use Raw Tile Browser or BlastEm DMA tracing to find exact tile offset.",
+      "notes": "Main player character. Palette 0x0082DA: 16-color gray suit with skin tones. Sprites likely begin at 0x01B000 (large uncompressed sprite bank). Use Raw Tile Browser with 'Main Sprite Bank' range and MJ palette to identify exact tile offsets. Character sprites are typically 2x4 or 3x5 tiles per frame.",
       "palettes": [
         {
           "name": "MJ Gray Suit Palette",
           "rom_offset": "0x0082DA",
-          "_note": "16 colors: gray gradient (index 0-4: 180→36 gray), gold/skin tones (5-7), more grays (8-11), dark brown (12-13), dark red (14), bright green (15 = likely transparency/debug). Confidence: HIGH - identified by pattern analysis.",
+          "_note": "16 colors: gray gradient (index 0=light to 4=dark gray), gold/skin tones (5-7), more grays (8-11), dark brown (12-13), dark red (14), green (15). Confidence: HIGH - grayscale + skin tone pattern is characteristic of MJ's gray suit sprites.",
           "_decoded": "0:rgb(180,180,180) 1:rgb(144,144,144) 2:rgb(108,108,108) 3:rgb(72,72,72) 4:rgb(36,36,36) 5:rgb(216,180,108) 6:rgb(180,144,72) 7:rgb(144,108,36) 8:rgb(144,144,144) 9:rgb(108,108,108) 10:rgb(180,180,180) 11:rgb(216,216,216) 12:rgb(108,72,0) 13:rgb(72,36,0) 14:rgb(108,0,0) 15:rgb(144,252,144)"
         },
         {
           "name": "MJ Walk - Alternate Palette",
           "rom_offset": "0x00B4C6",
-          "_note": "Vivid colors: orange-gold at [0-2], teal at [3-5], pure colors at [6-8] (green, red, cyan). May be cutscene or special move palette. Confidence: MEDIUM.",
+          "_note": "Vivid: orange-gold (0-2), teal (3-5), pure colors (6-8: green/red/cyan). May be special move or cutscene palette. Confidence: MEDIUM.",
           "_decoded": "0:rgb(252,216,144) 1:rgb(180,144,72) 2:rgb(108,72,0) 3:rgb(72,108,108) 4:rgb(36,72,72) 5:rgb(0,36,36) 6:rgb(0,252,36) 7:rgb(252,36,36) 8:rgb(0,252,252)"
         }
       ],
       "sprites": [
         {
-          "name": "Circular / Sphere tile (DMA source candidate)",
+          "name": "MJ walk frame (TBD - scan from 0x01B000)",
+          "rom_offset": "0x01B000",
+          "width_tiles": 2,
+          "height_tiles": 4,
+          "palette_index": 0,
+          "compression": "none",
+          "notes": "Starting point for Main Sprite Bank scan. Browse the tile range 0x01B000-0x02A400 in Raw Tile Browser with 'MJ Gray Suit Palette' to identify walk frames. MJ is typically 2x4 or 3x5 tiles. Use jump-to-offset to navigate."
+        },
+        {
+          "name": "Sphere/gem tile (DMA source 0x032D8A)",
           "rom_offset": "0x032D80",
           "width_tiles": 2,
           "height_tiles": 4,
           "palette_index": 0,
           "compression": "none",
-          "notes": "0x032D8A was found as a DMA source address in code. Tile at 0x032D80 shows a circular gradient pattern (nibbles 1,e,d,c forming a sphere outline). Surrounding tiles look like coin/gem/UI elements. Verify visually with Raw Tile Browser."
-        },
-        {
-          "name": "Texture / crosshatch tile (DMA source candidate)",
-          "rom_offset": "0x02D6C0",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "0x02D6CC was found as a DMA source address in code. Tile data shows repeating d/3 pattern (crosshatch/stripe). May be floor or wall texture tiles. Verify with Raw Tile Browser."
+          "notes": "0x032D8A found as DMA source address. Tile shows circular gradient (sphere outline). Surrounding tiles look like coins/gems/UI elements. CAUTION: this region has density ~1.0 suggesting it may be Nemesis-compressed, not raw 4bpp."
         }
       ]
     },
     {
-      "name": "Uncompressed Tile Region (Late ROM)",
-      "notes": "ROM region 0x05A000-0x05E800 contains uncompressed tile-like data. Scan with Raw Tile Browser. May be music driver data or small uncompressed effect sprites. Character 'FFFF' patterns in some tiles suggest white color at palette index 15.",
+      "name": "Environment / Level Tiles",
+      "notes": "Level backgrounds and platform tiles. The secondary sprite bank at 0x053000-0x05F400 likely contains level tilesets. Use 'Earth Tones' palette for scanning.",
       "palettes": [
-        {
-          "name": "Fire/Explosion Palette (rotating)",
-          "rom_offset": "0x00C770",
-          "_note": "4-palette block (128 bytes) at 0x00C770: all colors are orange-red gradients (palette cycling animation). Confidence: HIGH - 64/64 valid CRAM words, 64 non-zero.",
-          "_decoded": "Rotating orange-red: rgb(252,252,144) → rgb(252,216,0) → rgb(252,180,0) → rgb(252,144,0) → rgb(252,108,0) → rgb(216,72,0) → rgb(144,36,0) → rgb(108,0,0)"
-        },
         {
           "name": "Earth Tones / Environment",
           "rom_offset": "0x002D3C",
-          "_note": "Salmon/pink at [0], browns and blues. Possibly used for level environment. Confidence: MEDIUM.",
+          "_note": "Salmon/pink, browns, and blues. Possibly level background palette. Confidence: MEDIUM.",
           "_decoded": "0:rgb(180,216,180) 1:rgb(108,72,72) 2:rgb(72,36,36) 4:rgb(72,108,144) 5:rgb(36,72,108) 9:rgb(216,108,108)"
+        },
+        {
+          "name": "Fire/Explosion Palette (animated)",
+          "rom_offset": "0x00C770",
+          "_note": "4-palette rotating block (128 bytes). All orange-red. Animation palette cycling. Confidence: HIGH.",
+          "_decoded": "Rotating: rgb(252,252,144)→rgb(252,216,0)→rgb(252,180,0)→rgb(252,144,0)→rgb(252,108,0)→rgb(216,72,0)→rgb(144,36,0)→rgb(108,0,0)"
         }
       ],
       "sprites": [
         {
-          "name": "Tile at 0x05D360 (uncompressed, TBD)",
-          "rom_offset": "0x05D360",
+          "name": "Level tile at 0x05A000 (scan target)",
+          "rom_offset": "0x05A000",
           "width_tiles": 2,
           "height_tiles": 4,
           "palette_index": 0,
           "compression": "none",
-          "notes": "High-density uncompressed tile region. Use Raw Tile Browser to identify. May be sound driver or small sprite. Verify visually."
-        },
-        {
-          "name": "Tile at 0x05A900 (uncompressed, TBD)",
-          "rom_offset": "0x05A900",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "Region 0x05A900-0x05AC20 has 25 sprite-like tiles. Use Raw Tile Browser to identify."
+          "notes": "Start of secondary sprite/tile bank. Density 0.42-0.56 throughout 0x05A000-0x05F400 (704 tiles). Likely level/BG tilesets or additional character sprites."
         }
       ]
     }
@@ -84,32 +75,31 @@
 
   "tile_ranges": [
     {
-      "label": "Header + Code (0x200-0x3000)",
+      "label": "Header + Early Code (0x200-0x15000)",
       "start_offset": "0x000200",
-      "end_offset":   "0x003000",
-      "default_palette_group": 0,
-      "_note": "ROM entry code. Palettes for MJ found at 0x002D3C, 0x0033E4. DMA source addresses referenced in code: see sprite_groups."
+      "end_offset":   "0x015000",
+      "_note": "ROM header, vectors, and main game code. Palettes stored here: MJ suit at 0x0082DA, environment at 0x002D3C, vivid at 0x0033E4. Not useful for tile browsing."
     },
     {
-      "label": "Likely Nemesis-compressed graphics (0x3000-0x40000)",
-      "start_offset": "0x003000",
-      "end_offset":   "0x040000",
+      "label": "MAIN SPRITE BANK - MJ + enemies (0x01B000-0x02A400)",
+      "start_offset": "0x01B000",
+      "end_offset":   "0x02A400",
       "default_palette_group": 0,
-      "_note": "High-entropy region consistent with Nemesis compression. Raw tile browser will show garbled data unless decompressed. Contains sprite table pointers at 0x02AA32, 0x02CD7A, 0x02D6CC, 0x032D8A."
+      "_note": "PRIMARY candidate for character sprites. Density analysis: ~1952 tiles, consistently moderate density 0.37-0.65 (sprite-like). Use MJ Gray Suit palette. Look for 2x4 or 3x5 tile character frames near the start. This is the largest uncompressed sprite-like region in the ROM."
     },
     {
-      "label": "Mid-ROM graphics / data (0x40000-0x58000)",
-      "start_offset": "0x040000",
-      "end_offset":   "0x058000",
-      "default_palette_group": 0,
-      "_note": "Mixed compressed/uncompressed data. Scan for tile patterns."
+      "label": "Secondary sprites / level tiles (0x053000-0x05F400)",
+      "start_offset": "0x053000",
+      "end_offset":   "0x05F400",
+      "default_palette_group": 1,
+      "_note": "~1568 tiles. Density 0.28-0.65, sprite-like throughout. May contain level tilesets, item sprites, enemy tiles. Scan with Earth Tones palette."
     },
     {
-      "label": "Late ROM uncompressed tiles + audio (0x58000-0x80000)",
-      "start_offset": "0x058000",
-      "end_offset":   "0x080000",
+      "label": "Full ROM scan (0x200-0x5F400)",
+      "start_offset": "0x000200",
+      "end_offset":   "0x05F400",
       "default_palette_group": 0,
-      "_note": "Uncompressed tile-like data found at 0x05A000-0x05E800 range. High-density sprite-like tile regions at 0x05A900, 0x05C2A0, 0x05CA20, 0x05D040, 0x05D360."
+      "_note": "Full scan. NOTE: 256KB limit in app means only first 256KB shown at once. Use jump-to-offset to navigate to 0x01B000 or 0x05A000."
     }
   ]
 }
