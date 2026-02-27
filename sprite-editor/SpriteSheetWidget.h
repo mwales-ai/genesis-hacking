@@ -14,6 +14,7 @@ struct SpriteThumb
     QString name;
     int     groupIndex;
     int     spriteIndex;
+    int     frameIndex;   // frame within a multi-frame sprite entry (0-based)
 };
 
 class SpriteSheetWidget : public QWidget
@@ -29,7 +30,7 @@ public:
     QSize sizeHint() const override;
 
 signals:
-    void spriteSelected(int groupIndex, int spriteIndex);
+    void spriteSelected(int groupIndex, int spriteIndex, int frameIndex);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

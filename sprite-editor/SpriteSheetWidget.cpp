@@ -181,7 +181,8 @@ void SpriteSheetWidget::selectItem(int idx)
     if (idx < 0 || idx >= theSprites.size()) return;
     theSelectedIndex = idx;
     update();
-    emit spriteSelected(theSprites[idx].groupIndex, theSprites[idx].spriteIndex);
+    emit spriteSelected(theSprites[idx].groupIndex, theSprites[idx].spriteIndex,
+                        theSprites[idx].frameIndex);
 }
 
 void SpriteSheetWidget::resizeEvent(QResizeEvent *)

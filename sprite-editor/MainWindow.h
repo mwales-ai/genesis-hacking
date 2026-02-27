@@ -38,7 +38,7 @@ private slots:
 
     // Sprite Viewer tab
     void onSpriteGroupChanged(int index);
-    void onSpriteSelected(int groupIdx, int spriteIdx);
+    void onSpriteSelected(int groupIdx, int spriteIdx, int frameIdx);
     void onZoomChanged(int value);
     void onGridToggled(bool checked);
     void replaceSprite();
@@ -70,7 +70,7 @@ private:
     void populateRawPalettes();
 
     void displaySpriteGroup(int groupIndex);
-    void displaySpriteDetail(int groupIndex, int spriteIndex);
+    void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
     void refreshRawBrowser();
 
     QByteArray fetchTileData(const SpriteEntry & entry);
@@ -85,6 +85,7 @@ private:
 
     int                   theCurrentGroupIndex;
     int                   theCurrentSpriteIndex;
+    int                   theCurrentFrameIndex;
 
     // Custom widgets added programmatically into placeholder containers in the .ui
     SpriteSheetWidget    *theSpriteSheet;

@@ -119,6 +119,7 @@ bool GameDefinition::parseJson(const QByteArray & jsonData)
             sprite.name         = so["name"].toString("Unnamed Sprite");
             sprite.widthTiles   = so["width_tiles"].toInt(1);
             sprite.heightTiles  = so["height_tiles"].toInt(1);
+            sprite.frameCount   = so["frame_count"].toInt(1);
             sprite.paletteIndex = so["palette_index"].toInt(0);
             sprite.compression  = so["compression"].toString("none");
             sprite.notes        = so["notes"].toString();
@@ -126,9 +127,10 @@ bool GameDefinition::parseJson(const QByteArray & jsonData)
             sprite.romOffset = parseOffset(so["rom_offset"].toString("0x0"), &ok);
             if (!ok) sprite.romOffset = 0;
 
-            // Clamp tile dimensions to valid Genesis range
-            sprite.widthTiles  = qBound(1, sprite.widthTiles,  4);
-            sprite.heightTiles = qBound(1, sprite.heightTiles, 4);
+            // Clamp tile dimensions to valid Genesis range (up to 8x8 tiles = 64x64px)
+            sprite.widthTiles  = qBound(1, sprite.widthTiles,  8);
+            sprite.heightTiles = qBound(1, sprite.heightTiles, 8);
+            sprite.frameCount  = qMax(1, sprite.frameCount);
             sprite.paletteIndex = qBound(0, sprite.paletteIndex, 3);
 
             group.sprites.append(sprite);

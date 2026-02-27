@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     , theSettings("github-mwales", "SpriteEditor")
     , theCurrentGroupIndex(-1)
     , theCurrentSpriteIndex(-1)
+    , theCurrentFrameIndex(0)
 {
     ui->setupUi(this);
     setupCustomWidgets();
@@ -258,21 +259,42 @@ void MainWindow::displaySpriteGroup(int groupIndex)
     for (int i = 0; i < group.sprites.size(); ++i)
     {
         const SpriteEntry & entry = group.sprites[i];
-        QByteArray tileData = fetchTileData(entry);
-        if (tileData.isEmpty())
-            continue;
-
         GenesisPalette pal = paletteForSprite(entry, groupIndex);
-        QImage img = TileDecoder::decodeSprite(tileData,
-                                               entry.widthTiles,
-                                               entry.heightTiles,
-                                               pal);
-        SpriteThumb thumb;
-        thumb.image       = img;
-        thumb.name        = entry.name;
-        thumb.groupIndex  = groupIndex;
-        thumb.spriteIndex = i;
-        thumbs.append(thumb);
+        int bytesPerFrame = entry.widthTiles * entry.heightTiles * 32;
+
+        for (int f = 0; f < entry.frameCount; ++f)
+        {
+            uint32_t frameOffset = entry.romOffset + uint32_t(f * bytesPerFrame);
+            QByteArray frameData = theRom.readBytes(frameOffset, bytesPerFrame);
+            if (frameData.size() < bytesPerFrame)
+                continue;
+
+            // For compressed entries, only the first frame uses the decompressor
+            if (f == 0 && entry.compression != "none")
+            {
+                frameData = fetchTileData(entry);
+                if (frameData.isEmpty())
+                    continue;
+            }
+
+            QImage img = TileDecoder::decodeSprite(frameData,
+                                                   entry.widthTiles,
+                                                   entry.heightTiles,
+                                                   pal);
+            SpriteThumb thumb;
+            thumb.image       = img;
+            thumb.groupIndex  = groupIndex;
+            thumb.spriteIndex = i;
+            thumb.frameIndex  = f;
+
+            if (entry.frameCount == 1)
+                thumb.name = entry.name;
+            else
+                thumb.name = QString("%1 [%2/%3]")
+                    .arg(entry.name).arg(f + 1).arg(entry.frameCount);
+
+            thumbs.append(thumb);
+        }
     }
 
     theSpriteSheet->setSprites(thumbs);
@@ -291,14 +313,15 @@ void MainWindow::displaySpriteGroup(int groupIndex)
     }
 }
 
-void MainWindow::onSpriteSelected(int groupIdx, int spriteIdx)
+void MainWindow::onSpriteSelected(int groupIdx, int spriteIdx, int frameIdx)
 {
     theCurrentGroupIndex  = groupIdx;
     theCurrentSpriteIndex = spriteIdx;
-    displaySpriteDetail(groupIdx, spriteIdx);
+    theCurrentFrameIndex  = frameIdx;
+    displaySpriteDetail(groupIdx, spriteIdx, frameIdx);
 }
 
-void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx)
+void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx, int frameIdx)
 {
     if (!theDef.isLoaded() || !theRom.isOpen())
         return;
@@ -310,8 +333,27 @@ void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx)
         return;
 
     const SpriteEntry & entry = group.sprites[spriteIdx];
-    QByteArray tileData = fetchTileData(entry);
     GenesisPalette pal  = paletteForSprite(entry, groupIdx);
+    int bytesPerFrame = entry.widthTiles * entry.heightTiles * 32;
+
+    QByteArray tileData;
+    uint32_t frameOffset = entry.romOffset + uint32_t(frameIdx * bytesPerFrame);
+
+    if (entry.compression == "none")
+    {
+        tileData = theRom.readBytes(frameOffset, bytesPerFrame);
+    }
+    else
+    {
+        // Compressed: decompress full data, then extract the frame
+        QByteArray fullData = fetchTileData(entry);
+        int start = frameIdx * bytesPerFrame;
+        if (start + bytesPerFrame <= fullData.size())
+            tileData = fullData.mid(start, bytesPerFrame);
+        else
+            tileData = fullData.left(bytesPerFrame);
+        frameOffset = entry.romOffset;  // show base offset for compressed
+    }
 
     QImage img = TileDecoder::decodeSprite(tileData,
                                            entry.widthTiles,
@@ -323,13 +365,17 @@ void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx)
 
     thePaletteDisplay->setPalette(pal);
 
-    ui->theSpriteName->setText(entry.name);
+    QString nameLabel = entry.name;
+    if (entry.frameCount > 1)
+        nameLabel = QString("%1 [frame %2/%3]").arg(entry.name).arg(frameIdx + 1).arg(entry.frameCount);
+    ui->theSpriteName->setText(nameLabel);
+
     ui->theOffsetLabel->setText(
-        QString("ROM 0x%1  |  %2×%3 tiles  |  %4 bytes  |  [%5]")
-        .arg(entry.romOffset, 6, 16, QChar('0')).toUpper()
+        QString("ROM 0x%1  |  %2x%3 tiles  |  %4 bytes  |  [%5]")
+        .arg(frameOffset, 6, 16, QChar('0')).toUpper()
         .arg(entry.widthTiles)
         .arg(entry.heightTiles)
-        .arg(entry.widthTiles * entry.heightTiles * 32)
+        .arg(bytesPerFrame)
         .arg(entry.compression));
 
     ui->theReplaceButton->setEnabled(true);
@@ -382,17 +428,20 @@ void MainWindow::replaceSprite()
         return;
     }
 
-    if (!theRom.writeBytes(entry.romOffset, encoded))
+    int bytesPerFrame = entry.widthTiles * entry.heightTiles * 32;
+    uint32_t writeOffset = entry.romOffset + uint32_t(theCurrentFrameIndex * bytesPerFrame);
+
+    if (!theRom.writeBytes(writeOffset, encoded))
     {
         QMessageBox::critical(this, "Error",
             QString("Failed to write %1 bytes to ROM at offset 0x%2")
             .arg(encoded.size())
-            .arg(entry.romOffset, 6, 16, QChar('0')).toUpper());
+            .arg(writeOffset, 6, 16, QChar('0')).toUpper());
         return;
     }
 
     // Refresh display
-    displaySpriteDetail(theCurrentGroupIndex, theCurrentSpriteIndex);
+    displaySpriteDetail(theCurrentGroupIndex, theCurrentSpriteIndex, theCurrentFrameIndex);
     displaySpriteGroup(theCurrentGroupIndex);
     updateWindowTitle();
     statusBar()->showMessage("Sprite replaced. Use File > Save ROM to save changes.");
@@ -410,6 +459,8 @@ void MainWindow::exportSprite()
         const SpriteEntry & e = theDef.spriteGroups()[theCurrentGroupIndex].sprites[theCurrentSpriteIndex];
         suggestedName = e.name;
         suggestedName.replace(QRegularExpression("[^A-Za-z0-9_\\-]"), "_");
+        if (e.frameCount > 1)
+            suggestedName += QString("_frame%1").arg(theCurrentFrameIndex);
         suggestedName += ".png";
     }
     else

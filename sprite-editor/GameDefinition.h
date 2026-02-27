@@ -17,6 +17,7 @@ struct SpriteEntry
     uint32_t romOffset;
     int      widthTiles;
     int      heightTiles;
+    int      frameCount;    // number of consecutive frames (default 1)
     int      paletteIndex;  // index into parent SpriteGroup::palettes
     QString  compression;   // "none", "kosinski", "nemesis"
     QString  notes;
