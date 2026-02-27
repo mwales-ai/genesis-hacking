@@ -4,6 +4,7 @@
 #include <QToolTip>
 #include <QEvent>
 #include <QHelpEvent>
+#include <QScrollArea>
 
 RawTileBrowserWidget::RawTileBrowserWidget(QWidget *parent)
     : QWidget(parent)
@@ -183,4 +184,25 @@ int RawTileBrowserWidget::tileIndexAt(const QPoint & pos) const
     if (idx >= 0 && idx < theDecodedTiles.size())
         return idx;
     return -1;
+}
+
+void RawTileBrowserWidget::scrollToTile(int tileIndex)
+{
+    if (theTilesPerRow <= 0 || theTileDisplaySize <= 0) return;
+    if (tileIndex < 0 || tileIndex >= theDecodedTiles.size()) return;
+
+    int row = tileIndex / theTilesPerRow;
+    int col = tileIndex % theTilesPerRow;
+    int x   = col * theTileDisplaySize;
+    int y   = row * theTileDisplaySize;
+
+    // Walk up to the QScrollArea that contains this widget
+    QWidget *w = parentWidget();
+    while (w) {
+        if (QScrollArea *sa = qobject_cast<QScrollArea*>(w)) {
+            sa->ensureVisible(x, y, theTileDisplaySize, theTileDisplaySize);
+            return;
+        }
+        w = w->parentWidget();
+    }
 }

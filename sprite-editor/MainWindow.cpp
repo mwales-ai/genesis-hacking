@@ -8,7 +8,9 @@
 
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QLineEdit>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QCloseEvent>
@@ -87,6 +89,10 @@ void MainWindow::setupConnections()
             this,                   SLOT(onRawZoomChanged(int)));
     connect(theRawBrowser,          &RawTileBrowserWidget::tileClicked,
             this,                   &MainWindow::onRawTileClicked);
+    connect(ui->theJumpButton,      &QPushButton::clicked,
+            this,                   &MainWindow::onJumpToOffset);
+    connect(ui->theJumpOffsetEdit,  &QLineEdit::returnPressed,
+            this,                   &MainWindow::onJumpToOffset);
 }
 
 // ---------------------------------------------------------------------------
@@ -405,6 +411,8 @@ void MainWindow::populateRawRanges()
 
     ui->theRawRangeCombo->setEnabled(ui->theRawRangeCombo->count() > 0);
     ui->theRawRangeCombo->blockSignals(false);
+    ui->theJumpOffsetEdit->setEnabled(theRom.isOpen());
+    ui->theJumpButton->setEnabled(theRom.isOpen());
 
     if (ui->theRawRangeCombo->count() > 0)
         refreshRawBrowser();
@@ -452,6 +460,50 @@ void MainWindow::onRawTileClicked(int tileIndex, uint32_t romOffset)
         QString("Tile %1  |  ROM offset: 0x%2")
         .arg(tileIndex)
         .arg(romOffset, 6, 16, QChar('0')).toUpper());
+}
+
+void MainWindow::onJumpToOffset()
+{
+    QString text = ui->theJumpOffsetEdit->text().trimmed();
+    bool ok = false;
+    uint32_t targetOffset = text.toUInt(&ok, 16);
+    if (!ok)
+        targetOffset = text.toUInt(&ok, 0);  // also accept decimal
+    if (!ok) {
+        ui->theRawTileInfoLabel->setText("Jump failed: enter a valid hex offset (e.g. 0x032D80)");
+        return;
+    }
+
+    // Determine the current range's start offset
+    int rangeIdx = ui->theRawRangeCombo->currentIndex();
+    uint32_t rangeStart = 0x200;
+    if (theDef.isLoaded() && rangeIdx < theDef.tileRanges().size()) {
+        rangeStart = theDef.tileRanges()[rangeIdx].startOffset;
+    }
+
+    if (targetOffset < rangeStart) {
+        ui->theRawTileInfoLabel->setText(
+            QString("0x%1 is before the current range start (0x%2). Switch ranges.")
+            .arg(targetOffset, 6, 16, QChar('0')).toUpper()
+            .arg(rangeStart, 6, 16, QChar('0')).toUpper());
+        return;
+    }
+
+    uint32_t byteOffset = targetOffset - rangeStart;
+    int tileIndex = int(byteOffset / 32);
+    if (tileIndex >= theRawBrowser->tileCount()) {
+        ui->theRawTileInfoLabel->setText(
+            QString("0x%1 is beyond the current range end.")
+            .arg(targetOffset, 6, 16, QChar('0')).toUpper());
+        return;
+    }
+
+    theRawBrowser->scrollToTile(tileIndex);
+    uint32_t actualOffset = rangeStart + uint32_t(tileIndex) * 32;
+    ui->theRawTileInfoLabel->setText(
+        QString("Jumped to tile %1  |  ROM offset: 0x%2")
+        .arg(tileIndex)
+        .arg(actualOffset, 6, 16, QChar('0')).toUpper());
 }
 
 void MainWindow::refreshRawBrowser()

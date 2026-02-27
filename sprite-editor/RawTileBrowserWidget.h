@@ -23,6 +23,10 @@ public:
     void setZoom(int factor);
     int zoom() const;
 
+    // Scroll the parent QScrollArea so tileIndex is visible.
+    void scrollToTile(int tileIndex);
+    int tileCount() const { return theDecodedTiles.size(); }
+
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 

@@ -292,6 +292,39 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLabel" name="rawJumpLabel">
+            <property name="text">
+             <string>Jump:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="theJumpOffsetEdit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="placeholderText">
+             <string>0x000000</string>
+            </property>
+            <property name="maximumWidth">
+             <number>90</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theJumpButton">
+            <property name="text">
+             <string>Go</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximumWidth">
+             <number>36</number>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <!-- Raw tile browser scroll area (RawTileBrowserWidget inserted at runtime) -->

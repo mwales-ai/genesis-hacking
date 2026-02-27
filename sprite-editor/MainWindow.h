@@ -48,6 +48,7 @@ private slots:
     void onRawPaletteChanged(int index);
     void onRawZoomChanged(int value);
     void onRawTileClicked(int tileIndex, uint32_t romOffset);
+    void onJumpToOffset();
 
     // Help
     void showAbout();
