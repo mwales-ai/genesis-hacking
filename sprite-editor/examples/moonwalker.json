@@ -1,7 +1,7 @@
 {
   "game_name": "Michael Jackson's Moonwalker",
   "game_id": "moonwalker_us",
-  "notes": "US version (JUE). ROM is 512KB (0x80000 bytes). Tile format is 4bpp Genesis standard (8x8px, 32 bytes/tile). ROM layout from density analysis: code/compressed 0x200-0x1A000; MAIN SPRITE BANK 0x01B000-0x02A400 (~1952 uncompressed tiles); mixed/compressed 0x02A800-0x052FFF; secondary sprites 0x053000-0x05F400 (~1568 tiles); audio samples 0x05F800+. Palettes at 0x0082DA (MJ gray suit - HIGH confidence), 0x00C770 (fire/explosion animation), 0x002D3C (environment), 0x0033E4 (vivid/cutscene).",
+  "notes": "JUE region (Japan/US/Europe). Two ROM dumps available in roms/: Moonwalker.bin (checksum 0x60F5, cleaner header - PREFERRED for Binary Ninja RE) and Moonwalker.md (checksum 0x096F, alternate revision). Both are raw binary format (no SMD interleaving). The sprite regions documented below are identical in both dumps. ROM is 512KB (0x80000 bytes). Tile format is 4bpp Genesis standard (8x8px, 32 bytes/tile). ROM layout from density analysis: code/compressed 0x200-0x1A000; MAIN SPRITE BANK 0x01B000-0x02A400 (~1952 uncompressed tiles); mixed/compressed 0x02A800-0x052FFF; secondary sprites/tiles 0x053000-0x05F400 (~1568 tiles); audio samples 0x05F800+. Palettes at 0x0082DA (MJ gray suit - HIGH confidence), 0x00C770 (fire/explosion animation), 0x002D3C (environment), 0x0033E4 (vivid/cutscene).",
 
   "sprite_groups": [
     {
