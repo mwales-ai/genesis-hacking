@@ -59,7 +59,7 @@ void PaletteWidget::paintEvent(QPaintEvent *)
 
 void PaletteWidget::mousePressEvent(QMouseEvent *event)
 {
-    int index = event->x() / SWATCH_SIZE;
+    int index = int(event->position().x()) / SWATCH_SIZE;
     if (index >= 0 && index < 16)
         emit colorClicked(index);
 }

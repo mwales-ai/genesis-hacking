@@ -1,7 +1,7 @@
 {
   "game_name": "Michael Jackson's Moonwalker",
   "game_id": "moonwalker_us",
-  "notes": "US version (JUE). ROM is 512KB (0x80000 bytes). Most sprite data appears to use Nemesis compression (Huffman-based). Uncompressed sprite-like data found in 0x05A000-0x05E800 range. Palettes stored uncompressed in ROM; use ROM offsets below as starting points. Sprite offsets marked 'nemesis' are TBD—use BlastEm debugger or Raw Tile Browser to verify.",
+  "notes": "US version (JUE). ROM is 512KB (0x80000 bytes). Tile data appears to be UNCOMPRESSED (direct ROM-to-VRAM DMA, no Nemesis). Code area runs 0x200-~0x15000. Tile data regions found at 0x02D6CC, 0x032D8A, 0x05A000-0x05E800. Use Raw Tile Browser to scan. Palettes stored uncompressed; candidates at 0x0082DA (MJ), 0x00C770 (fire), 0x002D3C (environment).",
 
   "sprite_groups": [
     {
@@ -23,13 +23,22 @@
       ],
       "sprites": [
         {
-          "name": "Walk Animation (Nemesis compressed - TBD)",
-          "rom_offset": "0x003000",
+          "name": "Circular / Sphere tile (DMA source candidate)",
+          "rom_offset": "0x032D80",
           "width_tiles": 2,
           "height_tiles": 4,
           "palette_index": 0,
-          "compression": "nemesis",
-          "notes": "Offset TBD. ROM region 0x003000-0x00A000 has very high entropy consistent with Nemesis compression. Use BlastEm debugger to trace VDP DMA at game startup: DMA source addresses found in code include 0x02AA32, 0x02CD7A, 0x02D6CC, 0x032D8A. Check those for decompressed tile data."
+          "compression": "none",
+          "notes": "0x032D8A was found as a DMA source address in code. Tile at 0x032D80 shows a circular gradient pattern (nibbles 1,e,d,c forming a sphere outline). Surrounding tiles look like coin/gem/UI elements. Verify visually with Raw Tile Browser."
+        },
+        {
+          "name": "Texture / crosshatch tile (DMA source candidate)",
+          "rom_offset": "0x02D6C0",
+          "width_tiles": 2,
+          "height_tiles": 4,
+          "palette_index": 0,
+          "compression": "none",
+          "notes": "0x02D6CC was found as a DMA source address in code. Tile data shows repeating d/3 pattern (crosshatch/stripe). May be floor or wall texture tiles. Verify with Raw Tile Browser."
         }
       ]
     },
