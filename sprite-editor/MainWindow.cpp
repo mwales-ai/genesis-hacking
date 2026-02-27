@@ -100,6 +100,8 @@ void MainWindow::setupConnections()
             this,                   SLOT(onRawSpriteSizeChanged(int)));
     connect(ui->theRawSpriteHSpin,  SIGNAL(valueChanged(int)),
             this,                   SLOT(onRawSpriteSizeChanged(int)));
+    connect(ui->theAssemblyStartButton, &QPushButton::clicked,
+            this,                       &MainWindow::onSetAssemblyStart);
 }
 
 // ---------------------------------------------------------------------------
@@ -459,6 +461,7 @@ void MainWindow::populateRawRanges()
     ui->theJumpButton->setEnabled(theRom.isOpen());
     ui->theRawSpriteWSpin->setEnabled(theRom.isOpen());
     ui->theRawSpriteHSpin->setEnabled(theRom.isOpen());
+    ui->theAssemblyStartButton->setEnabled(theRom.isOpen());
 
     if (ui->theRawRangeCombo->count() > 0)
         refreshRawBrowser();
@@ -570,6 +573,50 @@ void MainWindow::onJumpToOffset()
     uint32_t actualOffset = rangeStart + uint32_t(tileIndex) * 32;
     ui->theRawTileInfoLabel->setText(
         QString("Jumped to tile %1  |  ROM offset: 0x%2")
+        .arg(tileIndex)
+        .arg(actualOffset, 6, 16, QChar('0')).toUpper());
+}
+
+void MainWindow::onSetAssemblyStart()
+{
+    QString text = ui->theJumpOffsetEdit->text().trimmed();
+    bool ok = false;
+    uint32_t targetOffset = text.toUInt(&ok, 16);
+    if (!ok)
+        targetOffset = text.toUInt(&ok, 0);
+    if (!ok) {
+        ui->theRawTileInfoLabel->setText("Set start failed: enter a valid hex offset (e.g. 0x0220E0)");
+        return;
+    }
+
+    int rangeIdx = ui->theRawRangeCombo->currentIndex();
+    uint32_t rangeStart = 0x200;
+    if (theDef.isLoaded() && rangeIdx < theDef.tileRanges().size()) {
+        rangeStart = theDef.tileRanges()[rangeIdx].startOffset;
+    }
+
+    if (targetOffset < rangeStart) {
+        ui->theRawTileInfoLabel->setText(
+            QString("0x%1 is before the current range start (0x%2).")
+            .arg(targetOffset, 6, 16, QChar('0')).toUpper()
+            .arg(rangeStart, 6, 16, QChar('0')).toUpper());
+        return;
+    }
+
+    uint32_t byteOffset = targetOffset - rangeStart;
+    int tileIndex = int(byteOffset / 32);
+    if (tileIndex >= theRawBrowser->tileCount()) {
+        ui->theRawTileInfoLabel->setText(
+            QString("0x%1 is beyond the current range end.")
+            .arg(targetOffset, 6, 16, QChar('0')).toUpper());
+        return;
+    }
+
+    theRawBrowser->setAssemblyStart(tileIndex);
+    theRawBrowser->scrollToTile(tileIndex);
+    uint32_t actualOffset = rangeStart + uint32_t(tileIndex) * 32;
+    ui->theRawTileInfoLabel->setText(
+        QString("Assembly starts at tile %1  |  ROM offset: 0x%2")
         .arg(tileIndex)
         .arg(actualOffset, 6, 16, QChar('0')).toUpper());
 }

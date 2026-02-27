@@ -51,6 +51,7 @@ private slots:
     void onRawSpriteSizeChanged(int value);
     void onRawTileClicked(int tileIndex, uint32_t romOffset);
     void onJumpToOffset();
+    void onSetAssemblyStart();
 
     // Help
     void showAbout();

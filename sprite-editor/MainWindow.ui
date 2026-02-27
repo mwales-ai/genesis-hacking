@@ -336,6 +336,22 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="theAssemblyStartButton">
+            <property name="text">
+             <string>Start</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Set the Jump offset as the sprite assembly starting point</string>
+            </property>
+            <property name="maximumWidth">
+             <number>46</number>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLabel" name="rawSpriteSizeLabel">
             <property name="text">
              <string>Tiles W×H:</string>

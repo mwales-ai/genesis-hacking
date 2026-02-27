@@ -13,6 +13,7 @@ RawTileBrowserWidget::RawTileBrowserWidget(QWidget *parent)
     , theSelectedItem(-1)
     , theSpriteW(1)
     , theSpriteH(1)
+    , theAssemblySkip(0)
     , theCellW(34)
     , theCellH(34)
     , theTilesPerRow(10)
@@ -31,6 +32,7 @@ void RawTileBrowserWidget::setTileData(const QByteArray & rawData,
     theRomBaseOffset = romBaseOffset;
     thePalette       = palette;
     theSelectedItem  = -1;
+    theAssemblySkip  = 0;
     rebuildImages();
     recalcLayout();
     updateGeometry();
@@ -79,24 +81,35 @@ void RawTileBrowserWidget::setSpriteSize(int w, int h)
     update();
 }
 
+void RawTileBrowserWidget::setAssemblyStart(int tileSkip)
+{
+    theAssemblySkip = qMax(0, tileSkip);
+    rebuildImages();
+    recalcLayout();
+    updateGeometry();
+    update();
+}
+
 void RawTileBrowserWidget::rebuildImages()
 {
     int numRawTiles    = theTileData.size() / 32;
     int tilesPerSprite = theSpriteW * theSpriteH;
-    int numItems       = numRawTiles / tilesPerSprite;
+    int skip           = qMin(theAssemblySkip, numRawTiles);
+    int usableTiles    = numRawTiles - skip;
+    int numItems       = usableTiles / tilesPerSprite;
 
     theDecodedTiles.resize(numItems);
 
     if (tilesPerSprite == 1)
     {
         for (int i = 0; i < numItems; ++i)
-            theDecodedTiles[i] = TileDecoder::decodeTile(theTileData, i * 32, thePalette);
+            theDecodedTiles[i] = TileDecoder::decodeTile(theTileData, (skip + i) * 32, thePalette);
     }
     else
     {
         for (int s = 0; s < numItems; s++)
         {
-            int firstTile = s * tilesPerSprite;
+            int firstTile = skip + s * tilesPerSprite;
             QImage sprite(theSpriteW * 8, theSpriteH * 8, QImage::Format_ARGB32);
             sprite.fill(0);
             QPainter painter(&sprite);
@@ -183,7 +196,7 @@ void RawTileBrowserWidget::mousePressEvent(QMouseEvent *event)
         theSelectedItem = idx;
         update();
         int tilesPerSprite = theSpriteW * theSpriteH;
-        int firstTile      = idx * tilesPerSprite;
+        int firstTile      = theAssemblySkip + idx * tilesPerSprite;
         uint32_t romOff    = theRomBaseOffset + (uint32_t)(firstTile * 32);
         emit tileClicked(firstTile, romOff);
     }
@@ -198,7 +211,7 @@ bool RawTileBrowserWidget::event(QEvent *e)
         if (idx >= 0 && idx < theDecodedTiles.size())
         {
             int tilesPerSprite = theSpriteW * theSpriteH;
-            int firstTile      = idx * tilesPerSprite;
+            int firstTile      = theAssemblySkip + idx * tilesPerSprite;
             uint32_t romOff    = theRomBaseOffset + (uint32_t)(firstTile * 32);
             QString tip;
             if (tilesPerSprite == 1)
@@ -247,9 +260,11 @@ void RawTileBrowserWidget::scrollToTile(int tileIndex)
 {
     if (theCellW <= 0 || theCellH <= 0 || theTilesPerRow <= 0) return;
 
-    // Convert raw tile index → assembled sprite/item index
+    // Convert raw tile index → assembled sprite/item index (accounting for assembly skip)
     int tilesPerSprite = theSpriteW * theSpriteH;
-    int itemIndex      = tileIndex / tilesPerSprite;
+    int adjustedTile   = tileIndex - theAssemblySkip;
+    if (adjustedTile < 0) adjustedTile = 0;
+    int itemIndex      = adjustedTile / tilesPerSprite;
 
     if (itemIndex < 0 || itemIndex >= theDecodedTiles.size()) return;
 

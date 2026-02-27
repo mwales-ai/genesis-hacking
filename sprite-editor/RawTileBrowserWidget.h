@@ -29,6 +29,11 @@ public:
     int spriteW() const { return theSpriteW; }
     int spriteH() const { return theSpriteH; }
 
+    // Skip N raw tiles before beginning sprite assembly.
+    // Used to align the assembly grid to a specific ROM offset.
+    void setAssemblyStart(int tileSkip);
+    int assemblyStart() const { return theAssemblySkip; }
+
     // Scroll the parent QScrollArea so the item containing tileIndex is visible.
     // tileIndex is always a raw tile index (byte_offset / 32).
     void scrollToTile(int tileIndex);
@@ -64,6 +69,7 @@ private:
     // Sprite assembly size
     int               theSpriteW;
     int               theSpriteH;
+    int               theAssemblySkip;  // raw tiles to skip before assembly
 
     // Layout cache (cell = one assembled sprite displayed on screen)
     int               theCellW;       // cell width in pixels  (spriteW * 8 * zoom + 2)
