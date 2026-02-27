@@ -48,6 +48,7 @@ private slots:
     void onRawRangeChanged(int index);
     void onRawPaletteChanged(int index);
     void onRawZoomChanged(int value);
+    void onRawSpriteSizeChanged(int value);
     void onRawTileClicked(int tileIndex, uint32_t romOffset);
     void onJumpToOffset();
 

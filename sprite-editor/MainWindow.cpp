@@ -96,6 +96,10 @@ void MainWindow::setupConnections()
             this,                   &MainWindow::onJumpToOffset);
     connect(ui->theJumpOffsetEdit,  &QLineEdit::returnPressed,
             this,                   &MainWindow::onJumpToOffset);
+    connect(ui->theRawSpriteWSpin,  SIGNAL(valueChanged(int)),
+            this,                   SLOT(onRawSpriteSizeChanged(int)));
+    connect(ui->theRawSpriteHSpin,  SIGNAL(valueChanged(int)),
+            this,                   SLOT(onRawSpriteSizeChanged(int)));
 }
 
 // ---------------------------------------------------------------------------
@@ -453,6 +457,8 @@ void MainWindow::populateRawRanges()
     ui->theRawRangeCombo->blockSignals(false);
     ui->theJumpOffsetEdit->setEnabled(theRom.isOpen());
     ui->theJumpButton->setEnabled(theRom.isOpen());
+    ui->theRawSpriteWSpin->setEnabled(theRom.isOpen());
+    ui->theRawSpriteHSpin->setEnabled(theRom.isOpen());
 
     if (ui->theRawRangeCombo->count() > 0)
         refreshRawBrowser();
@@ -494,12 +500,34 @@ void MainWindow::onRawZoomChanged(int value)
     theRawBrowser->setZoom(value);
 }
 
+void MainWindow::onRawSpriteSizeChanged(int)
+{
+    theRawBrowser->setSpriteSize(ui->theRawSpriteWSpin->value(),
+                                 ui->theRawSpriteHSpin->value());
+}
+
 void MainWindow::onRawTileClicked(int tileIndex, uint32_t romOffset)
 {
-    ui->theRawTileInfoLabel->setText(
-        QString("Tile %1  |  ROM offset: 0x%2")
-        .arg(tileIndex)
-        .arg(romOffset, 6, 16, QChar('0')).toUpper());
+    int w = ui->theRawSpriteWSpin->value();
+    int h = ui->theRawSpriteHSpin->value();
+    int tilesPerSprite = w * h;
+    QString label;
+    if (tilesPerSprite == 1)
+    {
+        label = QString("Tile %1  |  ROM offset: 0x%2")
+            .arg(tileIndex)
+            .arg(romOffset, 6, 16, QChar('0')).toUpper();
+    }
+    else
+    {
+        label = QString("Sprite %1  (tiles %2–%3, %4×%5)  |  ROM offset: 0x%6")
+            .arg(tileIndex / tilesPerSprite)
+            .arg(tileIndex)
+            .arg(tileIndex + tilesPerSprite - 1)
+            .arg(w).arg(h)
+            .arg(romOffset, 6, 16, QChar('0')).toUpper();
+    }
+    ui->theRawTileInfoLabel->setText(label);
 }
 
 void MainWindow::onJumpToOffset()

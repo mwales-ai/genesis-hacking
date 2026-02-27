@@ -23,14 +23,24 @@ public:
     void setZoom(int factor);
     int zoom() const;
 
-    // Scroll the parent QScrollArea so tileIndex is visible.
+    // Assemble tiles into sprites of (w x h) tiles (column-major Genesis order).
+    // Default 1x1 shows individual tiles as before.
+    void setSpriteSize(int w, int h);
+    int spriteW() const { return theSpriteW; }
+    int spriteH() const { return theSpriteH; }
+
+    // Scroll the parent QScrollArea so the item containing tileIndex is visible.
+    // tileIndex is always a raw tile index (byte_offset / 32).
     void scrollToTile(int tileIndex);
-    int tileCount() const { return theDecodedTiles.size(); }
+
+    // Always returns the number of raw 8x8 tiles (theTileData.size() / 32).
+    int tileCount() const { return theTileData.size() / 32; }
 
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
 signals:
+    // tileIndex = first raw tile index of the clicked sprite; romOffset = its ROM address
     void tileClicked(int tileIndex, uint32_t romOffset);
 
 protected:
@@ -42,18 +52,23 @@ protected:
 private:
     void rebuildImages();
     void recalcLayout();
-    int tileIndexAt(const QPoint & pos) const;
+    int itemIndexAt(const QPoint & pos) const;
 
     QByteArray        theTileData;
     uint32_t          theRomBaseOffset;
     GenesisPalette    thePalette;
-    QVector<QImage>   theDecodedTiles;
+    QVector<QImage>   theDecodedTiles;  // one entry per assembled sprite (or tile if 1x1)
     int               theZoom;
-    int               theSelectedTile;
+    int               theSelectedItem;  // index into theDecodedTiles
 
-    // Layout cache
-    int               theTileDisplaySize; // pixels per tile (8 * zoom)
-    int               theTilesPerRow;
+    // Sprite assembly size
+    int               theSpriteW;
+    int               theSpriteH;
+
+    // Layout cache (cell = one assembled sprite displayed on screen)
+    int               theCellW;       // cell width in pixels  (spriteW * 8 * zoom + 2)
+    int               theCellH;       // cell height in pixels (spriteH * 8 * zoom + 2)
+    int               theTilesPerRow; // items (assembled sprites) per row
     int               theTotalRows;
 };
 

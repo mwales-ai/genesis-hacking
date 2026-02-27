@@ -10,8 +10,11 @@ RawTileBrowserWidget::RawTileBrowserWidget(QWidget *parent)
     : QWidget(parent)
     , theRomBaseOffset(0)
     , theZoom(4)
-    , theSelectedTile(-1)
-    , theTileDisplaySize(32)
+    , theSelectedItem(-1)
+    , theSpriteW(1)
+    , theSpriteH(1)
+    , theCellW(34)
+    , theCellH(34)
     , theTilesPerRow(10)
     , theTotalRows(0)
 {
@@ -27,7 +30,7 @@ void RawTileBrowserWidget::setTileData(const QByteArray & rawData,
     theTileData      = rawData;
     theRomBaseOffset = romBaseOffset;
     thePalette       = palette;
-    theSelectedTile  = -1;
+    theSelectedItem  = -1;
     rebuildImages();
     recalcLayout();
     updateGeometry();
@@ -38,7 +41,7 @@ void RawTileBrowserWidget::clearTiles()
 {
     theTileData.clear();
     theDecodedTiles.clear();
-    theSelectedTile = -1;
+    theSelectedItem = -1;
     theTotalRows = 0;
     updateGeometry();
     update();
@@ -56,7 +59,6 @@ void RawTileBrowserWidget::setZoom(int factor)
     if (factor < 1) factor = 1;
     if (factor > 8) factor = 8;
     theZoom = factor;
-    theTileDisplaySize = 8 * theZoom;
     recalcLayout();
     updateGeometry();
     update();
@@ -67,32 +69,71 @@ int RawTileBrowserWidget::zoom() const
     return theZoom;
 }
 
+void RawTileBrowserWidget::setSpriteSize(int w, int h)
+{
+    theSpriteW = qMax(1, w);
+    theSpriteH = qMax(1, h);
+    rebuildImages();
+    recalcLayout();
+    updateGeometry();
+    update();
+}
+
 void RawTileBrowserWidget::rebuildImages()
 {
-    int numTiles = theTileData.size() / 32;
-    theDecodedTiles.resize(numTiles);
-    for (int i = 0; i < numTiles; ++i)
-        theDecodedTiles[i] = TileDecoder::decodeTile(theTileData, i * 32, thePalette);
+    int numRawTiles    = theTileData.size() / 32;
+    int tilesPerSprite = theSpriteW * theSpriteH;
+    int numItems       = numRawTiles / tilesPerSprite;
+
+    theDecodedTiles.resize(numItems);
+
+    if (tilesPerSprite == 1)
+    {
+        for (int i = 0; i < numItems; ++i)
+            theDecodedTiles[i] = TileDecoder::decodeTile(theTileData, i * 32, thePalette);
+    }
+    else
+    {
+        for (int s = 0; s < numItems; s++)
+        {
+            int firstTile = s * tilesPerSprite;
+            QImage sprite(theSpriteW * 8, theSpriteH * 8, QImage::Format_ARGB32);
+            sprite.fill(0);
+            QPainter painter(&sprite);
+            // Genesis column-major tile order: tile at (col, row) = col * spriteH + row
+            for (int col = 0; col < theSpriteW; col++)
+            {
+                for (int row = 0; row < theSpriteH; row++)
+                {
+                    int tileIdx = firstTile + col * theSpriteH + row;
+                    QImage tile = TileDecoder::decodeTile(theTileData, tileIdx * 32, thePalette);
+                    painter.drawImage(col * 8, row * 8, tile);
+                }
+            }
+            theDecodedTiles[s] = sprite;
+        }
+    }
 }
 
 void RawTileBrowserWidget::recalcLayout()
 {
-    theTileDisplaySize = 8 * theZoom + 2; // +2 for 1px border each side
+    theCellW = theSpriteW * 8 * theZoom + 2; // +2 for 1px border each side
+    theCellH = theSpriteH * 8 * theZoom + 2;
     int availWidth = qMax(width(), 200);
-    theTilesPerRow = qMax(1, availWidth / theTileDisplaySize);
-    int numTiles   = theDecodedTiles.size();
-    theTotalRows   = numTiles > 0 ? (numTiles + theTilesPerRow - 1) / theTilesPerRow : 0;
-    setMinimumHeight(theTotalRows * theTileDisplaySize);
+    theTilesPerRow = qMax(1, availWidth / theCellW);
+    int numItems   = theDecodedTiles.size();
+    theTotalRows   = numItems > 0 ? (numItems + theTilesPerRow - 1) / theTilesPerRow : 0;
+    setMinimumHeight(theTotalRows * theCellH);
 }
 
 QSize RawTileBrowserWidget::sizeHint() const
 {
-    return QSize(width(), theTotalRows * theTileDisplaySize);
+    return QSize(width(), theTotalRows * theCellH);
 }
 
 QSize RawTileBrowserWidget::minimumSizeHint() const
 {
-    return QSize(theTileDisplaySize * 4, theTileDisplaySize * 2);
+    return QSize(theCellW * 4, theCellH * 2);
 }
 
 void RawTileBrowserWidget::paintEvent(QPaintEvent *)
@@ -107,22 +148,22 @@ void RawTileBrowserWidget::paintEvent(QPaintEvent *)
         return;
     }
 
-    int cellSize = theTileDisplaySize;
-    int imgSize  = 8 * theZoom;
+    int imgW = theSpriteW * 8 * theZoom;
+    int imgH = theSpriteH * 8 * theZoom;
 
     for (int i = 0; i < theDecodedTiles.size(); ++i)
     {
         int col = i % theTilesPerRow;
         int row = i / theTilesPerRow;
-        int x   = col * cellSize;
-        int y   = row * cellSize;
+        int x   = col * theCellW;
+        int y   = row * theCellH;
 
         // Selection highlight
-        if (i == theSelectedTile)
-            p.fillRect(x, y, cellSize, cellSize, QColor(0, 80, 160));
+        if (i == theSelectedItem)
+            p.fillRect(x, y, theCellW, theCellH, QColor(0, 80, 160));
 
         QImage scaled = theDecodedTiles[i].scaled(
-            imgSize, imgSize,
+            imgW, imgH,
             Qt::IgnoreAspectRatio,
             Qt::FastTransformation);
 
@@ -130,19 +171,21 @@ void RawTileBrowserWidget::paintEvent(QPaintEvent *)
 
         // Faint border
         p.setPen(QColor(60, 60, 60));
-        p.drawRect(x, y, cellSize - 1, cellSize - 1);
+        p.drawRect(x, y, theCellW - 1, theCellH - 1);
     }
 }
 
 void RawTileBrowserWidget::mousePressEvent(QMouseEvent *event)
 {
-    int idx = tileIndexAt(event->pos());
+    int idx = itemIndexAt(event->pos());
     if (idx >= 0 && idx < theDecodedTiles.size())
     {
-        theSelectedTile = idx;
+        theSelectedItem = idx;
         update();
-        uint32_t romOff = theRomBaseOffset + (uint32_t)(idx * 32);
-        emit tileClicked(idx, romOff);
+        int tilesPerSprite = theSpriteW * theSpriteH;
+        int firstTile      = idx * tilesPerSprite;
+        uint32_t romOff    = theRomBaseOffset + (uint32_t)(firstTile * 32);
+        emit tileClicked(firstTile, romOff);
     }
 }
 
@@ -151,13 +194,27 @@ bool RawTileBrowserWidget::event(QEvent *e)
     if (e->type() == QEvent::ToolTip)
     {
         QHelpEvent *he = static_cast<QHelpEvent*>(e);
-        int idx = tileIndexAt(he->pos());
+        int idx = itemIndexAt(he->pos());
         if (idx >= 0 && idx < theDecodedTiles.size())
         {
-            uint32_t romOff = theRomBaseOffset + (uint32_t)(idx * 32);
-            QString tip = QString("Tile %1  |  ROM 0x%2")
-                .arg(idx)
-                .arg(romOff, 6, 16, QChar('0')).toUpper();
+            int tilesPerSprite = theSpriteW * theSpriteH;
+            int firstTile      = idx * tilesPerSprite;
+            uint32_t romOff    = theRomBaseOffset + (uint32_t)(firstTile * 32);
+            QString tip;
+            if (tilesPerSprite == 1)
+            {
+                tip = QString("Tile %1  |  ROM 0x%2")
+                    .arg(firstTile)
+                    .arg(romOff, 6, 16, QChar('0')).toUpper();
+            }
+            else
+            {
+                tip = QString("Sprite %1  (tiles %2–%3)  |  ROM 0x%4")
+                    .arg(idx)
+                    .arg(firstTile)
+                    .arg(firstTile + tilesPerSprite - 1)
+                    .arg(romOff, 6, 16, QChar('0')).toUpper();
+            }
             QToolTip::showText(he->globalPos(), tip, this);
         }
         else
@@ -175,11 +232,11 @@ void RawTileBrowserWidget::resizeEvent(QResizeEvent *)
     updateGeometry();
 }
 
-int RawTileBrowserWidget::tileIndexAt(const QPoint & pos) const
+int RawTileBrowserWidget::itemIndexAt(const QPoint & pos) const
 {
-    if (theTileDisplaySize <= 0) return -1;
-    int col = pos.x() / theTileDisplaySize;
-    int row = pos.y() / theTileDisplaySize;
+    if (theCellW <= 0 || theCellH <= 0) return -1;
+    int col = pos.x() / theCellW;
+    int row = pos.y() / theCellH;
     int idx = row * theTilesPerRow + col;
     if (idx >= 0 && idx < theDecodedTiles.size())
         return idx;
@@ -188,19 +245,23 @@ int RawTileBrowserWidget::tileIndexAt(const QPoint & pos) const
 
 void RawTileBrowserWidget::scrollToTile(int tileIndex)
 {
-    if (theTilesPerRow <= 0 || theTileDisplaySize <= 0) return;
-    if (tileIndex < 0 || tileIndex >= theDecodedTiles.size()) return;
+    if (theCellW <= 0 || theCellH <= 0 || theTilesPerRow <= 0) return;
 
-    int row = tileIndex / theTilesPerRow;
-    int col = tileIndex % theTilesPerRow;
-    int x   = col * theTileDisplaySize;
-    int y   = row * theTileDisplaySize;
+    // Convert raw tile index → assembled sprite/item index
+    int tilesPerSprite = theSpriteW * theSpriteH;
+    int itemIndex      = tileIndex / tilesPerSprite;
 
-    // Walk up to the QScrollArea that contains this widget
+    if (itemIndex < 0 || itemIndex >= theDecodedTiles.size()) return;
+
+    int row = itemIndex / theTilesPerRow;
+    int col = itemIndex % theTilesPerRow;
+    int x   = col * theCellW;
+    int y   = row * theCellH;
+
     QWidget *w = parentWidget();
     while (w) {
         if (QScrollArea *sa = qobject_cast<QScrollArea*>(w)) {
-            sa->ensureVisible(x, y, theTileDisplaySize, theTileDisplaySize);
+            sa->ensureVisible(x, y, theCellW, theCellH);
             return;
         }
         w = w->parentWidget();
