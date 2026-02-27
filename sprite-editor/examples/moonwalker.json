@@ -23,22 +23,22 @@
       ],
       "sprites": [
         {
-          "name": "MJ walk frame (TBD - scan from 0x01B000)",
-          "rom_offset": "0x01B000",
+          "name": "Character sprites group A - frame 0 (2x4, 23 frames at 0x0220E0)",
+          "rom_offset": "0x0220E0",
           "width_tiles": 2,
           "height_tiles": 4,
           "palette_index": 0,
           "compression": "none",
-          "notes": "Starting point for Main Sprite Bank scan. Browse the tile range 0x01B000-0x02A400 in Raw Tile Browser with 'MJ Gray Suit Palette' to identify walk frames. MJ is typically 2x4 or 3x5 tiles. Use jump-to-offset to navigate."
+          "notes": "CONFIRMED SPRITES. Zero-tile boundary analysis found 23 consecutive 2x4 sprites at this offset. Visual inspection with MJ gray suit palette shows clear humanoid figures with dark jacket and gold skin tones. 23 frames = likely one character's full animation set (walk/fight/idle). Sprites 0-22 occupy 0x0220E0-0x022BA0."
         },
         {
-          "name": "Sphere/gem tile (DMA source 0x032D8A)",
-          "rom_offset": "0x032D80",
+          "name": "Character sprites group B - frame 0 (2x5, 43 frames at 0x023800)",
+          "rom_offset": "0x023800",
           "width_tiles": 2,
-          "height_tiles": 4,
+          "height_tiles": 5,
           "palette_index": 0,
           "compression": "none",
-          "notes": "0x032D8A found as DMA source address. Tile shows circular gradient (sphere outline). Surrounding tiles look like coins/gems/UI elements. CAUTION: this region has density ~1.0 suggesting it may be Nemesis-compressed, not raw 4bpp."
+          "notes": "CONFIRMED SPRITES. Zero-tile boundary analysis found 43 consecutive 2x5 sprites at this offset. Visual inspection shows clear humanoid figures - dark jacket body with gold (skin) face and hands. 43 frames is very large, suggesting this is a main character animation set (possibly MJ main walk/fight sequence). Sprites 0-42 occupy 0x023800-0x02672C."
         }
       ]
     },
@@ -85,7 +85,7 @@
       "start_offset": "0x01B000",
       "end_offset":   "0x02A400",
       "default_palette_group": 0,
-      "_note": "PRIMARY candidate for character sprites. Density analysis: ~1952 tiles, consistently moderate density 0.37-0.65 (sprite-like). Use MJ Gray Suit palette. Look for 2x4 or 3x5 tile character frames near the start. This is the largest uncompressed sprite-like region in the ROM."
+      "_note": "CONFIRMED character sprite bank. ~1952 tiles, density 0.37-0.65. Zero-tile analysis found: 23 sprites of 2x4 at 0x0220E0; 43 sprites of 2x5 at 0x023800; 3 sprites of 3x5 at 0x0290A0. Visual inspection confirmed humanoid figures with gray jacket + gold skin (MJ palette). Many more sprite groups exist in the 587-tile run 0x01D760-0x0220C0."
     },
     {
       "label": "Secondary sprites / level tiles (0x053000-0x05F400)",

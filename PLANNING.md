@@ -73,23 +73,19 @@ Sonic and other Sega titles that do use Nemesis compression.
 
 ### 1. ~~Implement Nemesis Decompressor~~ DONE
 
-### 2. Verify Moonwalker Sprite Offsets Visually
-**Status:** PARTIALLY DONE — density analysis found primary candidates.
+### 2. ~~Verify Moonwalker Sprite Offsets Visually~~ CONFIRMED via Python analysis
 
-**Next step:** Open sprite editor with `roms/Moonwalker.md` + `moonwalker.json`.
-In Raw Tile Browser, select "MAIN SPRITE BANK" range (0x01B000-0x02A400),
-apply "MJ Gray Suit Palette" (0x0082DA), and scan for recognizable MJ character sprites.
+Zero-tile boundary analysis + visual pixel inspection confirmed:
+- **0x0220E0**: 23 sprites of 2×4 tiles — dark jacket + gold skin (MJ palette) ✓
+- **0x023800**: 43 sprites of 2×5 tiles — humanoid figures in motion ✓
+- **0x0290A0**: 3 sprites of 3×5 tiles
+- **0x054000+**: Level tile data (diagonal stripes, checkerboard floor patterns) ✓
 
-If density analysis is correct, MJ walk/idle frames should appear somewhere in the
-first 256KB of the main sprite bank (0x01B000-0x0231F0 = 256KB limit in app).
+Large run 0x01D760-0x0220C0 (587 tiles) still unresolved — could be more sprites
+(not cleanly divisible by common sprite sizes) or Nemesis-compressed data.
 
-**BlastEm method (more definitive):**
-```
-blastem roms/Moonwalker.md
-# press backtick to enter debugger
-# watchpoint on 0xC00004 (VDP control port DMA setup)
-```
-This will give exact ROM→VRAM transfer addresses when the game first renders sprites.
+**Next step:** In sprite editor, open 0x0220E0 and 0x023800 as sprite entries (already
+in moonwalker.json) to view them with proper transparency and correct palette.
 
 ### 3. Implement Kosinski Decompressor (Lower Priority)
 **File:** `sprite-editor/KosinskiDecompressor.cpp`
