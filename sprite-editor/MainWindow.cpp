@@ -86,6 +86,8 @@ void MainWindow::setupConnections()
             this,               &MainWindow::replaceSprite);
     connect(ui->theExportButton, &QPushButton::clicked,
             this,               &MainWindow::exportSprite);
+    connect(ui->theExportAllButton, &QPushButton::clicked,
+            this,               &MainWindow::exportAllSprites);
 
     connect(ui->theRawRangeCombo,   SIGNAL(currentIndexChanged(int)),
             this,                   SLOT(onRawRangeChanged(int)));
@@ -307,6 +309,7 @@ void MainWindow::displaySpriteGroup(int groupIndex)
     ui->theOffsetLabel->clear();
     ui->theReplaceButton->setEnabled(false);
     ui->theExportButton->setEnabled(false);
+    ui->theExportAllButton->setEnabled(!thumbs.isEmpty());
     ui->actionReplaceSprite->setEnabled(false);
 
     // Show palette of first sprite in group
@@ -486,6 +489,60 @@ void MainWindow::exportSprite()
     }
 
     statusBar()->showMessage("Exported sprite to: " + path);
+}
+
+void MainWindow::exportAllSprites()
+{
+    if (!theDef.isLoaded() || !theRom.isOpen() || theCurrentGroupIndex < 0)
+        return;
+
+    const SpriteGroup & group = theDef.spriteGroups()[theCurrentGroupIndex];
+    if (group.sprites.isEmpty())
+        return;
+
+    QString dir = QFileDialog::getExistingDirectory(
+        this, "Select Output Directory for PNG Export");
+    if (dir.isEmpty())
+        return;
+
+    int exported = 0;
+    for (int i = 0; i < group.sprites.size(); ++i)
+    {
+        const SpriteEntry & entry = group.sprites[i];
+        GenesisPalette pal = paletteForSprite(entry, theCurrentGroupIndex);
+        int bytesPerFrame = entry.widthTiles * entry.heightTiles * 32;
+
+        for (int f = 0; f < entry.frameCount; ++f)
+        {
+            uint32_t frameOffset = entry.romOffset + uint32_t(f * bytesPerFrame);
+            QByteArray frameData = theRom.readBytes(frameOffset, bytesPerFrame);
+            if (frameData.size() < bytesPerFrame)
+                continue;
+
+            QImage img = TileDecoder::decodeSprite(frameData,
+                                                   entry.widthTiles,
+                                                   entry.heightTiles,
+                                                   pal);
+            if (img.isNull())
+                continue;
+
+            QString baseName = entry.name;
+            baseName.replace(QRegularExpression("[^A-Za-z0-9_\\-]"), "_");
+            QString filename;
+            if (entry.frameCount == 1)
+                filename = QString("%1/%2.png").arg(dir, baseName);
+            else
+                filename = QString("%1/%2_%3.png")
+                    .arg(dir, baseName)
+                    .arg(f, 3, 10, QChar('0'));
+
+            if (img.save(filename, "PNG"))
+                ++exported;
+        }
+    }
+
+    statusBar()->showMessage(
+        QString("Exported %1 sprite frames to: %2").arg(exported).arg(dir));
 }
 
 // ---------------------------------------------------------------------------

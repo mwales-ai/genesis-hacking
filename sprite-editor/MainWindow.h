@@ -43,6 +43,7 @@ private slots:
     void onGridToggled(bool checked);
     void replaceSprite();
     void exportSprite();
+    void exportAllSprites();
 
     // Raw Tile Browser tab
     void onRawRangeChanged(int index);

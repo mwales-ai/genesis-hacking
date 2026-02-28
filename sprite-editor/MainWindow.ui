@@ -219,6 +219,19 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QPushButton" name="theExportAllButton">
+               <property name="text">
+                <string>Export All</string>
+               </property>
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="toolTip">
+                <string>Export all sprites in the current group as individual PNG files</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>
