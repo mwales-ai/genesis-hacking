@@ -46,6 +46,8 @@ Binary: `sprite-editor/build/SpriteEditor`
   Genesis column-major order. Adjustable via spinboxes in Raw Tile Browser.
 - ~~Assembly start offset~~ DONE — "Start" button sets sprite assembly origin to
   a specific ROM address so sprites align correctly.
+- ~~Multi-frame sprites~~ DONE — `frame_count` in JSON expands to N thumbnails
+  in Sprite Viewer; per-frame offset for detail view, replace, and export.
 
 ### Moonwalker ROM Analysis (`sprite-editor/examples/moonwalker.json`)
 Target ROM: `roms/Moonwalker.bin` (USA, JUE, checksum 0x38B2).
@@ -83,6 +85,13 @@ Sprite tile data is identical across revisions; palette offsets differ.
 ### 2. ~~Verify Moonwalker Sprite Offsets Visually~~ CONFIRMED
 
 ### 3. ~~Sprite Editor UX: assembly mode, export PNG, keyboard nav~~ DONE
+
+### 3b. ~~Multi-frame sprite support~~ DONE
+- Added `frame_count` field to JSON definition and `SpriteEntry` struct
+- Sprite Viewer expands multi-frame entries into individual thumbnails ([1/N], [2/N], ...)
+- Detail view shows per-frame ROM offset; replacement writes to correct frame offset
+- Increased tile dimension bounds from 4→8 (Moonwalker uses 2×5 sprites)
+- Updated moonwalker.json with frame counts: 23, 43, 73, 13, 21, 3, 13 frames
 
 ### 4. Identify and Document MJ Sprites in moonwalker.json
 Using the sprite editor + BlastEm debugger, map out:
