@@ -26,6 +26,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    // Load ROM and/or definition from command-line arguments
+    void loadFromCommandLine(const QStringList & args);
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 

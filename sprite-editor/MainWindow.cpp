@@ -40,6 +40,59 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::loadFromCommandLine(const QStringList & args)
+{
+    // args[0] = program name, args[1] = ROM path, args[2] = definition path
+    QString romPath, defPath;
+
+    for (int i = 1; i < args.size(); ++i)
+    {
+        QString arg = args[i];
+        if (arg.endsWith(".json", Qt::CaseInsensitive))
+            defPath = arg;
+        else
+            romPath = arg;
+    }
+
+    if (!romPath.isEmpty())
+    {
+        if (theRom.openRom(romPath))
+        {
+            theSettings.setValue("lastRomPath", romPath);
+            updateWindowTitle();
+            updateStatusLabel();
+            statusBar()->showMessage("ROM loaded: " + theRom.gameTitle());
+        }
+        else
+        {
+            statusBar()->showMessage("Failed to open ROM: " + romPath);
+        }
+    }
+
+    if (!defPath.isEmpty())
+    {
+        if (theDef.loadFromFile(defPath))
+        {
+            theSettings.setValue("lastDefPath", defPath);
+            updateWindowTitle();
+            updateStatusLabel();
+            statusBar()->showMessage("Definition loaded: " + theDef.gameName());
+        }
+        else
+        {
+            statusBar()->showMessage("Failed to load definition: " + theDef.lastError());
+        }
+    }
+
+    if (theRom.isOpen())
+    {
+        if (theDef.isLoaded())
+            populateSpriteGroups();
+        populateRawRanges();
+        populateRawPalettes();
+    }
+}
+
 void MainWindow::setupCustomWidgets()
 {
     // --- Sprite Viewer Tab ---
