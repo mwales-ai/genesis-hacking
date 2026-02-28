@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     , theCurrentGroupIndex(-1)
     , theCurrentSpriteIndex(-1)
     , theCurrentFrameIndex(0)
+    , theRawSelectedTileIndex(-1)
+    , theRawSelectedRomOffset(0)
 {
     ui->setupUi(this);
     setupCustomWidgets();
@@ -103,6 +105,8 @@ void MainWindow::setupConnections()
             this,                   SLOT(onRawSpriteSizeChanged(int)));
     connect(ui->theAssemblyStartButton, &QPushButton::clicked,
             this,                       &MainWindow::onSetAssemblyStart);
+    connect(ui->theRawExportButton, &QPushButton::clicked,
+            this,                   &MainWindow::onRawExportPng);
 }
 
 // ---------------------------------------------------------------------------
@@ -562,6 +566,9 @@ void MainWindow::onRawSpriteSizeChanged(int)
 
 void MainWindow::onRawTileClicked(int tileIndex, uint32_t romOffset)
 {
+    theRawSelectedTileIndex = tileIndex;
+    theRawSelectedRomOffset = romOffset;
+
     int w = ui->theRawSpriteWSpin->value();
     int h = ui->theRawSpriteHSpin->value();
     int tilesPerSprite = w * h;
@@ -582,6 +589,7 @@ void MainWindow::onRawTileClicked(int tileIndex, uint32_t romOffset)
             .arg(romOffset, 6, 16, QChar('0')).toUpper();
     }
     ui->theRawTileInfoLabel->setText(label);
+    ui->theRawExportButton->setEnabled(true);
 }
 
 void MainWindow::onJumpToOffset()
@@ -670,6 +678,70 @@ void MainWindow::onSetAssemblyStart()
         QString("Assembly starts at tile %1  |  ROM offset: 0x%2")
         .arg(tileIndex)
         .arg(actualOffset, 6, 16, QChar('0')).toUpper());
+}
+
+void MainWindow::onRawExportPng()
+{
+    if (!theRom.isOpen() || theRawSelectedTileIndex < 0)
+        return;
+
+    int w = ui->theRawSpriteWSpin->value();
+    int h = ui->theRawSpriteHSpin->value();
+    int bytesNeeded = w * h * 32;
+
+    QByteArray tileData = theRom.readBytes(theRawSelectedRomOffset, bytesNeeded);
+    if (tileData.size() < bytesNeeded)
+    {
+        statusBar()->showMessage("Not enough ROM data to export this sprite.");
+        return;
+    }
+
+    // Use whatever palette is currently selected in the raw browser
+    GenesisPalette pal = TileDecoder::greyPalette();
+    int palIdx = ui->theRawPaletteCombo->currentIndex();
+    if (palIdx > 0 && theDef.isLoaded())
+    {
+        int flatIdx = 1;
+        for (const auto & g : theDef.spriteGroups())
+        {
+            for (const auto & p : g.palettes)
+            {
+                if (flatIdx == palIdx)
+                {
+                    QByteArray palData = theRom.readBytes(p.romOffset, 32);
+                    pal = TileDecoder::decodePalette(palData);
+                    break;
+                }
+                ++flatIdx;
+            }
+        }
+    }
+
+    QImage img = TileDecoder::decodeSprite(tileData, w, h, pal);
+    if (img.isNull())
+    {
+        statusBar()->showMessage("Failed to decode sprite for export.");
+        return;
+    }
+
+    QString suggestedName = QString("sprite_0x%1_%2x%3.png")
+        .arg(theRawSelectedRomOffset, 6, 16, QChar('0')).toUpper()
+        .arg(w).arg(h);
+
+    QString path = QFileDialog::getSaveFileName(
+        this, "Export Sprite as PNG", suggestedName,
+        "PNG Images (*.png);;All Files (*)");
+
+    if (path.isEmpty())
+        return;
+
+    if (!img.save(path, "PNG"))
+    {
+        QMessageBox::critical(this, "Export Failed", "Could not save PNG to: " + path);
+        return;
+    }
+
+    statusBar()->showMessage("Exported sprite to: " + path);
 }
 
 void MainWindow::refreshRawBrowser()

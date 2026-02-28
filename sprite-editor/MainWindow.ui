@@ -426,6 +426,31 @@
           </widget>
          </widget>
         </item>
+        <!-- Raw browser action buttons -->
+        <item>
+         <layout class="QHBoxLayout" name="rawActionLayout">
+          <item>
+           <widget class="QPushButton" name="theRawExportButton">
+            <property name="text">
+             <string>Export PNG</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Export the selected sprite/tile as a PNG image</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
         <!-- Tile info label -->
         <item>
          <widget class="QLabel" name="theRawTileInfoLabel">

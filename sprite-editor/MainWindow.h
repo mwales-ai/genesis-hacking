@@ -52,6 +52,7 @@ private slots:
     void onRawTileClicked(int tileIndex, uint32_t romOffset);
     void onJumpToOffset();
     void onSetAssemblyStart();
+    void onRawExportPng();
 
     // Help
     void showAbout();
@@ -86,6 +87,10 @@ private:
     int                   theCurrentGroupIndex;
     int                   theCurrentSpriteIndex;
     int                   theCurrentFrameIndex;
+
+    // Raw tile browser selection state
+    int                   theRawSelectedTileIndex;
+    uint32_t              theRawSelectedRomOffset;
 
     // Custom widgets added programmatically into placeholder containers in the .ui
     SpriteSheetWidget    *theSpriteSheet;
