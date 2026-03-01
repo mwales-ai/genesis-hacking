@@ -1,0 +1,2483 @@
+{
+  "rom_size": 524288,
+  "game_name": "\ufffd}\ufffdC\ufffdP\ufffd\ufffd\ufffdW\ufffd\ufffd\ufffdN\ufffd\\\ufffd\ufffd\ufffdY \ufffd\ufffd\ufffd[\ufffd\ufffd\ufffdE\ufffdH\ufffd[\ufffdJ\ufffd[",
+  "hardcoded_dma": [
+    {
+      "code_offset": "0x0004A2",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFCF00",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x000542",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFCC00",
+      "length_bytes": 640
+    },
+    {
+      "code_offset": "0x000580",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFCC00",
+      "length_bytes": 640
+    },
+    {
+      "code_offset": "0x0005F2",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFCC00",
+      "length_bytes": 640
+    },
+    {
+      "code_offset": "0x000B9C",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFCF00",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x000F1A",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x0014A2",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x001796",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x052E94",
+      "length_bytes": 4800
+    },
+    {
+      "code_offset": "0x0017D4",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x052E94",
+      "length_bytes": 4800
+    },
+    {
+      "code_offset": "0x0019D8",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02CD7A",
+      "length_bytes": 256
+    },
+    {
+      "code_offset": "0x001FBC",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF9200",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x002032",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF0020",
+      "length_bytes": 18240
+    },
+    {
+      "code_offset": "0x00208C",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF0020",
+      "length_bytes": 18240
+    },
+    {
+      "code_offset": "0x00215E",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02ACDA",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x0021A0",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02ACDA",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x0024A4",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 8192
+    },
+    {
+      "code_offset": "0x002786",
+      "dma_type": "fill",
+      "type": "hardcoded",
+      "length_bytes": 4094
+    },
+    {
+      "code_offset": "0x0027CE",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF5000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x002820",
+      "dma_type": "fill",
+      "type": "hardcoded",
+      "length_bytes": 4094
+    },
+    {
+      "code_offset": "0x0028FC",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF8000",
+      "length_bytes": 256
+    },
+    {
+      "code_offset": "0x00294E",
+      "dma_type": "fill",
+      "type": "hardcoded",
+      "length_bytes": 4094
+    },
+    {
+      "code_offset": "0x002D86",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02ACDA",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x003024",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x00306A",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x00311C",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02ACDA",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x00315A",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02ACDA",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x00342A",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x00369A",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x0039E8",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x003BA8",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x003CDC",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x004200",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x004374",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF8000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x0045C2",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF9200",
+      "length_bytes": 1792
+    },
+    {
+      "code_offset": "0x0046DA",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x004B6E",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02AA32",
+      "length_bytes": 64
+    },
+    {
+      "code_offset": "0x004BC2",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02ACDA",
+      "length_bytes": 128
+    },
+    {
+      "code_offset": "0x004C04",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02CEDA",
+      "length_bytes": 32
+    },
+    {
+      "code_offset": "0x004C46",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x032D8A",
+      "length_bytes": 32
+    },
+    {
+      "code_offset": "0x004CA6",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x032D8A",
+      "length_bytes": 32
+    },
+    {
+      "code_offset": "0x004D42",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02D6CC",
+      "length_bytes": 32
+    },
+    {
+      "code_offset": "0x004E06",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x004E6A",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x00564C",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF9200",
+      "length_bytes": 1792
+    },
+    {
+      "code_offset": "0x00574C",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x00578A",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    },
+    {
+      "code_offset": "0x0057D4",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x052E94",
+      "length_bytes": 4800
+    },
+    {
+      "code_offset": "0x005AD2",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0x02CEDA",
+      "length_bytes": 32
+    },
+    {
+      "code_offset": "0x005F58",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFC000",
+      "length_bytes": 16
+    },
+    {
+      "code_offset": "0x005F96",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFC000",
+      "length_bytes": 16
+    },
+    {
+      "code_offset": "0x0061A8",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFC0F0",
+      "length_bytes": 20
+    },
+    {
+      "code_offset": "0x00630C",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFFC0E0",
+      "length_bytes": 16
+    },
+    {
+      "code_offset": "0x006726",
+      "dma_type": "transfer",
+      "type": "hardcoded",
+      "source_addr": "0xFF6000",
+      "length_bytes": 4096
+    }
+  ],
+  "dynamic_dma_routines": [
+    {
+      "lea_offset": "0x002884",
+      "subroutine_start": "0x00273A"
+    },
+    {
+      "lea_offset": "0x0029B2",
+      "subroutine_start": "0x00273A"
+    },
+    {
+      "lea_offset": "0x005B7A",
+      "subroutine_start": "0x005B5E"
+    },
+    {
+      "lea_offset": "0x014864",
+      "subroutine_start": "0x014864"
+    },
+    {
+      "lea_offset": "0x0148B8",
+      "subroutine_start": "0x0148B8"
+    },
+    {
+      "lea_offset": "0x014EAC",
+      "subroutine_start": "0x014EAC"
+    },
+    {
+      "lea_offset": "0x014F12",
+      "subroutine_start": "0x014EAC"
+    },
+    {
+      "lea_offset": "0x014FE2",
+      "subroutine_start": "0x014F54"
+    },
+    {
+      "lea_offset": "0x015034",
+      "subroutine_start": "0x014F54"
+    },
+    {
+      "lea_offset": "0x0151EC",
+      "subroutine_start": "0x0151E4"
+    },
+    {
+      "lea_offset": "0x01521E",
+      "subroutine_start": "0x01521C"
+    }
+  ],
+  "sprite_bank_references": [
+    {
+      "code_offset": "0x000678",
+      "target_addr": "0x00069A",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x00076A",
+      "target_addr": "0x000C08",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x000778",
+      "target_addr": "0x000C20",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0007E6",
+      "target_addr": "0x02AC3A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00083E",
+      "target_addr": "0x050182",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00088A",
+      "target_addr": "0x050E66",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0008A0",
+      "target_addr": "0x050EA6",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0008E8",
+      "target_addr": "0x03950E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0008FE",
+      "target_addr": "0x051106",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00096A",
+      "target_addr": "0x000A38",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x000984",
+      "target_addr": "0x0520DA",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000996",
+      "target_addr": "0x052E14",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0009DE",
+      "target_addr": "0x000A38",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0009F8",
+      "target_addr": "0x039A84",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000A0A",
+      "target_addr": "0x03A2BC",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000A1C",
+      "target_addr": "0x03A4E2",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000A60",
+      "target_addr": "0x02EC9C",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000A72",
+      "target_addr": "0x02FD6A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000A88",
+      "target_addr": "0x039A84",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000A9A",
+      "target_addr": "0x03A4E2",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000AB2",
+      "target_addr": "0x02FE20",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000AC4",
+      "target_addr": "0x032982",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000C5A",
+      "target_addr": "0x031E32",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x000C66",
+      "target_addr": "0x04636E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x000D4C",
+      "target_addr": "0x017760",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00104C",
+      "target_addr": "0x034AEE",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x001062",
+      "target_addr": "0x035456",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x001078",
+      "target_addr": "0x03488A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x001084",
+      "target_addr": "0x035346",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00109A",
+      "target_addr": "0x034A16",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0010B0",
+      "target_addr": "0x034ADE",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0010C6",
+      "target_addr": "0x034846",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0010DC",
+      "target_addr": "0x034786",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00119E",
+      "target_addr": "0x0013A8",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x0011F6",
+      "target_addr": "0x001388",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x00120A",
+      "target_addr": "0x034780",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001216",
+      "target_addr": "0x034780",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00122A",
+      "target_addr": "0x001348",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x00123C",
+      "target_addr": "0x0012BC",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x0013EE",
+      "target_addr": "0x006A70",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001402",
+      "target_addr": "0x006A50",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001416",
+      "target_addr": "0x0016BE",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00141C",
+      "target_addr": "0x0016C2",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x001426",
+      "target_addr": "0x0016CC",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00142C",
+      "target_addr": "0x0016D0",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x001436",
+      "target_addr": "0x0016D4",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00143C",
+      "target_addr": "0x0016D8",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x00144C",
+      "target_addr": "0x0016DC",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x001452",
+      "target_addr": "0x0016E0",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x0014D8",
+      "target_addr": "0x02B8E0",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00163C",
+      "target_addr": "0x0176B0",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x001716",
+      "target_addr": "0x006A70",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00172A",
+      "target_addr": "0x001964",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x001730",
+      "target_addr": "0x001968",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x00173A",
+      "target_addr": "0x001972",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x001740",
+      "target_addr": "0x001976",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x00174A",
+      "target_addr": "0x00197A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x001750",
+      "target_addr": "0x00197E",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x00180E",
+      "target_addr": "0x017760",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00182E",
+      "target_addr": "0x006A90",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001A0C",
+      "target_addr": "0x02CE7A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001BA0",
+      "target_addr": "0x001C50",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x001BAE",
+      "target_addr": "0x001CE0",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x001BD2",
+      "target_addr": "0x001D74",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001BE0",
+      "target_addr": "0x001DBC",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001BF0",
+      "target_addr": "0x001F3C",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x001BFE",
+      "target_addr": "0x001F4E",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x001C1A",
+      "target_addr": "0x001E06",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x001E3E",
+      "target_addr": "0x0191A2",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x001ECA",
+      "target_addr": "0x001C4C",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x001ED8",
+      "target_addr": "0x001CDC",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x001F0E",
+      "target_addr": "0x001F3C",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x001F1C",
+      "target_addr": "0x001F4E",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x002004",
+      "target_addr": "0x02CE7A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x002112",
+      "target_addr": "0x02E800",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00212E",
+      "target_addr": "0x0022A4",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x00213A",
+      "target_addr": "0x0022B0",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x0021F6",
+      "target_addr": "0x002746",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00227A",
+      "target_addr": "0x002756",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x002324",
+      "target_addr": "0x008000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x002390",
+      "target_addr": "0x008000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0023B8",
+      "target_addr": "0x006A50",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0023CA",
+      "target_addr": "0x002D30",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x002446",
+      "target_addr": "0x02E22A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00244C",
+      "target_addr": "0x02E29E",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x0024D4",
+      "target_addr": "0x0176AC",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x002650",
+      "target_addr": "0x00273A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00284C",
+      "target_addr": "0x02E800",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0028C4",
+      "target_addr": "0x02EC00",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00297A",
+      "target_addr": "0x02EC00",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x002A00",
+      "target_addr": "0x030940",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x002A14",
+      "target_addr": "0x002A7A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x002A38",
+      "target_addr": "0x002A7E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x002A5C",
+      "target_addr": "0x002A82",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x002F0E",
+      "target_addr": "0x004000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0030C2",
+      "target_addr": "0x00B3E4",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0030D6",
+      "target_addr": "0x0033EA",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0030EA",
+      "target_addr": "0x0033CA",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00319A",
+      "target_addr": "0x02ADFC",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0031A6",
+      "target_addr": "0x032BE4",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x003480",
+      "target_addr": "0x006A70",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x003494",
+      "target_addr": "0x006A50",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0034A8",
+      "target_addr": "0x003920",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0034BA",
+      "target_addr": "0x003832",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0034C0",
+      "target_addr": "0x003836",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x0034CA",
+      "target_addr": "0x00390C",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0034DA",
+      "target_addr": "0x003842",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0034F2",
+      "target_addr": "0x0038FE",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0034F8",
+      "target_addr": "0x003902",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003504",
+      "target_addr": "0x0038DC",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00350A",
+      "target_addr": "0x0038E0",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003514",
+      "target_addr": "0x0038F4",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00351A",
+      "target_addr": "0x0038F8",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x00352E",
+      "target_addr": "0x003938",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x003578",
+      "target_addr": "0x00392A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x003774",
+      "target_addr": "0x00393C",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x003790",
+      "target_addr": "0x00393C",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x003962",
+      "target_addr": "0x006A70",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x003976",
+      "target_addr": "0x003A6A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00397C",
+      "target_addr": "0x003A82",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003986",
+      "target_addr": "0x003A6E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00398C",
+      "target_addr": "0x003AA4",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003996",
+      "target_addr": "0x003A72",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00399C",
+      "target_addr": "0x003AC0",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x0039A6",
+      "target_addr": "0x003A76",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0039AC",
+      "target_addr": "0x003ADE",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x0039B6",
+      "target_addr": "0x003A7A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0039BC",
+      "target_addr": "0x003AF4",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x0039C6",
+      "target_addr": "0x003A7E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0039CC",
+      "target_addr": "0x003B14",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003B52",
+      "target_addr": "0x006A70",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x003B66",
+      "target_addr": "0x003C2A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x003B6C",
+      "target_addr": "0x003C36",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003B76",
+      "target_addr": "0x003C2E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x003B7C",
+      "target_addr": "0x003C44",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003B86",
+      "target_addr": "0x003C32",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x003B8C",
+      "target_addr": "0x003C5E",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x003F0A",
+      "target_addr": "0x0176AC",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x0041A0",
+      "target_addr": "0x000C0C",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0042FE",
+      "target_addr": "0x03CC96",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x00430A",
+      "target_addr": "0x0498EE",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x004332",
+      "target_addr": "0x049772",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x004C88",
+      "target_addr": "0x03256E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x004CE0",
+      "target_addr": "0x032C74",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x004CF8",
+      "target_addr": "0x02A6BE",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x004D0E",
+      "target_addr": "0x02AB60",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x004D24",
+      "target_addr": "0x02B030",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x004D7C",
+      "target_addr": "0x039822",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0054A0",
+      "target_addr": "0x003DC0",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0054B4",
+      "target_addr": "0x005504",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0054D2",
+      "target_addr": "0x003E22",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0054E6",
+      "target_addr": "0x005514",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00580E",
+      "target_addr": "0x02B8E0",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x005824",
+      "target_addr": "0x02C7B8",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0059DA",
+      "target_addr": "0x03950E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x005A54",
+      "target_addr": "0x000A38",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x005B40",
+      "target_addr": "0x02CF1C",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x005BC4",
+      "target_addr": "0x0007B4",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x005BE4",
+      "target_addr": "0x02AD5A",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x005BFA",
+      "target_addr": "0x02ADFC",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x005C10",
+      "target_addr": "0x02A6BE",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x005C36",
+      "target_addr": "0x04650E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x005C56",
+      "target_addr": "0x0463CE",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x005C8A",
+      "target_addr": "0x039822",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x005C98",
+      "target_addr": "0x005CBA",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x005CA6",
+      "target_addr": "0x005CF2",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x005D40",
+      "target_addr": "0x02DD8E",
+      "instruction": "LEA",
+      "register": "A6"
+    },
+    {
+      "code_offset": "0x005DB6",
+      "target_addr": "0x02E1EE",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x005ED0",
+      "target_addr": "0x005FC4",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x005EF0",
+      "target_addr": "0x005FE4",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x00600E",
+      "target_addr": "0x04664E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x006020",
+      "target_addr": "0x04650E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x006038",
+      "target_addr": "0x0463CE",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00605C",
+      "target_addr": "0x04650E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x006074",
+      "target_addr": "0x0463CE",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0063B0",
+      "target_addr": "0x017760",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x0063D4",
+      "target_addr": "0x006A38",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0065A8",
+      "target_addr": "0x00516E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00668E",
+      "target_addr": "0x0176AC",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x0066C6",
+      "target_addr": "0x006AB0",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0066D0",
+      "target_addr": "0x006A50",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0066EC",
+      "target_addr": "0x01727C",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x006702",
+      "target_addr": "0x017000",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x006B12",
+      "target_addr": "0x029EBE",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x006F3E",
+      "target_addr": "0x029EBE",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x006F54",
+      "target_addr": "0x029EBE",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x0074AC",
+      "target_addr": "0x00FFFC",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0075B2",
+      "target_addr": "0x00FFFC",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00777C",
+      "target_addr": "0x00FFD0",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00891A",
+      "target_addr": "0x036B82",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x008928",
+      "target_addr": "0x036B9E",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x008954",
+      "target_addr": "0x036B8C",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x008962",
+      "target_addr": "0x036BA4",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x008AF0",
+      "target_addr": "0x00FFCC",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x008C54",
+      "target_addr": "0x00FFCC",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x008DAA",
+      "target_addr": "0x00FFCC",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00B0A2",
+      "target_addr": "0x00C522",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B0B4",
+      "target_addr": "0x032246",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B10E",
+      "target_addr": "0x032406",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B220",
+      "target_addr": "0x00C702",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B22A",
+      "target_addr": "0x00C652",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B28C",
+      "target_addr": "0x0383D0",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B3AE",
+      "target_addr": "0x00B444",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B57C",
+      "target_addr": "0x00C522",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B588",
+      "target_addr": "0x00C528",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B5AA",
+      "target_addr": "0x00C51A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B614",
+      "target_addr": "0x032406",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B664",
+      "target_addr": "0x00C52E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B682",
+      "target_addr": "0x032326",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B69A",
+      "target_addr": "0x032396",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B71C",
+      "target_addr": "0x00C3C2",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B730",
+      "target_addr": "0x00C4C2",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x00B842",
+      "target_addr": "0x00C50A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B95C",
+      "target_addr": "0x00C6E2",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B970",
+      "target_addr": "0x032406",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B980",
+      "target_addr": "0x00C534",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B9C0",
+      "target_addr": "0x00C442",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00B9F6",
+      "target_addr": "0x032406",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00BA02",
+      "target_addr": "0x00C50A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00BA22",
+      "target_addr": "0x032166",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00BA66",
+      "target_addr": "0x00C522",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00BB20",
+      "target_addr": "0x00C522",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00BB34",
+      "target_addr": "0x00C63E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00BC88",
+      "target_addr": "0x004000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00C134",
+      "target_addr": "0x00C70E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00C234",
+      "target_addr": "0x00C502",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00C25E",
+      "target_addr": "0x0321D6",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00C284",
+      "target_addr": "0x0322B6",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00C316",
+      "target_addr": "0x00C63E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00C382",
+      "target_addr": "0x00C53A",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00C75C",
+      "target_addr": "0x03290E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00D770",
+      "target_addr": "0x02003D",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00D77E",
+      "target_addr": "0x020039",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00D98C",
+      "target_addr": "0x04003A",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00EC7C",
+      "target_addr": "0x029EBE",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00ECD0",
+      "target_addr": "0x010000",
+      "instruction": "MOVE.L",
+      "register": "D4"
+    },
+    {
+      "code_offset": "0x00ED34",
+      "target_addr": "0x040038",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00EE36",
+      "target_addr": "0x040000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00EE42",
+      "target_addr": "0x04FFF0",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00EE86",
+      "target_addr": "0x04003A",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00EF02",
+      "target_addr": "0x040044",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00EF52",
+      "target_addr": "0x040034",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00F034",
+      "target_addr": "0x050037",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00F054",
+      "target_addr": "0x050041",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00F2FA",
+      "target_addr": "0x010000",
+      "instruction": "MOVE.L",
+      "register": "D1"
+    },
+    {
+      "code_offset": "0x00F31E",
+      "target_addr": "0x010000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00F33A",
+      "target_addr": "0x008000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x00F704",
+      "target_addr": "0x055310",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00F7AE",
+      "target_addr": "0x055324",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00F866",
+      "target_addr": "0x057384",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00F8CA",
+      "target_addr": "0x0572E0",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x00FC14",
+      "target_addr": "0x010000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0100C6",
+      "target_addr": "0x020000",
+      "instruction": "MOVE.L",
+      "register": "D3"
+    },
+    {
+      "code_offset": "0x0100CC",
+      "target_addr": "0x001000",
+      "instruction": "MOVE.L",
+      "register": "D4"
+    },
+    {
+      "code_offset": "0x0100E0",
+      "target_addr": "0x000800",
+      "instruction": "MOVE.L",
+      "register": "D4"
+    },
+    {
+      "code_offset": "0x010520",
+      "target_addr": "0x056048",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x010526",
+      "target_addr": "0x00FFF0",
+      "instruction": "MOVE.L",
+      "register": "D5"
+    },
+    {
+      "code_offset": "0x010588",
+      "target_addr": "0x056D60",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x01058E",
+      "target_addr": "0x00FFF0",
+      "instruction": "MOVE.L",
+      "register": "D5"
+    },
+    {
+      "code_offset": "0x0106A6",
+      "target_addr": "0x010620",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x010B96",
+      "target_addr": "0x000C00",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x010E24",
+      "target_addr": "0x010D24",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x010F7C",
+      "target_addr": "0x000800",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x011000",
+      "target_addr": "0x000800",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x011044",
+      "target_addr": "0x000800",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0110AE",
+      "target_addr": "0x000400",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0110BE",
+      "target_addr": "0x000800",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0111EC",
+      "target_addr": "0x010EFA",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x01150A",
+      "target_addr": "0x000E00",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x011840",
+      "target_addr": "0x057AF8",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x01193C",
+      "target_addr": "0x001000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x011A0E",
+      "target_addr": "0x001000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x011B40",
+      "target_addr": "0x057DCC",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x011B4C",
+      "target_addr": "0x057F72",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x011DE0",
+      "target_addr": "0x0586A0",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x011F70",
+      "target_addr": "0x011FA4",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x01219E",
+      "target_addr": "0x0121D6",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x012378",
+      "target_addr": "0x0583DC",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x0123B0",
+      "target_addr": "0x0124CC",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x012476",
+      "target_addr": "0x01249E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x012546",
+      "target_addr": "0x012564",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x01255A",
+      "target_addr": "0x008000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0125D0",
+      "target_addr": "0x0124D4",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x0126B0",
+      "target_addr": "0x058118",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x012788",
+      "target_addr": "0x0128E8",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x01279C",
+      "target_addr": "0x0128F0",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x012932",
+      "target_addr": "0x0124CC",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x012B0E",
+      "target_addr": "0x004000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x012D62",
+      "target_addr": "0x004000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x012E10",
+      "target_addr": "0x058478",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x012FFC",
+      "target_addr": "0x057BF6",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x01308E",
+      "target_addr": "0x057B48",
+      "instruction": "LEA",
+      "register": "A4"
+    },
+    {
+      "code_offset": "0x013430",
+      "target_addr": "0x003DC0",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x013446",
+      "target_addr": "0x003E22",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0135DA",
+      "target_addr": "0x008000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x0135E0",
+      "target_addr": "0x040000",
+      "instruction": "MOVE.L",
+      "register": "D2"
+    },
+    {
+      "code_offset": "0x013600",
+      "target_addr": "0x002000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x013606",
+      "target_addr": "0x040000",
+      "instruction": "MOVE.L",
+      "register": "D2"
+    },
+    {
+      "code_offset": "0x0136A8",
+      "target_addr": "0x040000",
+      "instruction": "MOVE.L",
+      "register": "D2"
+    },
+    {
+      "code_offset": "0x0136C6",
+      "target_addr": "0x040000",
+      "instruction": "MOVE.L",
+      "register": "D2"
+    },
+    {
+      "code_offset": "0x013B3E",
+      "target_addr": "0x003000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x013B80",
+      "target_addr": "0x013AF2",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x0140E0",
+      "target_addr": "0x002000",
+      "instruction": "MOVE.L",
+      "register": "D0"
+    },
+    {
+      "code_offset": "0x01483C",
+      "target_addr": "0x0191A2",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x01484E",
+      "target_addr": "0x01A77E",
+      "instruction": "LEA",
+      "register": "A5"
+    },
+    {
+      "code_offset": "0x014B48",
+      "target_addr": "0x014CA2",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x014D8E",
+      "target_addr": "0x014DAE",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x014D9E",
+      "target_addr": "0x014DCE",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x014DA6",
+      "target_addr": "0x014DBE",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x014EBA",
+      "target_addr": "0x014F54",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x0150EA",
+      "target_addr": "0x01514A",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x0152AA",
+      "target_addr": "0x015332",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x0152BC",
+      "target_addr": "0x015348",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x0153FE",
+      "target_addr": "0x01541E",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x01545C",
+      "target_addr": "0x02D6EC",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x015864",
+      "target_addr": "0x05A000",
+      "instruction": "LEA",
+      "register": "A0"
+    },
+    {
+      "code_offset": "0x015BC4",
+      "target_addr": "0x05F292",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015BCE",
+      "target_addr": "0x015E34",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015BF2",
+      "target_addr": "0x015E3E",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015BFE",
+      "target_addr": "0x05F292",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015C04",
+      "target_addr": "0x015FCA",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x015D72",
+      "target_addr": "0x015E0C",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015D86",
+      "target_addr": "0x015FE8",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x015D98",
+      "target_addr": "0x015E16",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015DAA",
+      "target_addr": "0x015FE8",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x015DBC",
+      "target_addr": "0x015E20",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015DD0",
+      "target_addr": "0x015FE8",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x015DE2",
+      "target_addr": "0x015E2A",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015DF4",
+      "target_addr": "0x015FE8",
+      "instruction": "LEA",
+      "register": "A3"
+    },
+    {
+      "code_offset": "0x015EF0",
+      "target_addr": "0x015F3E",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x015EF6",
+      "target_addr": "0x015E48",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015F1C",
+      "target_addr": "0x015F32",
+      "instruction": "LEA",
+      "register": "A1"
+    },
+    {
+      "code_offset": "0x015F22",
+      "target_addr": "0x015E48",
+      "instruction": "LEA",
+      "register": "A2"
+    },
+    {
+      "code_offset": "0x015FB6",
+      "target_addr": "0x015FE8",
+      "instruction": "LEA",
+      "register": "A3"
+    }
+  ],
+  "breakpoint_recommendations": [
+    {
+      "address": "0x00273A",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x00273A",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x005B5E",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x014864",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x0148B8",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x014EAC",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x014EAC",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x014F54",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x014F54",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x0151E4",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    },
+    {
+      "address": "0x01521C",
+      "purpose": "Dynamic DMA routine entry point",
+      "what_to_check": "Print D0-D3, A0-A1 to see DMA source/dest/length"
+    }
+  ]
+}
