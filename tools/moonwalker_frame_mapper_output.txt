@@ -1,0 +1,343 @@
+Loaded ROM: roms/Moonwalker.bin (524288 bytes)
+
+======================================================================
+Animation Frame Summary
+======================================================================
+Total frames defined: 200
+Valid frames: 111
+
+Frame SubFr  Tiles        Range VRAM bytes     Pals
+    1    22     24     68-1348      768      [0,1,2]
+    2    22     31      5-1672      992      [0,1,2,3]
+    3    24     32      7-1353     1024      [0,1,2,3]
+    4    21     20      7-1353      640      [0,1,2,3]
+    5    17     27     51-1910      864      [0,1,2,3]
+    6    18     20     50-1828      640      [0,1,2,3]
+    7    21     21     66-1352      672      [0,1,2,3]
+    8    17     22     51-1904      704      [0,1,2,3]
+    9    23     23      4-1861      736      [0,1,2,3]
+   10    18     23     51-1859      736      [0,1,2,3]
+   11    22     27      5-1828      864      [0,1,2,3]
+   12    21     27      5-1352      864      [0,1,2,3]
+   13    17     25     51-1859      800      [0,1,2,3]
+   14    21     24     51-1913      768      [0,1,2,3]
+   15    23     27     51-1859      864      [0,1,2,3]
+   16    21     18     66-1353      576      [0,1,2,3]
+   17    17     36      4-1862     1152      [0,1,2,3]
+   18    22     23      5-1349      736      [0,1,2,3]
+   19    18     38      4-1621     1216      [0,1,2,3]
+   20    17     34      7-1371     1088      [0,1,3]
+   21    17     35      5- 856     1120      [0,1]
+   22    23     30      3-1336      960      [0,1,2]
+   23    23     47      3-1904     1504      [0,1,2,3]
+   24    23     28    119-1075      896      [0,1,2]
+   25    27     25      5-1315      800      [0,1,2]
+   26    26     21      3-1911      672      [0,1]
+   27    27     25      4-1387      800      [0,1,2]
+   28    29     30      5-1877      960      [0,1,3]
+   29    24     23      4-1911      736      [0,1,2]
+   30    25     26     83-1904      832      [0,1,2,3]
+   31    27     42      5-1792     1344      [0,1,2]
+   32    18     34      4-1370     1088      [0,1,2,3]
+   33    24     49    546-1799     1568      [1,2]
+   34    19     28      5-1078      896      [0,1,3]
+   35    21     31      4-1588      992      [0,1,3]
+   36    19     26    273-1623      832      [0,1,2,3]
+   37    23     23      3-1077      736      [0,1,2]
+   38    24     36    293-1792     1152      [0,1,2,3]
+   39    20     24      5-1366      768      [0,1,2,3]
+   40    22     37    288-1909     1184      [0,1,2,3]
+   41    26     50     68-1907     1600      [0,1,2,3]
+   42    24     33     18-1911     1056      [0,1,2]
+   43    23     27     83-1218      864      [0,1,2,3]
+   44    19     20     67-1280      640      [0,1,2]
+   45    18     28     53-1962      896      [0,1,2,3]
+   46    25     31      7-1861      992      [0,1,3]
+   47    25     41      7-1919     1312      [0,1,2,3]
+   48    19     37     51-1918     1184      [0,1,2,3]
+   49    26     35      4-1908     1120      [0,1,2,3]
+   50    23     41      5-1384     1312      [0,2,3]
+   51    21     35      5-1640     1120      [0,1,2]
+   52    19     24    144-1366      768      [0,1,2]
+   53    24     28     67-1331      896      [0,1,2]
+   54    17     27      4-1828      864      [0,1,2,3]
+   55    17     20      5-1911      640      [0,1,3]
+   56    19     36     51-1859     1152      [0,1,2,3]
+   57    24     27      7-1861      864      [0,1,2,3]
+   58    22     24     51-1352      768      [0,1,2,3]
+   59    21     17     66-1352      544      [0,1,2,3]
+   60    19     30      7-1844      960      [0,1,2,3]
+   61    18     29      7-1862      928      [0,1,2,3]
+   62    18     17     66-1880      544      [0,1,3]
+   63    15     24     51-1862      768      [0,1,2,3]
+   64    21     22     51-1861      704      [0,1,2,3]
+   65    23     33     51-1865     1056      [0,1,2,3]
+   66    21     23      7-1353      736      [0,1,3]
+   67    17     36      4-1862     1152      [0,1,2,3]
+   68    18     39      5-1826     1248      [0,1,2,3]
+   69    20     38      3-1904     1216      [0,1,2,3]
+   70    26     48      4-1076     1536      [0,1,2]
+   71    29     59      3-1911     1888      [0,1,2,3]
+   72    25     48      1-1793     1536      [0,1,2,3]
+   73    22     28      7-1910      896      [0,1,2,3]
+   74    17     40      4-1792     1280      [0,1,2,3]
+   75    24     39      1-1964     1248      [0,1,2]
+   76    28     30    256-1478      960      [0,1,2]
+   77    25     27      7-1366      864      [0,1,2,3]
+   78    25     30      4-1364      960      [0,1,2]
+   79    20     22     68-1966      704      [0,1,2]
+   80    24     24    512-1352      768      [0,1,2]
+   81    23     31      4-1963      992      [0,1,2,3]
+   82    23     29      2-1963      928      [0,1,2,3]
+   83    23     28      4-1904      896      [0,1,2,3]
+   84    22     32      4-1297     1024      [0,1,2,3]
+   85    20     26      4-1096      832      [0,1,2]
+   86    21     26      4-1911      832      [0,1,2]
+   87    19     40      7-1213     1280      [0,1,2]
+   88    23     28      4-1904      896      [0,1,2,3]
+   89    20     32      7-1727     1024      [0,1,2,3]
+   90    16     28     50-1902      896      [0,1,2,3]
+   91    16     31      4-1588      992      [0,1,2,3]
+   92    17     29      7-1367      928      [0,1,2]
+   93    18     24    256-1912      768      [0,1,2]
+   94    17     22      4-1202      704      [0,1,3]
+   95    19     27      4-1350      864      [0,1,2]
+   96    15     14    273- 274      448      [0]
+   97     9     17      2- 548      544      [0,1]
+   98     5      9    819- 822      288      [0,1]
+   99     3      4     68-  71      128      [0]
+  100     3      3   1093-1095       96      [0]
+  102    42    117      3-1930     3744      [0,1,2,3]
+  103    44    133      3-1933     4256      [0,1,2,3]
+  104    51    127      3-1930     4064      [0,1,2,3]
+  105    21     64      6-1880     2048      [0,1,2,3]
+  106    29     62    101-1643     1984      [0,1,2,3]
+  107    31     63      1-1914     2016      [0,2,3]
+  108    22     34     50-1329     1088      [0,1,2,3]
+  109    26     34      7-1333     1088      [0,1,2]
+  110    25     32      4-1865     1024      [0,1,2,3]
+  142    82    230      7-2024     7360      [0,1,2,3]
+  186    63     59    119-1914     1888      [0,1,2,3]
+
+======================================================================
+VRAM Tile Usage by Frame
+======================================================================
+
+Unique VRAM tile ranges: 97
+  Tiles 1-1793 (VRAM 0x00020-0x0E040): used by frames [72]
+  Tiles 1-1914 (VRAM 0x00020-0x0EF60): used by frames [107]
+  Tiles 1-1964 (VRAM 0x00020-0x0F5A0): used by frames [75]
+  Tiles 2-548 (VRAM 0x00040-0x044A0): used by frames [97]
+  Tiles 2-1963 (VRAM 0x00040-0x0F580): used by frames [82]
+  Tiles 3-1077 (VRAM 0x00060-0x086C0): used by frames [37]
+  Tiles 3-1336 (VRAM 0x00060-0x0A720): used by frames [22]
+  Tiles 3-1904 (VRAM 0x00060-0x0EE20): used by frames [23, 69]
+  Tiles 3-1911 (VRAM 0x00060-0x0EF00): used by frames [26, 71]
+  Tiles 3-1930 (VRAM 0x00060-0x0F160): used by frames [102, 104]
+  Tiles 3-1933 (VRAM 0x00060-0x0F1C0): used by frames [103]
+  Tiles 4-1076 (VRAM 0x00080-0x086A0): used by frames [70]
+  Tiles 4-1096 (VRAM 0x00080-0x08920): used by frames [85]
+  Tiles 4-1202 (VRAM 0x00080-0x09660): used by frames [94]
+  Tiles 4-1297 (VRAM 0x00080-0x0A240): used by frames [84]
+  Tiles 4-1350 (VRAM 0x00080-0x0A8E0): used by frames [95]
+  Tiles 4-1364 (VRAM 0x00080-0x0AAA0): used by frames [78]
+  Tiles 4-1370 (VRAM 0x00080-0x0AB60): used by frames [32]
+  Tiles 4-1387 (VRAM 0x00080-0x0AD80): used by frames [27]
+  Tiles 4-1588 (VRAM 0x00080-0x0C6A0): used by frames [35, 91]
+  Tiles 4-1621 (VRAM 0x00080-0x0CAC0): used by frames [19]
+  Tiles 4-1792 (VRAM 0x00080-0x0E020): used by frames [74]
+  Tiles 4-1828 (VRAM 0x00080-0x0E4A0): used by frames [54]
+  Tiles 4-1861 (VRAM 0x00080-0x0E8C0): used by frames [9]
+  Tiles 4-1862 (VRAM 0x00080-0x0E8E0): used by frames [17, 67]
+  Tiles 4-1865 (VRAM 0x00080-0x0E940): used by frames [110]
+  Tiles 4-1904 (VRAM 0x00080-0x0EE20): used by frames [83, 88]
+  Tiles 4-1908 (VRAM 0x00080-0x0EEA0): used by frames [49]
+  Tiles 4-1911 (VRAM 0x00080-0x0EF00): used by frames [29, 86]
+  Tiles 4-1963 (VRAM 0x00080-0x0F580): used by frames [81]
+  Tiles 5-856 (VRAM 0x000A0-0x06B20): used by frames [21]
+  Tiles 5-1078 (VRAM 0x000A0-0x086E0): used by frames [34]
+  Tiles 5-1315 (VRAM 0x000A0-0x0A480): used by frames [25]
+  Tiles 5-1349 (VRAM 0x000A0-0x0A8C0): used by frames [18]
+  Tiles 5-1352 (VRAM 0x000A0-0x0A920): used by frames [12]
+  Tiles 5-1366 (VRAM 0x000A0-0x0AAE0): used by frames [39]
+  Tiles 5-1384 (VRAM 0x000A0-0x0AD20): used by frames [50]
+  Tiles 5-1640 (VRAM 0x000A0-0x0CD20): used by frames [51]
+  Tiles 5-1672 (VRAM 0x000A0-0x0D120): used by frames [2]
+  Tiles 5-1792 (VRAM 0x000A0-0x0E020): used by frames [31]
+  Tiles 5-1826 (VRAM 0x000A0-0x0E460): used by frames [68]
+  Tiles 5-1828 (VRAM 0x000A0-0x0E4A0): used by frames [11]
+  Tiles 5-1877 (VRAM 0x000A0-0x0EAC0): used by frames [28]
+  Tiles 5-1911 (VRAM 0x000A0-0x0EF00): used by frames [55]
+  Tiles 6-1880 (VRAM 0x000C0-0x0EB20): used by frames [105]
+  Tiles 7-1213 (VRAM 0x000E0-0x097C0): used by frames [87]
+  Tiles 7-1333 (VRAM 0x000E0-0x0A6C0): used by frames [109]
+  Tiles 7-1353 (VRAM 0x000E0-0x0A940): used by frames [3, 4, 66]
+  Tiles 7-1366 (VRAM 0x000E0-0x0AAE0): used by frames [77]
+  Tiles 7-1367 (VRAM 0x000E0-0x0AB00): used by frames [92]
+  Tiles 7-1371 (VRAM 0x000E0-0x0AB80): used by frames [20]
+  Tiles 7-1727 (VRAM 0x000E0-0x0D800): used by frames [89]
+  Tiles 7-1844 (VRAM 0x000E0-0x0E6A0): used by frames [60]
+  Tiles 7-1861 (VRAM 0x000E0-0x0E8C0): used by frames [46, 57]
+  Tiles 7-1862 (VRAM 0x000E0-0x0E8E0): used by frames [61]
+  Tiles 7-1910 (VRAM 0x000E0-0x0EEE0): used by frames [73]
+  Tiles 7-1919 (VRAM 0x000E0-0x0F000): used by frames [47]
+  Tiles 7-2024 (VRAM 0x000E0-0x0FD20): used by frames [142]
+  Tiles 18-1911 (VRAM 0x00240-0x0EF00): used by frames [42]
+  Tiles 50-1329 (VRAM 0x00640-0x0A640): used by frames [108]
+  Tiles 50-1828 (VRAM 0x00640-0x0E4A0): used by frames [6]
+  Tiles 50-1902 (VRAM 0x00640-0x0EDE0): used by frames [90]
+  Tiles 51-1352 (VRAM 0x00660-0x0A920): used by frames [58]
+  Tiles 51-1859 (VRAM 0x00660-0x0E880): used by frames [10, 13, 15, 56]
+  Tiles 51-1861 (VRAM 0x00660-0x0E8C0): used by frames [64]
+  Tiles 51-1862 (VRAM 0x00660-0x0E8E0): used by frames [63]
+  Tiles 51-1865 (VRAM 0x00660-0x0E940): used by frames [65]
+  Tiles 51-1904 (VRAM 0x00660-0x0EE20): used by frames [8]
+  Tiles 51-1910 (VRAM 0x00660-0x0EEE0): used by frames [5]
+  Tiles 51-1913 (VRAM 0x00660-0x0EF40): used by frames [14]
+  Tiles 51-1918 (VRAM 0x00660-0x0EFE0): used by frames [48]
+  Tiles 53-1962 (VRAM 0x006A0-0x0F560): used by frames [45]
+  Tiles 66-1352 (VRAM 0x00840-0x0A920): used by frames [7, 59]
+  Tiles 66-1353 (VRAM 0x00840-0x0A940): used by frames [16]
+  Tiles 66-1880 (VRAM 0x00840-0x0EB20): used by frames [62]
+  Tiles 67-1280 (VRAM 0x00860-0x0A020): used by frames [44]
+  Tiles 67-1331 (VRAM 0x00860-0x0A680): used by frames [53]
+  Tiles 68-71 (VRAM 0x00880-0x00900): used by frames [99]
+  Tiles 68-1348 (VRAM 0x00880-0x0A8A0): used by frames [1]
+  Tiles 68-1907 (VRAM 0x00880-0x0EE80): used by frames [41]
+  Tiles 68-1966 (VRAM 0x00880-0x0F5E0): used by frames [79]
+  Tiles 83-1218 (VRAM 0x00A60-0x09860): used by frames [43]
+  Tiles 83-1904 (VRAM 0x00A60-0x0EE20): used by frames [30]
+  Tiles 101-1643 (VRAM 0x00CA0-0x0CD80): used by frames [106]
+  Tiles 119-1075 (VRAM 0x00EE0-0x08680): used by frames [24]
+  Tiles 119-1914 (VRAM 0x00EE0-0x0EF60): used by frames [186]
+  Tiles 144-1366 (VRAM 0x01200-0x0AAE0): used by frames [52]
+  Tiles 256-1478 (VRAM 0x02000-0x0B8E0): used by frames [76]
+  Tiles 256-1912 (VRAM 0x02000-0x0EF20): used by frames [93]
+  Tiles 273-274 (VRAM 0x02220-0x02260): used by frames [96]
+  Tiles 273-1623 (VRAM 0x02220-0x0CB00): used by frames [36]
+  Tiles 288-1909 (VRAM 0x02400-0x0EEC0): used by frames [40]
+  Tiles 293-1792 (VRAM 0x024A0-0x0E020): used by frames [38]
+  Tiles 512-1352 (VRAM 0x04000-0x0A920): used by frames [80]
+  Tiles 546-1799 (VRAM 0x04440-0x0E100): used by frames [33]
+  Tiles 819-822 (VRAM 0x06660-0x066E0): used by frames [98]
+  Tiles 1093-1095 (VRAM 0x088A0-0x08900): used by frames [100]
+
+Overall tile range: 1-2024
+Total unique tiles used: 738
+VRAM needed: 23616 bytes (23.1 KB)
+======================================================================
+Searching for pointer tables into sprite bank
+======================================================================
+
+  Scanning full ROM for pointer tables into sprite bank...
+
+  Table at 0x0201B8 (6 entries):
+    [ 0] 0x001220  
+    [ 1] 0x000000  
+    [ 2] 0x000000  
+    [ 3] 0x000000  
+    [ 4] 0x000000  
+    [ 5] 0x000000  
+
+  Table at 0x0201D0 (6 entries):
+    [ 0] 0x000000  
+    [ 1] 0x000000  
+    [ 2] 0x002000  
+    [ 3] 0x002000  
+    [ 4] 0x002200  
+    [ 5] 0x003200  
+
+  Table at 0x0201E8 (6 entries):
+    [ 0] 0x004300  
+    [ 1] 0x005400  
+    [ 2] 0x003000  
+    [ 3] 0x000000  
+    [ 4] 0x000000  
+    [ 5] 0x000233  
+
+  Table at 0x020200 (6 entries):
+    [ 0] 0x42220334  
+    [ 1] 0x32320345  
+    [ 2] 0x33310344  
+    [ 3] 0x34220555  
+    [ 4] 0x42220001  
+    [ 5] 0x12130011  
+
+  Table at 0x020218 (6 entries):
+    [ 0] 0x11153111  
+    [ 1] 0x11253211  
+    [ 2] 0x11240221  
+    [ 3] 0x11520043  
+    [ 4] 0x20120000  
+    [ 5] 0x230000  
+
+  Table at 0x020230 (6 entries):
+    [ 0] 0x220000  
+    [ 1] 0x220000  
+    [ 2] 0x210000  
+    [ 3] 0x210000  
+    [ 4] 0x020000  Characters-large (2x4x73) +0x28A0
+    [ 5] 0x020000  Characters-large (2x4x73) +0x28A0
+
+======================================================================
+Frame-to-ROM Correlation
+======================================================================
+
+  Jump table at 0x014D42 (level/char type dispatch):
+    [ 0] 0x014D50: BRA 0x014D8C
+    [ 1] 0x014D54: BRA 0x014D8C
+    [ 2] 0x014D58: BRA 0x014D8C
+    [ 3] 0x014D5C: BRA 0x014D8C
+    [ 4] 0x014D60: BRA 0x014D8C
+    [ 5] 0x014D64: BRA 0x014D8E
+    [ 6] 0x014D68: BRA 0x014D8C
+    [ 7] 0x014D6C: BRA 0x014D8C
+    [ 8] 0x014D70: BRA 0x014DA6
+    [ 9] 0x014D74: BRA 0x014D8C
+    [10] 0x014D78: BRA 0x014D8C
+    [11] 0x014D7C: BRA 0x014D8C
+    [12] 0x014D80: BRA 0x014D9E
+    [13] 0x014D84: BRA 0x014D9E
+    [14] 0x014D88: BRA 0x014D9E
+
+  Descriptor table at 0x014CA2:
+    [ 0] 0x014CA2: 0004 0001 0003 0000 0002  (ptr if long: 0x00000002)
+    [ 1] 0x014CAC: 0001 4CD2 CF7A 0002 0001  (ptr if long: 0x00020001)
+    [ 2] 0x014CB6: 0003 0000 0002 0001 4CE4  (ptr if long: 0x00014CE4)
+    [ 3] 0x014CC0: CF7C 0006 0001 0003 0000  (ptr if long: 0x00030000)
+    [ 4] 0x014CCA: 0002 0001 4CF6 CF7E 0EEE  (ptr if long: 0xCF7E0EEE)
+    [ 5] 0x014CD4: 0642 0A86 0CCC 0CA8 0A88  (ptr if long: 0x0CA80A88)
+    [ 6] 0x014CDE: 0AAA 0A86 0866 0642 0C88  (ptr if long: 0x06420C88)
+    [ 7] 0x014CE8: 0A86 0A86 0A66 0864 0864  (ptr if long: 0x08640864)
+    [ 8] 0x014CF2: 0844 0420 0A86 0642 0864  (ptr if long: 0x06420864)
+    [ 9] 0x014CFC: 0864 0844 0642 0642 0622  (ptr if long: 0x06420622)
+    [10] 0x014D06: 0420 4A38 DFCF 6632 43F8  (ptr if long: 0x663243F8)
+    [11] 0x014D10: C950 3019 672A 5351 6626  (ptr if long: 0x53516626)
+
+  Frame-to-level-type analysis:
+  The variable at 0xDE42 selects the character/level type
+  This indexes into jump tables to select different loading routines
+
+  Sprite bank data boundaries:
+    0x01D760-0x022060 (18688 bytes): Characters-large (2x4x73)
+      GAP: 128 bytes (0x022060-0x0220E0), zero ratio: 56.25%
+      First 16 bytes: 00003330000031300000211000003210
+    0x0220E0-0x0237E0 ( 5888 bytes): MJ Anim A (2x4x23)
+      GAP: 32 bytes (0x0237E0-0x023800), zero ratio: 100.00%
+      First 16 bytes: 00000000000000000000000000000000
+    0x023800-0x026DC0 (13760 bytes): MJ Anim B (2x5x43)
+      GAP: 32 bytes (0x026DC0-0x026DE0), zero ratio: 100.00%
+      First 16 bytes: 00000000000000000000000000000000
+    0x026DE0-0x027AE0 ( 3328 bytes): Chunk D (2x4x13)
+      GAP: 128 bytes (0x027AE0-0x027B60), zero ratio: 75.00%
+      First 16 bytes: 00003000000030000000130000001300
+    0x027B60-0x029060 ( 5376 bytes): Chunk E (2x4x21)
+      GAP: 64 bytes (0x029060-0x0290A0), zero ratio: 54.69%
+      First 16 bytes: 54561236646622346560213465602223
+    0x0290A0-0x029640 ( 1440 bytes): Large chars (3x5x3)
+      GAP: 32 bytes (0x029640-0x029660), zero ratio: 100.00%
+      First 16 bytes: 00000000000000000000000000000000
+    0x029660-0x02A360 ( 3328 bytes): Chunk F (2x4x13)
+
+    Pre-chunk data (0x01B000-0x01D760): 10080 bytes, zero ratio: 48.78%
+    Blocks with >30% zeros (likely tiles): 38/39
