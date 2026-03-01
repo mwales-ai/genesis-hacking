@@ -1,0 +1,427 @@
+Loaded ROM: roms/Moonwalker.bin (524288 bytes)
+
+======================================================================
+Sprite Attribute Table at 0x01A77E
+======================================================================
+Table entries analyzed: 512
+Last entry with valid tile#: 511 (offset 0x01B776)
+Table size: ~4096 bytes
+
+Tile number range used by sprites:
+  Range: 2 - 1928 (0x002 - 0x788)
+  VRAM offset range: 0x00040 - 0x0F120
+  Unique tile indices: 134
+  Top 10 most-used tiles: [(0, 133), (768, 13), (1075, 10), (1091, 9), (816, 8), (256, 8), (1911, 8), (819, 7), (7, 7), (449, 6)]
+
+Palette usage: {0: 229, 2: 74, 1: 93, 3: 34}
+
+First 30 sprite attribute entries:
+    #       Off     Y     X    WxH   Tile  Pal  Flips  Link
+    0  0x01A77E     0     0  1x1  0x000    0     ..     0
+    1  0x01A786     0     0  1x1  0x000    0     ..     0
+    2  0x01A78E     0     0  1x1  0x000    0     ..     0
+    3  0x01A796     0     0  1x1  0x000    0     ..     0
+    4  0x01A79E     0    71  1x1  0x000    0     ..    69
+    5  0x01A7A6     0   852  2x2  0x000    0     ..    71
+    6  0x01A7AE     0   890  2x4  0x000    0     ..   119
+    7  0x01A7B6     0   122  2x4  0x000    0     ..   122
+    8  0x01A7BE     0     0  1x1  0x000    0     ..     0
+    9  0x01A7C6     0     0  1x1  0x000    0     ..     0
+   10  0x01A7CE     0     0  1x1  0x000    0     ..     0
+   11  0x01A7D6     0     0  1x1  0x330    0     ..     0
+   12  0x01A7DE   818     0  1x1  0x532    2     .V     0
+   13  0x01A7E6   339   256  1x1  0x776    2     ..     0
+   14  0x01A7EE    50     0  1x4  0x2A9    1     H.     0
+   15  0x01A7F6   151     0  1x1  0x197    0     HV     0
+   16  0x01A7FE     0     4  1x1  0x000    0     ..     0
+   17  0x01A806     0     4  1x1  0x000    0     ..     4
+   18  0x01A80E     0    68  1x1  0x000    0     ..    68
+   19  0x01A816     0    68  1x1  0x000    0     ..    68
+   20  0x01A81E     0    68  1x1  0x000    0     ..    68
+   21  0x01A826     0   836  2x1  0x000    0     ..    67
+   22  0x01A82E     0   580  1x4  0x000    0     ..    68
+   23  0x01A836     0   580  1x4  0x000    0     ..    68
+   24  0x01A83E     0   836  2x1  0x000    0     ..    68
+   25  0x01A846     0   195  1x4  0x000    0     ..    52
+   26  0x01A84E     9   400  3x3  0x028    0     ..    37
+   27  0x01A856   153     0  3x2  0x100    0     H.     0
+   28  0x01A85E    68   716  1x4  0x433    2     ..   124
+   29  0x01A866   818   716  1x3  0x334    1     .V    76
+
+======================================================================
+Frame Pointer Table at 0x0191A2
+======================================================================
+Entries read: 200
+Last valid frame: 186
+Valid frames with reasonable subframe counts: 112
+Subframe count distribution: {22: 9, 24: 9, 21: 12, 17: 12, 18: 9, 23: 13, 27: 3, 26: 5, 29: 3, 25: 7, 19: 9, 20: 5, 15: 2, 28: 1, 16: 2, 9: 1, 5: 1, 3: 3, 42: 1, 44: 1, 51: 1, 31: 1, 82: 1, 63: 1}
+
+Frame table entries:
+    #     Pointer   SubFrames  Notes
+    0  0x05DE08E8       N/A   <-- invalid ptr
+    1  0x0001935E          22  
+    2  0x0001938E          22  
+    3  0x000193BE          24  
+    4  0x000193F2          21  
+    5  0x00019420          17  
+    6  0x00019446          18  
+    7  0x0001946E          21  
+    8  0x0001949C          17  
+    9  0x000194C2          23  
+   10  0x000194F4          18  
+   11  0x0001951C          22  
+   12  0x0001954C          21  
+   13  0x0001957A          17  
+   14  0x000195A0          21  
+   15  0x000195CE          23  
+   16  0x00019600          21  
+   17  0x0001962E          17  
+   18  0x00019654          22  
+   19  0x00019684          18  
+   20  0x000196AC          17  
+   21  0x000196D2          17  
+   22  0x000196F8          23  
+   23  0x0001972A          23  
+   24  0x0001975C          23  
+   25  0x0001978E          27  
+   26  0x000197C8          26  
+   27  0x00019800          27  
+   28  0x0001983A          29  
+   29  0x00019878          24  
+   30  0x000198AC          25  
+   31  0x000198E2          27  
+   32  0x0001991C          18  
+   33  0x00019944          24  
+   34  0x00019978          19  
+   35  0x000199A2          21  
+   36  0x000199D0          19  
+   37  0x000199FA          23  
+   38  0x00019A2C          24  
+   39  0x00019A60          20  
+   40  0x00019A8C          22  
+   41  0x00019ABC          26  
+   42  0x00019AF4          24  
+   43  0x00019B28          23  
+   44  0x00019B5A          19  
+   45  0x00019B84          18  
+   46  0x00019BAC          25  
+   47  0x00019BE2          25  
+   48  0x00019C18          19  
+   49  0x00019C42          26  
+   50  0x00019C7A          23  
+   51  0x00019CAC          21  
+   52  0x00019CDA          19  
+   53  0x00019D04          24  
+   54  0x00019D38          17  
+   55  0x00019D5E          17  
+   56  0x00019D84          19  
+   57  0x00019DAE          24  
+   58  0x00019DE2          22  
+   59  0x00019E12          21  
+   60  0x00019E40          19  
+   61  0x00019E6A          18  
+   62  0x00019E92          18  
+   63  0x00019EBA          15  
+   64  0x00019EDC          21  
+   65  0x00019F0A          23  
+   66  0x00019F3C          21  
+   67  0x00019F6A          17  
+   68  0x00019F90          18  
+   69  0x00019FB8          20  
+   70  0x00019FE4          26  
+   71  0x0001A01C          29  
+   72  0x0001A05A          25  
+   73  0x0001A090          22  
+   74  0x0001A0C0          17  
+   75  0x0001A0E6          24  
+   76  0x0001A11A          28  
+   77  0x0001A156          25  
+   78  0x0001A18C          25  
+   79  0x0001A1C2          20  
+
+Detailed subframe analysis (first 10 valid frames):
+
+  Frame 1 @ 0x01935E: 22 sub-frames
+    Offsets (into attr table): ['0x0000', '0x0020', '0x0040', '0x0060', '0x0080', '0x00A0', '0x00C0', '0x00E0', '0x0100', '0x0120', '0x0140', '0x0160', '0x0180', '0x01A0', '0x01C0', '0x01E0', '0x0200', '0x0220', '0x0240', '0x0260']
+    ... and 2 more
+    Entry indices: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76]
+
+  Frame 2 @ 0x01938E: 22 sub-frames
+    Offsets (into attr table): ['0x0000', '0x02E0', '0x0300', '0x0320', '0x0340', '0x0360', '0x0380', '0x03A0', '0x03C0', '0x03E0', '0x0400', '0x0420', '0x0440', '0x0460', '0x0480', '0x04A0', '0x04C0', '0x04E0', '0x0500', '0x0520']
+    ... and 2 more
+    Entry indices: [0, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156, 160, 164]
+
+  Frame 3 @ 0x0193BE: 24 sub-frames
+    Offsets (into attr table): ['0x0000', '0x05A0', '0x05C0', '0x05E0', '0x0600', '0x0620', '0x0000', '0x0640', '0x0660', '0x0680', '0x06A0', '0x06C0', '0x06E0', '0x0000', '0x0700', '0x0720', '0x0000', '0x0740', '0x0760', '0x0780']
+    ... and 4 more
+    Entry indices: [0, 180, 184, 188, 192, 196, 0, 200, 204, 208, 212, 216, 220, 0, 224, 228, 0, 232, 236, 240]
+
+  Frame 4 @ 0x0193F2: 21 sub-frames
+    Offsets (into attr table): ['0x0000', '0x0840', '0x0860', '0x05E0', '0x0880', '0x08A0', '0x08C0', '0x08E0', '0x0900', '0x0920', '0x0940', '0x0960', '0x0980', '0x0000', '0x09A0', '0x09C0', '0x09E0', '0x0A00', '0x0A20', '0x0A40']
+    ... and 1 more
+    Entry indices: [0, 264, 268, 188, 272, 276, 280, 284, 288, 292, 296, 300, 304, 0, 308, 312, 316, 320, 324, 328]
+
+  Frame 5 @ 0x019420: 17 sub-frames
+    Offsets (into attr table): ['0x0AA0', '0x0AC0', '0x0AE0', '0x0B00', '0x0B20', '0x0B40', '0x0B60', '0x0B80', '0x0BA0', '0x0BC0', '0x0BE0', '0x0C00', '0x0C20', '0x0C40', '0x0C60', '0x0C80', '0x0CA0']
+    Entry indices: [340, 344, 348, 352, 356, 360, 364, 368, 372, 376, 380, 384, 388, 392, 396, 400, 404]
+
+  Frame 6 @ 0x019446: 18 sub-frames
+    Offsets (into attr table): ['0x0AA0', '0x0CE0', '0x0D00', '0x0D20', '0x0D40', '0x0D60', '0x0D80', '0x0DA0', '0x0DC0', '0x0DE0', '0x0E00', '0x0E20', '0x0E40', '0x0E60', '0x0E80', '0x0EA0', '0x0EC0', '0x0EE0']
+    Entry indices: [340, 412, 416, 420, 424, 428, 432, 436, 440, 444, 448, 452, 456, 460, 464, 468, 472, 476]
+
+  Frame 7 @ 0x01946E: 21 sub-frames
+    Offsets (into attr table): ['0x0000', '0x0F20', '0x0F40', '0x0F60', '0x0880', '0x08A0', '0x0F80', '0x08E0', '0x0FA0', '0x0FC0', '0x0940', '0x0FE0', '0x1000', '0x0000', '0x1020', '0x1040', '0x1060', '0x1080', '0x10A0', '0x10C0']
+    ... and 1 more
+    Entry indices: [0, 484, 488, 492, 272, 276, 496, 284, 500, 504, 296, 508, 512, 0, 516, 520, 524, 528, 532, 536]
+
+  Frame 8 @ 0x01949C: 17 sub-frames
+    Offsets (into attr table): ['0x0AA0', '0x1120', '0x1140', '0x1160', '0x1180', '0x11A0', '0x11C0', '0x11E0', '0x1200', '0x1220', '0x1240', '0x1260', '0x1280', '0x12A0', '0x12C0', '0x12E0', '0x1300']
+    Entry indices: [340, 548, 552, 556, 560, 564, 568, 572, 576, 580, 584, 588, 592, 596, 600, 604, 608]
+
+  Frame 9 @ 0x0194C2: 23 sub-frames
+    Offsets (into attr table): ['0x1340', '0x1360', '0x1380', '0x13A0', '0x13C0', '0x13E0', '0x1400', '0x1420', '0x1440', '0x1460', '0x1480', '0x14A0', '0x14C0', '0x14E0', '0x1500', '0x0000', '0x0000', '0x1280', '0x1520', '0x1540']
+    ... and 3 more
+    Entry indices: [616, 620, 624, 628, 632, 636, 640, 644, 648, 652, 656, 660, 664, 668, 672, 0, 0, 592, 676, 680]
+
+  Frame 10 @ 0x0194F4: 18 sub-frames
+    Offsets (into attr table): ['0x0AA0', '0x1120', '0x15E0', '0x1180', '0x11A0', '0x1600', '0x1620', '0x1640', '0x1660', '0x1680', '0x16A0', '0x16C0', '0x16E0', '0x1700', '0x1720', '0x1740', '0x0EC0', '0x1760']
+    Entry indices: [340, 548, 700, 560, 564, 704, 708, 712, 716, 720, 724, 728, 732, 736, 740, 744, 472, 748]
+
+======================================================================
+Compression Detection at Known Sprite Offsets
+======================================================================
+
+  Characters - large set @ 0x01D760:
+    Expected: 2x4 × 73 frames = 584 tiles, 18688 bytes
+    First word: 0x0643 (as tile count: 1603, XOR: 0)
+    First 32 bytes (1 tile): 0643000006430000065300000054000000540000005400000654000006530000
+    Zero bytes in first tile: 19/32 (59%)
+    Assessment: Likely UNCOMPRESSED (high zero ratio, max nibble=6)
+
+  MJ Anim Set A @ 0x0220E0:
+    Expected: 2x4 × 23 frames = 184 tiles, 5888 bytes
+    First word: 0x0004 (as tile count: 4, XOR: 0)
+    First 32 bytes (1 tile): 0004000000740000007700000077000000000000000000000000000000002110
+    Zero bytes in first tile: 26/32 (81%)
+    Assessment: Likely UNCOMPRESSED (high zero ratio, max nibble=7)
+
+  MJ Anim Set B @ 0x023800:
+    Expected: 2x5 × 43 frames = 430 tiles, 13760 bytes
+    First word: 0x0000 (as tile count: 0, XOR: 0)
+    First 32 bytes (1 tile): 0000000000000000000000002220004444420455777504577777457878970479
+    Zero bytes in first tile: 13/32 (41%)
+    Assessment: Likely UNCOMPRESSED (high zero ratio, max nibble=9)
+
+  Characters - chunk D @ 0x026DE0:
+    Expected: 2x4 × 13 frames = 104 tiles, 3328 bytes
+    First word: 0x0000 (as tile count: 0, XOR: 0)
+    First 32 bytes (1 tile): 0000000000000000000000000005000000540000004300000076000007770000
+    Zero bytes in first tile: 26/32 (81%)
+    Assessment: Likely UNCOMPRESSED (high zero ratio, max nibble=7)
+
+  Characters - chunk E @ 0x027B60:
+    Expected: 2x4 × 21 frames = 168 tiles, 5376 bytes
+    First word: 0x0000 (as tile count: 0, XOR: 0)
+    First 32 bytes (1 tile): 0000111111101111111111111111111111111111111111111111011111110001
+    Zero bytes in first tile: 3/32 (9%)
+    Assessment: Likely UNCOMPRESSED (first word doesn't match Nemesis header)
+
+  Large characters @ 0x0290A0:
+    Expected: 3x5 × 3 frames = 45 tiles, 1440 bytes
+    First word: 0x0006 (as tile count: 6, XOR: 0)
+    First 32 bytes (1 tile): 0006000000060000000000000000000000000000000000000000000000000000
+    Zero bytes in first tile: 30/32 (94%)
+    Assessment: Likely UNCOMPRESSED (high zero ratio, max nibble=6)
+
+  Characters - chunk F @ 0x029660:
+    Expected: 2x4 × 13 frames = 104 tiles, 3328 bytes
+    First word: 0x777A (as tile count: 30586, XOR: 0)
+    First 32 bytes (1 tile): 777a008877aa098890450a9804450a99544437a354333223443c2113443c1133
+    Zero bytes in first tile: 1/32 (3%)
+    Assessment: Likely UNCOMPRESSED (first word doesn't match Nemesis header)
+
+======================================================================
+References to DMA Parameter RAM Variables
+======================================================================
+
+  0xDFF4 (0xFFDFF4) - DMA source (call at 0x001FFA)
+    Refs in code area: 2 (of 6 total)
+      0x001E3C: ...2878dff031ccdff447f9000191a2...
+      0x001FF2: ...df9067283038dff434003238dff6...
+
+  0xDFF6 (0xFFDFF6) - DMA dest (call at 0x001FFA)
+    Refs in code area: 2 (of 9 total)
+      0x001E54: ...5241eb4931c1dff64eb90001484a...
+      0x001FF8: ...dff434003238dff64eb900014864...
+
+  0xDEBA (0xFFDEBA) - DMA source (call at 0x00572C)
+    Refs in code area: 2 (of 5 total)
+      0x005722: ...6700ff823038deba3238debc2438...
+      0x014D34: ...0000deb631d9deba31d9debc08f8...
+
+  0xDEBC (0xFFDEBC) - DMA dest (call at 0x00572C)
+    Refs in code area: 2 (of 7 total)
+      0x005726: ...3038deba3238debc2438deb64eb9...
+      0x014D38: ...31d9deba31d9debc08f80000deb4...
+
+  0xDEB6 (0xFFDEB6) - DMA length (call at 0x00572C)
+    Refs in code area: 2 (of 2 total)
+      0x00572A: ...3238debc2438deb64eb9000148b8...
+      0x014D30: ...245921f20000deb631d9deba31d9...
+
+  0xDE20 (0xFFDE20) - DMA trampoline (cmd word)
+    Refs in code area: 122 (of 123 total)
+      0x0004C4: ...c00031fc0080de203cb8de2033fc...
+      0x0004C8: ...0080de203cb8de2033fc000000a1...
+      0x000560: ...790031fc0082de203cb8de2033fc...
+      0x000564: ...0082de203cb8de2033fc000000a1...
+      0x00059E: ...700031fc0083de203cb8de2033fc...
+      0x0005A2: ...0083de203cb8de2033fc000000a1...
+      0x000610: ...700031fc0083de203cb8de2033fc...
+      0x000614: ...0083de203cb8de2033fc000000a1...
+      0x000BBE: ...c00031fc0080de203cb8de2033fc...
+      0x000BC2: ...0080de203cb8de2033fc000000a1...
+
+======================================================================
+Block Copy Patterns (0x014800-0x015600)
+======================================================================
+
+  DBF/DBRA loops:
+    0x01480E: DBF D2, 0x01480C (disp=-4)
+    0x01481C: DBF D2, 0x014818 (disp=-6)
+    0x01485A: DBF D1, 0x014858 (disp=-4)
+    0x01485E: DBF D0, 0x01484A (disp=-22)
+    0x014944: DBF D0, 0x014942 (disp=-4)
+    0x0149E2: DBF D3, 0x0149E0 (disp=-4)
+    0x0149E8: DBF D1, 0x0149DC (disp=-14)
+    0x0149F8: DBF D3, 0x0149F6 (disp=-4)
+    0x0149FE: DBF D1, 0x0149F2 (disp=-14)
+    0x014A2E: DBF D3, 0x014A1E (disp=-18)
+    0x014A3A: DBF D1, 0x014A18 (disp=-36)
+    0x014B40: DBF D6, 0x014B3E (disp=-4)
+    0x014B52: DBF D0, 0x014B50 (disp=-4)
+    0x014B6C: DBF D2, 0x014B6A (disp=-4)
+    0x014B70: DBF D1, 0x014B68 (disp=-10)
+    0x014B96: DBF D3, 0x014B8E (disp=-10)
+    0x014BB0: DBF D3, 0x014BA8 (disp=-10)
+    0x014D98: DBF D0, 0x014D96 (disp=-4)
+    0x014E04: DBF D5, 0x014DF6 (disp=-16)
+    0x014E0C: DBF D6, 0x014DF4 (disp=-26)
+    0x014E14: DBF D7, 0x014DF2 (disp=-36)
+    0x014E34: DBF D0, 0x014DEA (disp=-76)
+    0x014E38: DBF D1, 0x014DE8 (disp=-82)
+    0x014EC4: DBF D7, 0x014EC2 (disp=-4)
+    0x014EE4: DBF D7, 0x014EE2 (disp=-4)
+    0x014F86: DBF D6, 0x014F84 (disp=-4)
+    0x014F96: DBF D6, 0x014F94 (disp=-4)
+    0x014FAC: DBF D6, 0x014FAA (disp=-4)
+    0x014FBC: DBF D6, 0x014FBA (disp=-4)
+    0x014FCC: DBF D6, 0x014FCA (disp=-4)
+    0x015092: DBF D6, 0x015090 (disp=-4)
+    0x0150B4: DBF D0, 0x0150B2 (disp=-4)
+    0x0150CA: DBF D0, 0x0150C8 (disp=-4)
+    0x0150E0: DBF D0, 0x0150DE (disp=-4)
+    0x0150F4: DBF D7, 0x0150F2 (disp=-4)
+    0x01511E: DBF D0, 0x01511C (disp=-4)
+    0x0151FE: DBF D4, 0x0151FC (disp=-4)
+    0x015204: DBF D2, 0x0151F8 (disp=-14)
+    0x01524E: DBF D4, 0x015242 (disp=-14)
+    0x015256: DBF D2, 0x01523A (disp=-30)
+    0x01525E: DBF D4, 0x015264 (disp=4)
+    0x015284: DBF D0, 0x015276 (disp=-16)
+    0x01529A: DBF D0, 0x01528C (disp=-16)
+    0x0152A0: DBF D1, 0x015272 (disp=-48)
+    0x01531E: DBF D0, 0x015310 (disp=-16)
+    0x0153AE: DBF D5, 0x0153A8 (disp=-8)
+    0x01546E: DBF D7, 0x01546C (disp=-4)
+    0x015510: DBF D1, 0x015504 (disp=-14)
+    0x0155AE: DBF D1, 0x0155A2 (disp=-14)
+    0x0155BC: DBF D0, 0x0155BA (disp=-4)
+
+  MOVEM.L instructions:
+    0x0152A6: MOVEM.L regs, -(A7) mask=0xFFDC
+    0x0152B8: MOVEM.L regs, -(A7) mask=0xFFDC
+    0x01535C: MOVEM.L (A7)+, regs mask=0x3BFF
+
+======================================================================
+Sprite Tile Index to ROM Offset Mapping Analysis
+======================================================================
+
+  Hex dump of main sprite update routine (0x001F00-0x002000):
+    0x001F00: 0002 0002 137c 0060 001e 3802 e64c 49f9
+    0x001F10: 0000 1f3c 0c78 0004 de40 6506 49f9 0000
+    0x001F20: 1f4e 4a34 4000 6706 08e9 0004 0002 5042
+    0x001F30: 43e9 0040 45ea 0040 51c9 ffac 4e75 0000
+    0x001F40: 0000 0001 0101 0100 0000 0000 0000 0000
+    0x001F50: 0101 0101 0100 0000 0000 0000 0000 0000
+    0x001F60: 0000 2268 002a 7200 1211 5341 e549 2171
+    0x001F70: 1002 0014 4e75 3028 0024 4efb 0002 6000
+    0x001F80: 0006 6000 001a 3038 dfee b068 0028 660c
+    0x001F90: 317c 0004 0024 08a8 0002 0002 4e75 4e75
+    0x001FA0: 08b8 0000 df90 6700 0040 33fc 0100 00a1
+    0x001FB0: 1100 0839 0000 00a1 1100 66f6 4df9 00c0
+    0x001FC0: 0004 2cbc 9403 9380 2cbc 96c9 9500 3cbc
+    0x001FD0: 977f 3cbc 7900 31fc 0082 de20 3cb8 de20
+    0x001FE0: 33fc 0000 00a1 1100 08b8 0001 df90 6728
+    0x001FF0: 3038 dff4 3400 3238 dff6 4eb9 0001 4864
+    0x002000: 3038 dffc 43f9 0002 ce7a 323c 0005 343c
+
+  Hex dump of sprite pattern loader (0x014B00-0x014EA0):
+    0x014B00: 31c2 dfb2 0242 8fff 2442 2278 dfb4 3203
+    0x014B10: 4843 3003 6100 fef2 2005 6100 fbf2 d4fc
+    0x014B20: 1000 225c 301c 321c 6100 feae 08f8 0000
+    0x014B30: dfb0 4e75 4df8 c900 7e00 3c3c 0017 2cc7
+    0x014B40: 51ce fffc 43f8 c920 45f9 0001 4ca2 700b
+    0x014B50: 22da 51c8 fffc 3038 de42 e548 227b 0058
+    0x014B60: 3219 6b10 45f8 c900 7403 24d9 51ca fffc
+    0x014B70: 51c9 fff6 4e75 4a78 def0 6638 3038 de42
+    0x014B80: e548 247b 0032 3612 6b10 43f8 c900 6100
+    0x014B90: fd84 43e9 0010 51cb fff6 0c78 0005 de40
+    0x014BA0: 6712 43f8 c920 7602 6100 fd6a 43e9 0010
+    0x014BB0: 51cb fff6 4e75 0001 4c02 0001 4c02 0001
+    0x014BC0: 4c02 0001 4c14 0001 4c14 0001 4c14 0001
+    0x014BD0: 4c16 0001 4c16 0001 4c16 0001 4c38 0001
+    0x014BE0: 4c38 0001 4c38 0001 4c3a 0001 4c3a 0001
+    0x014BF0: 4c4c 0001 4c4c 0001 4c4c 0001 4c4c 0001
+    0x014C00: 4c4c 0000 0010 0001 0002 0000 0004 0001
+    0x014C10: 4c4e cf16 ffff 0001 0008 0001 0003 0000
+    0x014C20: 0004 0001 4c90 cf18 0008 0001 0003 0000
+    0x014C30: 0002 0001 4c9c cf1e ffff 0000 0008 0001
+    0x014C40: 0002 0000 000e 0001 4c74 cf12 ffff 008e
+    0x014C50: 00ee 00ee 008e 046c 046c 046c 046c 0ace
+    0x014C60: 0088 0a64 0088 0a64 0088 0a64 0088 0a64
+    0x014C70: 0aee 0eae 0a80 0ee0 04e6 00a2 00ee 000c
+    0x014C80: 008e 0ee0 0a80 00a2 04e6 00aa 0008 000c
+    0x014C90: 0422 0444 0444 0666 0666 0422 0666 0422
+    0x014CA0: 0444 0004 0001 0003 0000 0002 0001 4cd2
+    0x014CB0: cf7a 0002 0001 0003 0000 0002 0001 4ce4
+    0x014CC0: cf7c 0006 0001 0003 0000 0002 0001 4cf6
+    0x014CD0: cf7e 0eee 0642 0a86 0ccc 0ca8 0a88 0aaa
+    0x014CE0: 0a86 0866 0642 0c88 0a86 0a86 0a66 0864
+    0x014CF0: 0864 0844 0420 0a86 0642 0864 0864 0844
+    0x014D00: 0642 0642 0622 0420 4a38 dfcf 6632 43f8
+    0x014D10: c950 3019 672a 5351 6626 32c0 3019 5840
+    0x014D20: b059 6502 7000 3340 fffc 2459 21f2 0000
+    0x014D30: deb6 31d9 deba 31d9 debc 08f8 0000 deb4
+    0x014D40: 4e75 43f8 c950 3038 de42 e548 4efb 0002
+    0x014D50: 6000 003a 6000 0036 6000 0032 6000 002e
+    0x014D60: 6000 002a 6000 0028 6000 0022 6000 001e
+    0x014D70: 6000 0034 6000 0016 6000 0012 6000 000e
+    0x014D80: 6000 001c 6000 0018 6000 0014 4e75 45f9
+    0x014D90: 0001 4dae 7007 32da 51c8 fffc 4e75 45f9
+    0x014DA0: 0001 4dce 60ee 45f9 0001 4dbe 60e6 0006
+    0x014DB0: 0001 0000 0008 0005 42c8 1560 0080 0006
+    0x014DC0: 0001 0000 0010 0005 42e0 2ce0 00e0 0002
+    0x014DD0: 0001 0000 0010 0005 42d0 0040 00e0 225e
+    0x014DE0: 245e 385e 321e 74f0 300c 2649 3a7c 0002
+    0x014DF0: 7e03 7c01 7a01 1619 c602 1819 c802 e80c
+    0x014E00: 8803 14c4 51cd fff0 d2fc 001c 51ce ffe6
+    0x014E10: 92fc 0038 51cf ffdc 360c 5243 ed4b 224b
+    0x014E20: d2c3 534d 360d 4a43 66c6 4a40 6702 224b
+    0x014E30: d2fc 0040 51c8 ffb4 51c9 ffae 4e75 7040
+    0x014E40: 13c0 00a1 0009 13c0 00a1 000b 13c0 00a1
+    0x014E50: 000d 4e75 33fc 0100 00a1 1100 0839 0000
+    0x014E60: 00a1 1100 66f6 41f8 de02 43f9 00a1 0003
+    0x014E70: 6102 5449 12bc 0000 4e71 4e71 1011 e508
+    0x014E80: 0200 00c0 12bc 0040 4e71 4e71 1211 0201
+    0x014E90: 003f 8001 4600 1200 1410 b500 10c1 c001
