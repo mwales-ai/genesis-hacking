@@ -120,6 +120,7 @@ The same logic applies to **Pal DMA** for palette data.
 |---------|-------------|
 | `breakpoint ADDRESS` or `b ADDRESS` | Set a breakpoint at ADDRESS |
 | `watchpoint ADDRESS [SIZE]` | Set a write watchpoint. SIZE defaults to 2 for even addresses, 1 for odd |
+| `readwatch ADDRESS [SIZE]` or `rw ADDRESS [SIZE]` | Set a read watchpoint. Breaks when the address is read |
 | `delete N` or `d N` | Remove breakpoint/watchpoint by index |
 | `condition N EXPR` | Make breakpoint N conditional on EXPR |
 | `commands N` | Set commands to run when breakpoint N is hit |
@@ -242,7 +243,8 @@ n = composite         o = oscilloscope  [ = cycle sub-mode
 # Common debugger workflow
 u                           # enter debugger (key)
 b $200                      # breakpoint at $200
-watchpoint $FF0000 4        # watch 4 bytes at $FF0000
+watchpoint $FF0000 4        # watch 4 bytes at $FF0000 for writes
+readwatch $FF9200 2         # watch 2 bytes at $FF9200 for reads
 c                           # continue
 p d0                        # print register d0
 vs                          # dump sprite table
