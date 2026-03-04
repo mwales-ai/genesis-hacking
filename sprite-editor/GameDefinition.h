@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QVector>
+#include <QMap>
+#include <QByteArray>
 #include <stdint.h>
 
 struct PaletteDefinition
@@ -38,6 +40,33 @@ struct TileRange
     int      defaultPaletteGroup;  // -1 = none
 };
 
+struct ScreenCapturePalette
+{
+    int                line;        // 0-3
+    QVector<uint16_t>  cramValues;  // 16 raw Genesis CRAM words
+    QString            dmaSource;   // hex offset or empty
+};
+
+struct TileMapEntry
+{
+    int     row, col;
+    int     pattern;
+    int     paletteLine;
+    bool    hFlip, vFlip, priority;
+    QString romOffset;   // hex string or empty
+    QString source;      // "dma", "search", "embedded", "blank"
+};
+
+struct ScreenCapture
+{
+    QString                       name;
+    int                           widthTiles;
+    int                           heightTiles;
+    QVector<ScreenCapturePalette> palettes;
+    QVector<TileMapEntry>         tileMap;
+    QMap<QString, QByteArray>     embeddedTiles;  // VRAM addr hex -> 32 bytes
+};
+
 class GameDefinition
 {
 public:
@@ -50,8 +79,9 @@ public:
     QString gameName() const;
     QString gameId() const;
 
-    const QVector<SpriteGroup> & spriteGroups() const;
-    const QVector<TileRange>   & tileRanges() const;
+    const QVector<SpriteGroup>   & spriteGroups() const;
+    const QVector<TileRange>     & tileRanges() const;
+    const QVector<ScreenCapture> & screenCaptures() const;
 
 private:
     bool parseJson(const QByteArray & jsonData);
@@ -59,10 +89,11 @@ private:
 
     QString               theGameName;
     QString               theGameId;
-    QVector<SpriteGroup>  theSpriteGroups;
-    QVector<TileRange>    theTileRanges;
-    QString               theLastError;
-    bool                  theLoaded;
+    QVector<SpriteGroup>   theSpriteGroups;
+    QVector<TileRange>     theTileRanges;
+    QVector<ScreenCapture> theScreenCaptures;
+    QString                theLastError;
+    bool                   theLoaded;
 };
 
 #endif // GAMEDEFINITION_H

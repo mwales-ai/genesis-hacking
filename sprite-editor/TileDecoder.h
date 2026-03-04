@@ -41,6 +41,14 @@ public:
     // Build a greyscale placeholder palette (useful when no palette is known).
     static GenesisPalette greyPalette();
 
+    // Decode a single 8x8 tile with optional horizontal/vertical flip.
+    static QImage decodeTileFlipped(const QByteArray & tileData, int offset,
+                                    const GenesisPalette & palette,
+                                    bool hFlip, bool vFlip);
+
+    // Build a palette directly from 16 CRAM uint16_t values.
+    static GenesisPalette decodePaletteFromCram(const QVector<uint16_t> & cramValues);
+
     // Scale with nearest-neighbor (Qt::FastTransformation) to preserve pixel look.
     static QImage scaleForDisplay(const QImage & src, int scaleFactor);
 

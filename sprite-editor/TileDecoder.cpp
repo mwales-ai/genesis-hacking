@@ -98,6 +98,27 @@ QByteArray TileDecoder::encodeSprite(const QImage & image,
     return result;
 }
 
+QImage TileDecoder::decodeTileFlipped(const QByteArray & tileData, int offset,
+                                      const GenesisPalette & palette,
+                                      bool hFlip, bool vFlip)
+{
+    QImage img = decodeTile(tileData, offset, palette);
+    if (hFlip || vFlip)
+        img = img.mirrored(hFlip, vFlip);
+    return img;
+}
+
+GenesisPalette TileDecoder::decodePaletteFromCram(const QVector<uint16_t> & cramValues)
+{
+    GenesisPalette pal;
+    pal.reserve(16);
+    for (int i = 0; i < 16 && i < cramValues.size(); ++i)
+        pal.append(cramWordToColor(cramValues[i]));
+    while (pal.size() < 16)
+        pal.append(QColor(0, 0, 0, 0));
+    return pal;
+}
+
 QColor TileDecoder::cramWordToColor(uint16_t cramWord)
 {
     // Genesis CRAM format: ---- bbb- ggg- rrr-

@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QSettings>
+#include <QComboBox>
+#include <QSpinBox>
 #include <iostream>
 
 #include "RomFile.h"
@@ -18,6 +20,7 @@ class SpriteSheetWidget;
 class RawTileBrowserWidget;
 class TileCanvasWidget;
 class PaletteWidget;
+class TileMapWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -58,6 +61,10 @@ private slots:
     void onSetAssemblyStart();
     void onRawExportPng();
 
+    // Screen Captures tab
+    void onScreenCaptureSelected(int index);
+    void onScreenCapZoomChanged(int value);
+
     // Help
     void showAbout();
 
@@ -77,6 +84,7 @@ private:
     void displaySpriteGroup(int groupIndex);
     void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
     void refreshRawBrowser();
+    void populateScreenCaptures();
 
     QByteArray fetchTileData(const SpriteEntry & entry);
     GenesisPalette paletteForSprite(const SpriteEntry & entry, int groupIndex);
@@ -101,6 +109,12 @@ private:
     RawTileBrowserWidget *theRawBrowser;
     TileCanvasWidget     *theSpriteDetail;
     PaletteWidget        *thePaletteDisplay;
+
+    // Screen Captures tab (added programmatically)
+    QWidget              *theScreenCapTab;
+    QComboBox            *theScreenCapCombo;
+    QSpinBox             *theScreenCapZoomSpin;
+    TileMapWidget        *theTileMapWidget;
 };
 
 #endif // MAINWINDOW_H

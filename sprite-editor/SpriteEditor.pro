@@ -21,7 +21,8 @@ SOURCES += \
     NoneHandler.cpp \
     NemesisDecompressor.cpp \
     KosinskiDecompressor.cpp \
-    SpriteReplaceDialog.cpp
+    SpriteReplaceDialog.cpp \
+    TileMapWidget.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -36,7 +37,8 @@ HEADERS += \
     NoneHandler.h \
     NemesisDecompressor.h \
     KosinskiDecompressor.h \
-    SpriteReplaceDialog.h
+    SpriteReplaceDialog.h \
+    TileMapWidget.h
 
 FORMS += \
     MainWindow.ui \

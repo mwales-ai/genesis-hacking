@@ -5,6 +5,7 @@
 #include "TileCanvasWidget.h"
 #include "PaletteWidget.h"
 #include "SpriteReplaceDialog.h"
+#include "TileMapWidget.h"
 
 #include <QFileDialog>
 #include <QFileInfo>
@@ -91,6 +92,8 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
         populateRawRanges();
         populateRawPalettes();
     }
+    if (theDef.isLoaded())
+        populateScreenCaptures();
 }
 
 void MainWindow::setupCustomWidgets()
@@ -112,6 +115,34 @@ void MainWindow::setupCustomWidgets()
     // --- Raw Tile Browser Tab ---
     theRawBrowser = new RawTileBrowserWidget();
     ui->rawScrollContents->layout()->addWidget(theRawBrowser);
+
+    // --- Screen Captures Tab (added programmatically) ---
+    theScreenCapTab = new QWidget();
+    QVBoxLayout *capLayout = new QVBoxLayout(theScreenCapTab);
+
+    // Top bar: combo box for capture selection + zoom spin
+    QHBoxLayout *capTopBar = new QHBoxLayout();
+    QLabel *capLabel = new QLabel("Capture:");
+    theScreenCapCombo = new QComboBox();
+    theScreenCapCombo->setEnabled(false);
+    QLabel *capZoomLabel = new QLabel("Zoom:");
+    theScreenCapZoomSpin = new QSpinBox();
+    theScreenCapZoomSpin->setRange(1, 8);
+    theScreenCapZoomSpin->setValue(2);
+    capTopBar->addWidget(capLabel);
+    capTopBar->addWidget(theScreenCapCombo, 1);
+    capTopBar->addWidget(capZoomLabel);
+    capTopBar->addWidget(theScreenCapZoomSpin);
+    capLayout->addLayout(capTopBar);
+
+    // Scrollable tile map widget
+    QScrollArea *capScroll = new QScrollArea();
+    theTileMapWidget = new TileMapWidget();
+    capScroll->setWidget(theTileMapWidget);
+    capScroll->setWidgetResizable(false);
+    capLayout->addWidget(capScroll, 1);
+
+    ui->theTabWidget->addTab(theScreenCapTab, "Screen Captures");
 }
 
 void MainWindow::setupMenus()
@@ -162,6 +193,12 @@ void MainWindow::setupConnections()
             this,                       &MainWindow::onSetAssemblyStart);
     connect(ui->theRawExportButton, &QPushButton::clicked,
             this,                   &MainWindow::onRawExportPng);
+
+    // Screen Captures tab
+    connect(theScreenCapCombo, SIGNAL(currentIndexChanged(int)),
+            this,              SLOT(onScreenCaptureSelected(int)));
+    connect(theScreenCapZoomSpin, SIGNAL(valueChanged(int)),
+            this,                 SLOT(onScreenCapZoomChanged(int)));
 }
 
 // ---------------------------------------------------------------------------
@@ -232,6 +269,7 @@ void MainWindow::openGameDefinition()
         populateRawRanges();
         populateRawPalettes();
     }
+    populateScreenCaptures();
 
     statusBar()->showMessage("Game definition loaded: " + theDef.gameName());
 }
@@ -1032,4 +1070,50 @@ void MainWindow::showAbout()
         "making the tool usable with any Genesis game.<br><br>"
         "Use the <b>Raw Tile Browser</b> tab to identify sprite offsets when "
         "no game definition exists yet.");
+}
+
+// ---------------------------------------------------------------------------
+// Screen Captures tab
+// ---------------------------------------------------------------------------
+
+void MainWindow::populateScreenCaptures()
+{
+    theScreenCapCombo->blockSignals(true);
+    theScreenCapCombo->clear();
+
+    const auto & captures = theDef.screenCaptures();
+    for (const auto & cap : captures)
+        theScreenCapCombo->addItem(cap.name);
+
+    theScreenCapCombo->setEnabled(!captures.isEmpty());
+    theScreenCapCombo->blockSignals(false);
+
+    if (!captures.isEmpty())
+        onScreenCaptureSelected(0);
+    else
+        theTileMapWidget->clearCapture();
+}
+
+void MainWindow::onScreenCaptureSelected(int index)
+{
+    const auto & captures = theDef.screenCaptures();
+    if (index < 0 || index >= captures.size())
+    {
+        theTileMapWidget->clearCapture();
+        return;
+    }
+
+    RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
+    theTileMapWidget->setScreenCapture(captures[index], rom);
+
+    statusBar()->showMessage(
+        QString("Screen capture: %1 (%2x%3 tiles)")
+            .arg(captures[index].name)
+            .arg(captures[index].widthTiles)
+            .arg(captures[index].heightTiles));
+}
+
+void MainWindow::onScreenCapZoomChanged(int value)
+{
+    theTileMapWidget->setZoom(value);
 }
