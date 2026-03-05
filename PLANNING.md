@@ -93,6 +93,42 @@ Sprite tile data is identical across revisions; palette offsets differ.
 - Increased tile dimension bounds from 4→8 (Moonwalker uses 2×5 sprites)
 - Updated moonwalker.json with frame counts: 23, 43, 73, 13, 21, 3, 13 frames
 
+### 3c. ~~BlastEm Enhancements: CRAM DMA Tracking & Debugger~~ DONE
+Forked BlastEm to add ROM hacking support features:
+- **DMA history ring buffer** (`vdp.h`/`vdp.c`): Tracks all DMA transfers (source address,
+  destination, length, frame, type). Configurable size via `--dma-history N`.
+- **CRAM DMA source lookup** (`vdp_dma_lookup_cram_source()`): Traces palette data in CRAM
+  back to its ROM source address via DMA history.
+- **VRAM DMA source lookup** (`vdp_dma_lookup_source()`): Traces tile data in VRAM back
+  to its ROM source address.
+- **`dmatrace` debugger command**: Logs all DMA transfers to a file or stderr, including
+  source address, destination type/address, and length. `dmatrace off` to stop.
+- **Read watchpoints**: Break when emulated code reads from specific addresses.
+- **Updated `-h` help text**: Documents all command-line switches including `-b`, `-D`,
+  `-t`, `--dma-log`, and `--dma-history`.
+
+### 3d. ~~Full Screen Graphic Capture~~ DONE
+BlastEm `screencap` debugger command + sprite editor Screen Captures tab:
+- **BlastEm side** (`vdp.c`, `debug.c`):
+  - VDP helpers: `vdp_get_plane_a_base()`, `vdp_get_plane_b_base()`,
+    `vdp_get_nametable_stride()`, `vdp_get_visible_dimensions()`
+  - Brute-force ROM tile search: `vdp_find_tile_in_rom()` — finds tiles in ROM when
+    DMA history doesn't cover them
+  - `screencap [FILE] [a|b]` command: Exports full VDP plane state to JSON with tile map
+    entries (pattern, palette, flip, priority, ROM offset), 4 CRAM palette lines with
+    DMA sources, and embedded tile data for VRAM-only tiles
+  - Source resolution chain: DMA history → brute-force ROM search → embedded data
+- **Sprite editor side** (`GameDefinition.h/cpp`, `TileDecoder.h/cpp`, `TileMapWidget.h/cpp`,
+  `MainWindow.h/cpp`):
+  - New data structures: `ScreenCapture`, `TileMapEntry`, `ScreenCapturePalette`
+  - JSON parsing for `screen_captures` array in game definitions
+  - `decodeTileFlipped()` — decode tiles with h/v flip support
+  - `decodePaletteFromCram()` — build palette from raw CRAM values
+  - `TileMapWidget` — renders full tile maps with zoom (1-8x) and hover tooltips
+  - New "Screen Captures" tab in MainWindow with capture selector and zoom control
+- **JSON format**: Designed for forward compatibility with sprite collections and
+  animations (future `sprite_collections` and `animations` arrays)
+
 ### 4. Identify and Document MJ Sprites in moonwalker.json
 Using the sprite editor + BlastEm debugger, map out:
 - MJ walk animation frames (in 2×4 group at 0x0220E0)

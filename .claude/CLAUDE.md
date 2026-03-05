@@ -40,8 +40,23 @@ Binary Ninja host
 
 `loader.py` identifies Genesis ROMs by magic bytes and Genesis header fields, then builds Binary Ninja memory segments and sections accordingly.
 
+## Build Commands
+
+### Sprite Editor
+```bash
+cd sprite-editor && bash build.sh
+```
+Binary output: `sprite-editor/build/SpriteEditor`
+
+### BlastEm (forked, at ../blastem/)
+```bash
+cd ../blastem && make
+```
+Binary output: `../blastem/blastem`
+
 ## System Dependencies
 
 - `gcc-m68k-linux-gnu` — M68k cross-compiler (required by bn-genesis assemble)
-- `qt5-qmake`, `qtbase5-dev` — Qt5 for C++ GUI tools
+- `qt6-base-dev` — Qt6 for C++ GUI tools (sprite editor)
 - Binary Ninja (proprietary) — required to use bn-genesis or binja_scripts
+- `blastem` — Genesis emulator with built-in debugger (forked at ../blastem/)
