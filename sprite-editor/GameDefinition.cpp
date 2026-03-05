@@ -19,6 +19,7 @@ bool GameDefinition::loadFromFile(const QString & path)
     theSpriteGroups.clear();
     theTileRanges.clear();
     theScreenCaptures.clear();
+    theSpriteCollections.clear();
 
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly))
@@ -63,6 +64,11 @@ const QVector<TileRange> & GameDefinition::tileRanges() const
 const QVector<ScreenCapture> & GameDefinition::screenCaptures() const
 {
     return theScreenCaptures;
+}
+
+const QVector<SpriteCollection> & GameDefinition::spriteCollections() const
+{
+    return theSpriteCollections;
 }
 
 uint32_t GameDefinition::parseOffset(const QString & hexStr, bool *ok)
@@ -236,9 +242,78 @@ bool GameDefinition::parseJson(const QByteArray & jsonData)
         theScreenCaptures.append(cap);
     }
 
+    // Parse sprite_collections (optional — from BlastEm spritecap command)
+    QJsonArray collections = root["sprite_collections"].toArray();
+    for (const QJsonValue & colv : collections)
+    {
+        QJsonObject cobj = colv.toObject();
+        SpriteCollection col;
+        col.name = cobj["name"].toString("Unnamed Collection");
+
+        // Bounding box
+        QJsonObject bbox = cobj["bounding_box"].toObject();
+        col.boundingBox = QRect(bbox["x"].toInt(0), bbox["y"].toInt(0),
+                                bbox["width"].toInt(0), bbox["height"].toInt(0));
+
+        // Palettes (same format as screen captures)
+        QJsonArray pals = cobj["palettes"].toArray();
+        for (const QJsonValue & pv : pals)
+        {
+            QJsonObject po = pv.toObject();
+            ScreenCapturePalette pal;
+            pal.line = po["line"].toInt(0);
+            QJsonArray cramArr = po["cram_values"].toArray();
+            for (const QJsonValue & cval : cramArr)
+            {
+                bool ok = false;
+                uint16_t word = cval.toString("0").toUInt(&ok, 16);
+                pal.cramValues.append(word);
+            }
+            pal.dmaSource = po["dma_source"].isNull() ? QString() : po["dma_source"].toString();
+            col.palettes.append(pal);
+        }
+
+        // Sprites
+        QJsonArray spArr = cobj["sprites"].toArray();
+        for (const QJsonValue & sv : spArr)
+        {
+            QJsonObject so = sv.toObject();
+            CollectionSprite cs;
+            cs.index       = so["index"].toInt(0);
+            cs.x           = so["x"].toInt(0);
+            cs.y           = so["y"].toInt(0);
+            cs.widthTiles  = qBound(1, so["width_tiles"].toInt(1), 4);
+            cs.heightTiles = qBound(1, so["height_tiles"].toInt(1), 4);
+            cs.paletteLine = qBound(0, so["palette_line"].toInt(0), 3);
+            cs.priority    = so["priority"].toBool(false);
+            cs.hFlip       = so["h_flip"].toBool(false);
+            cs.vFlip       = so["v_flip"].toBool(false);
+            cs.pattern     = so["pattern"].toInt(0);
+            cs.vramAddr    = so["vram_addr"].toString();
+            cs.romOffset   = so["rom_offset"].isNull() ? QString() : so["rom_offset"].toString();
+            cs.source      = so["source"].toString("dma");
+
+            // Parse embedded tile data if present
+            QString tileHex = so["tile_data"].toString();
+            if (!tileHex.isEmpty())
+            {
+                for (int i = 0; i + 1 < tileHex.length(); i += 2)
+                {
+                    bool ok = false;
+                    uint8_t byte = tileHex.mid(i, 2).toUInt(&ok, 16);
+                    cs.tileData.append(static_cast<char>(byte));
+                }
+            }
+            col.sprites.append(cs);
+        }
+
+        theSpriteCollections.append(col);
+    }
+
     GameDefDebug << "GameDefinition: " << theSpriteGroups.size() << " groups, "
                  << theTileRanges.size() << " tile ranges, "
-                 << theScreenCaptures.size() << " screen captures" << std::endl;
+                 << theScreenCaptures.size() << " screen captures, "
+                 << theSpriteCollections.size() << " sprite collections" << std::endl;
 
     theLoaded = true;
     return true;
