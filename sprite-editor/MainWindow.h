@@ -21,6 +21,7 @@ class RawTileBrowserWidget;
 class TileCanvasWidget;
 class PaletteWidget;
 class TileMapWidget;
+class SpriteCollectionWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -65,6 +66,10 @@ private slots:
     void onScreenCaptureSelected(int index);
     void onScreenCapZoomChanged(int value);
 
+    // Sprite Collections tab
+    void onSpriteCollectionSelected(int index);
+    void onSpriteCollectionZoomChanged(int value);
+
     // Palette editing
     void onPaletteColorSelected(int index);
     void onPaletteColorEditRequested(int index);
@@ -89,6 +94,7 @@ private:
     void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
     void refreshRawBrowser();
     void populateScreenCaptures();
+    void populateSpriteCollections();
 
     QByteArray fetchTileData(const SpriteEntry & entry);
     GenesisPalette paletteForSprite(const SpriteEntry & entry, int groupIndex);
@@ -119,6 +125,12 @@ private:
     QComboBox            *theScreenCapCombo;
     QSpinBox             *theScreenCapZoomSpin;
     TileMapWidget        *theTileMapWidget;
+
+    // Sprite Collections tab (added programmatically)
+    QWidget              *theSpriteColTab;
+    QComboBox            *theSpriteColCombo;
+    QSpinBox             *theSpriteColZoomSpin;
+    SpriteCollectionWidget *theSpriteColWidget;
 };
 
 #endif // MAINWINDOW_H

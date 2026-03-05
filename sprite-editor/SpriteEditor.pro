@@ -23,7 +23,8 @@ SOURCES += \
     KosinskiDecompressor.cpp \
     SpriteReplaceDialog.cpp \
     TileMapWidget.cpp \
-    GenesisColorDialog.cpp
+    GenesisColorDialog.cpp \
+    SpriteCollectionWidget.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     KosinskiDecompressor.h \
     SpriteReplaceDialog.h \
     TileMapWidget.h \
-    GenesisColorDialog.h
+    GenesisColorDialog.h \
+    SpriteCollectionWidget.h
 
 FORMS += \
     MainWindow.ui \

@@ -6,6 +6,7 @@
 #include "PaletteWidget.h"
 #include "SpriteReplaceDialog.h"
 #include "TileMapWidget.h"
+#include "SpriteCollectionWidget.h"
 #include "GenesisColorDialog.h"
 
 #include <QFileDialog>
@@ -94,7 +95,10 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
         populateRawPalettes();
     }
     if (theDef.isLoaded())
+    {
         populateScreenCaptures();
+        populateSpriteCollections();
+    }
 }
 
 void MainWindow::setupCustomWidgets()
@@ -144,6 +148,34 @@ void MainWindow::setupCustomWidgets()
     capLayout->addWidget(capScroll, 1);
 
     ui->theTabWidget->addTab(theScreenCapTab, "Screen Captures");
+
+    // --- Sprite Collections Tab (added programmatically) ---
+    theSpriteColTab = new QWidget();
+    QVBoxLayout *colLayout = new QVBoxLayout(theSpriteColTab);
+
+    // Top bar: combo box + zoom spin
+    QHBoxLayout *colTopBar = new QHBoxLayout();
+    QLabel *colLabel = new QLabel("Collection:");
+    theSpriteColCombo = new QComboBox();
+    theSpriteColCombo->setEnabled(false);
+    QLabel *colZoomLabel = new QLabel("Zoom:");
+    theSpriteColZoomSpin = new QSpinBox();
+    theSpriteColZoomSpin->setRange(1, 8);
+    theSpriteColZoomSpin->setValue(4);
+    colTopBar->addWidget(colLabel);
+    colTopBar->addWidget(theSpriteColCombo, 1);
+    colTopBar->addWidget(colZoomLabel);
+    colTopBar->addWidget(theSpriteColZoomSpin);
+    colLayout->addLayout(colTopBar);
+
+    // Scrollable sprite collection widget
+    QScrollArea *colScroll = new QScrollArea();
+    theSpriteColWidget = new SpriteCollectionWidget();
+    colScroll->setWidget(theSpriteColWidget);
+    colScroll->setWidgetResizable(false);
+    colLayout->addWidget(colScroll, 1);
+
+    ui->theTabWidget->addTab(theSpriteColTab, "Sprite Collections");
 }
 
 void MainWindow::setupMenus()
@@ -206,6 +238,12 @@ void MainWindow::setupConnections()
             this,              SLOT(onScreenCaptureSelected(int)));
     connect(theScreenCapZoomSpin, SIGNAL(valueChanged(int)),
             this,                 SLOT(onScreenCapZoomChanged(int)));
+
+    // Sprite Collections tab
+    connect(theSpriteColCombo, SIGNAL(currentIndexChanged(int)),
+            this,              SLOT(onSpriteCollectionSelected(int)));
+    connect(theSpriteColZoomSpin, SIGNAL(valueChanged(int)),
+            this,                 SLOT(onSpriteCollectionZoomChanged(int)));
 }
 
 // ---------------------------------------------------------------------------
@@ -277,6 +315,7 @@ void MainWindow::openGameDefinition()
         populateRawPalettes();
     }
     populateScreenCaptures();
+    populateSpriteCollections();
 
     statusBar()->showMessage("Game definition loaded: " + theDef.gameName());
 }
@@ -1180,4 +1219,53 @@ void MainWindow::onScreenCaptureSelected(int index)
 void MainWindow::onScreenCapZoomChanged(int value)
 {
     theTileMapWidget->setZoom(value);
+}
+
+// ---------------------------------------------------------------------------
+// Sprite Collections tab
+// ---------------------------------------------------------------------------
+
+void MainWindow::populateSpriteCollections()
+{
+    theSpriteColCombo->blockSignals(true);
+    theSpriteColCombo->clear();
+
+    const auto & collections = theDef.spriteCollections();
+    for (const auto & col : collections)
+        theSpriteColCombo->addItem(col.name);
+
+    theSpriteColCombo->setEnabled(!collections.isEmpty());
+    theSpriteColCombo->blockSignals(false);
+
+    if (!collections.isEmpty())
+        onSpriteCollectionSelected(0);
+    else
+        theSpriteColWidget->clearCollection();
+}
+
+void MainWindow::onSpriteCollectionSelected(int index)
+{
+    const auto & collections = theDef.spriteCollections();
+    if (index < 0 || index >= collections.size())
+    {
+        theSpriteColWidget->clearCollection();
+        return;
+    }
+
+    RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
+    theSpriteColWidget->setCollection(collections[index], rom);
+    theSpriteColWidget->setZoom(theSpriteColZoomSpin->value());
+
+    const SpriteCollection & col = collections[index];
+    statusBar()->showMessage(
+        QString("Sprite collection: %1 (%2 sprites, %3x%4 bounding box)")
+            .arg(col.name)
+            .arg(col.sprites.size())
+            .arg(col.boundingBox.width())
+            .arg(col.boundingBox.height()));
+}
+
+void MainWindow::onSpriteCollectionZoomChanged(int value)
+{
+    theSpriteColWidget->setZoom(value);
 }
