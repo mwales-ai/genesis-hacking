@@ -31,6 +31,7 @@ void TileMapWidget::setScreenCapture(const ScreenCapture & capture, RomFile *rom
     }
 
     rebuildImage();
+    resize(sizeHint());
     updateGeometry();
     update();
 }
@@ -48,6 +49,7 @@ void TileMapWidget::setZoom(int factor)
     if (factor < 1) factor = 1;
     if (factor > 8) factor = 8;
     theZoom = factor;
+    resize(sizeHint());
     updateGeometry();
     update();
 }
