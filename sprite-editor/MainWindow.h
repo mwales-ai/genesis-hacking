@@ -65,6 +65,10 @@ private slots:
     void onScreenCaptureSelected(int index);
     void onScreenCapZoomChanged(int value);
 
+    // Palette editing
+    void onPaletteColorSelected(int index);
+    void onPaletteColorEditRequested(int index);
+
     // Help
     void showAbout();
 

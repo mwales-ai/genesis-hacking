@@ -49,6 +49,13 @@ public:
     // Build a palette directly from 16 CRAM uint16_t values.
     static GenesisPalette decodePaletteFromCram(const QVector<uint16_t> & cramValues);
 
+    // Convert a QColor to Genesis CRAM word (---- bbb- ggg- rrr-).
+    // Each 8-bit channel is rounded to the nearest 3-bit value.
+    static uint16_t colorToCramWord(const QColor & color);
+
+    // Encode 16-color palette to 32 bytes of big-endian CRAM data.
+    static QByteArray encodePalette(const GenesisPalette & palette);
+
     // Scale with nearest-neighbor (Qt::FastTransformation) to preserve pixel look.
     static QImage scaleForDisplay(const QImage & src, int scaleFactor);
 

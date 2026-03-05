@@ -22,7 +22,8 @@ SOURCES += \
     NemesisDecompressor.cpp \
     KosinskiDecompressor.cpp \
     SpriteReplaceDialog.cpp \
-    TileMapWidget.cpp
+    TileMapWidget.cpp \
+    GenesisColorDialog.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -38,7 +39,8 @@ HEADERS += \
     NemesisDecompressor.h \
     KosinskiDecompressor.h \
     SpriteReplaceDialog.h \
-    TileMapWidget.h
+    TileMapWidget.h \
+    GenesisColorDialog.h
 
 FORMS += \
     MainWindow.ui \

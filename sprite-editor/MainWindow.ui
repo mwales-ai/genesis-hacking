@@ -102,10 +102,10 @@
            <item>
             <widget class="QWidget" name="thePalettePlaceholder">
              <property name="minimumHeight">
-              <number>32</number>
+              <number>48</number>
              </property>
              <property name="maximumHeight">
-              <number>32</number>
+              <number>48</number>
              </property>
              <layout class="QHBoxLayout" name="palettePlaceholderLayout">
               <property name="margin">

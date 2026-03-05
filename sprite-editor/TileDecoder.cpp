@@ -159,6 +159,30 @@ GenesisPalette TileDecoder::greyPalette()
     return pal;
 }
 
+uint16_t TileDecoder::colorToCramWord(const QColor & color)
+{
+    // Round each 8-bit channel to nearest 3-bit value (0-7).
+    // Adding 18 before dividing by 36 gives correct rounding.
+    int r = qBound(0, (color.red()   + 18) / 36, 7);
+    int g = qBound(0, (color.green() + 18) / 36, 7);
+    int b = qBound(0, (color.blue()  + 18) / 36, 7);
+
+    // Genesis CRAM format: ---- bbb- ggg- rrr-
+    return (uint16_t)((b << 9) | (g << 5) | (r << 1));
+}
+
+QByteArray TileDecoder::encodePalette(const GenesisPalette & palette)
+{
+    QByteArray result(32, (char)0);
+    for (int i = 0; i < 16 && i < palette.size(); ++i)
+    {
+        uint16_t word = colorToCramWord(palette[i]);
+        result[i * 2]     = (char)((word >> 8) & 0xFF);  // big-endian high byte
+        result[i * 2 + 1] = (char)(word & 0xFF);         // big-endian low byte
+    }
+    return result;
+}
+
 QImage TileDecoder::scaleForDisplay(const QImage & src, int scaleFactor)
 {
     if (scaleFactor <= 1)

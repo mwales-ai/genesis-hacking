@@ -6,6 +6,7 @@
 #include "PaletteWidget.h"
 #include "SpriteReplaceDialog.h"
 #include "TileMapWidget.h"
+#include "GenesisColorDialog.h"
 
 #include <QFileDialog>
 #include <QFileInfo>
@@ -193,6 +194,12 @@ void MainWindow::setupConnections()
             this,                       &MainWindow::onSetAssemblyStart);
     connect(ui->theRawExportButton, &QPushButton::clicked,
             this,                   &MainWindow::onRawExportPng);
+
+    // Palette editing
+    connect(thePaletteDisplay,  &PaletteWidget::colorSelected,
+            this,               &MainWindow::onPaletteColorSelected);
+    connect(thePaletteDisplay,  &PaletteWidget::colorEditRequested,
+            this,               &MainWindow::onPaletteColorEditRequested);
 
     // Screen Captures tab
     connect(theScreenCapCombo, SIGNAL(currentIndexChanged(int)),
@@ -1070,6 +1077,63 @@ void MainWindow::showAbout()
         "making the tool usable with any Genesis game.<br><br>"
         "Use the <b>Raw Tile Browser</b> tab to identify sprite offsets when "
         "no game definition exists yet.");
+}
+
+// ---------------------------------------------------------------------------
+// Palette editing
+// ---------------------------------------------------------------------------
+
+void MainWindow::onPaletteColorSelected(int index)
+{
+    statusBar()->showMessage(
+        QString("Pen color: index %1  CRAM: 0x%2")
+        .arg(index)
+        .arg(thePaletteDisplay->selectedCramWord(), 4, 16, QChar('0')).toUpper());
+}
+
+void MainWindow::onPaletteColorEditRequested(int index)
+{
+    QColor current = thePaletteDisplay->palette()[index];
+    GenesisColorDialog dlg(current, index, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    thePaletteDisplay->setColorAt(index, dlg.selectedColor());
+
+    // Re-render the current sprite with the modified palette
+    if (theCurrentSpriteIndex >= 0 && theCurrentGroupIndex >= 0)
+    {
+        const SpriteGroup & group = theDef.spriteGroups()[theCurrentGroupIndex];
+        const SpriteEntry & entry = group.sprites[theCurrentSpriteIndex];
+        int bytesPerFrame = entry.widthTiles * entry.heightTiles * 32;
+
+        QByteArray tileData;
+        if (entry.compression == "none")
+        {
+            uint32_t frameOffset = entry.romOffset + uint32_t(theCurrentFrameIndex * bytesPerFrame);
+            tileData = theRom.readBytes(frameOffset, bytesPerFrame);
+        }
+        else
+        {
+            QByteArray fullData = fetchTileData(entry);
+            int start = theCurrentFrameIndex * bytesPerFrame;
+            if (start + bytesPerFrame <= fullData.size())
+                tileData = fullData.mid(start, bytesPerFrame);
+            else
+                tileData = fullData.left(bytesPerFrame);
+        }
+
+        QImage img = TileDecoder::decodeSprite(tileData,
+                                               entry.widthTiles,
+                                               entry.heightTiles,
+                                               thePaletteDisplay->palette());
+        theSpriteDetail->setSprite(img);
+    }
+
+    statusBar()->showMessage(
+        QString("Color %1 changed to CRAM 0x%2 (in-memory preview only)")
+        .arg(index)
+        .arg(dlg.selectedCramWord(), 4, 16, QChar('0')).toUpper());
 }
 
 // ---------------------------------------------------------------------------
