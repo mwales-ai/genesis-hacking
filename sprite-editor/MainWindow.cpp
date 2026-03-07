@@ -7,6 +7,7 @@
 #include "SpriteReplaceDialog.h"
 #include "TileMapWidget.h"
 #include "SpriteCollectionWidget.h"
+#include "SpritePixelEditor.h"
 #include "GenesisColorDialog.h"
 
 #include <QFileDialog>
@@ -17,7 +18,9 @@
 #include <QRegularExpression>
 #include <QScrollArea>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QCloseEvent>
+#include <QCheckBox>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -29,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     , theCurrentFrameIndex(0)
     , theRawSelectedTileIndex(-1)
     , theRawSelectedRomOffset(0)
+    , theEditCollectionIndex(-1)
+    , theEditSpriteIndex(-1)
 {
     ui->setupUi(this);
     setupCustomWidgets();
@@ -176,6 +181,52 @@ void MainWindow::setupCustomWidgets()
     colLayout->addWidget(colScroll, 1);
 
     ui->theTabWidget->addTab(theSpriteColTab, "Sprite Collections");
+
+    // --- Sprite Editor Tab (added programmatically) ---
+    theSpriteEditorTab = new QWidget();
+    QVBoxLayout *editorLayout = new QVBoxLayout(theSpriteEditorTab);
+
+    // Info label at top
+    theEditorInfoLabel = new QLabel("No sprite selected — click a sprite in the Collections tab");
+    theEditorInfoLabel->setWordWrap(true);
+    editorLayout->addWidget(theEditorInfoLabel);
+
+    // Main area: pixel editor in scroll area
+    QScrollArea *editorScroll = new QScrollArea();
+    theSpritePixelEditor = new SpritePixelEditor();
+    editorScroll->setWidget(theSpritePixelEditor);
+    editorScroll->setWidgetResizable(false);
+    editorLayout->addWidget(editorScroll, 1);
+
+    // Palette row
+    theEditorPalette = new PaletteWidget();
+    editorLayout->addWidget(theEditorPalette);
+
+    // Bottom bar: zoom, grid, save buttons
+    QHBoxLayout *editorBottomBar = new QHBoxLayout();
+    QLabel *edZoomLabel = new QLabel("Zoom:");
+    theEditorZoomSpin = new QSpinBox();
+    theEditorZoomSpin->setRange(1, 32);
+    theEditorZoomSpin->setValue(8);
+    theEditorGridCheck = new QCheckBox("Grid");
+    theEditorGridCheck->setChecked(true);
+
+    theEditorSaveButton = new QPushButton("Save Tiles to ROM");
+    theEditorSaveButton->setEnabled(false);
+    theEditorSavePaletteButton = new QPushButton("Save Palette to ROM");
+    theEditorSavePaletteButton->setEnabled(false);
+    theEditorCloseButton = new QPushButton("Close");
+
+    editorBottomBar->addWidget(edZoomLabel);
+    editorBottomBar->addWidget(theEditorZoomSpin);
+    editorBottomBar->addWidget(theEditorGridCheck);
+    editorBottomBar->addStretch();
+    editorBottomBar->addWidget(theEditorSaveButton);
+    editorBottomBar->addWidget(theEditorSavePaletteButton);
+    editorBottomBar->addWidget(theEditorCloseButton);
+    editorLayout->addLayout(editorBottomBar);
+
+    ui->theTabWidget->addTab(theSpriteEditorTab, "Sprite Editor");
 }
 
 void MainWindow::setupMenus()
@@ -244,6 +295,24 @@ void MainWindow::setupConnections()
             this,              SLOT(onSpriteCollectionSelected(int)));
     connect(theSpriteColZoomSpin, SIGNAL(valueChanged(int)),
             this,                 SLOT(onSpriteCollectionZoomChanged(int)));
+    connect(theSpriteColWidget, &SpriteCollectionWidget::spriteClicked,
+            this,               &MainWindow::onCollectionSpriteClicked);
+
+    // Sprite Editor tab
+    connect(theEditorPalette, &PaletteWidget::colorSelected,
+            this,             &MainWindow::onEditorPaletteSelected);
+    connect(theEditorPalette, &PaletteWidget::colorEditRequested,
+            this,             &MainWindow::onEditorPaletteEditRequested);
+    connect(theEditorSaveButton,        &QPushButton::clicked,
+            this,                       &MainWindow::onEditorSave);
+    connect(theEditorSavePaletteButton, &QPushButton::clicked,
+            this,                       &MainWindow::onEditorSavePalette);
+    connect(theEditorCloseButton,       &QPushButton::clicked,
+            this,                       &MainWindow::onEditorClose);
+    connect(theEditorZoomSpin,  SIGNAL(valueChanged(int)),
+            this,               SLOT(onEditorZoomChanged(int)));
+    connect(theEditorGridCheck, &QCheckBox::toggled,
+            this,               &MainWindow::onEditorGridToggled);
 }
 
 // ---------------------------------------------------------------------------
@@ -1268,4 +1337,282 @@ void MainWindow::onSpriteCollectionSelected(int index)
 void MainWindow::onSpriteCollectionZoomChanged(int value)
 {
     theSpriteColWidget->setZoom(value);
+}
+
+// ---------------------------------------------------------------------------
+// Sprite Editor tab
+// ---------------------------------------------------------------------------
+
+void MainWindow::onCollectionSpriteClicked(int spriteIndex)
+{
+    int colIndex = theSpriteColCombo->currentIndex();
+    const auto & collections = theDef.spriteCollections();
+    if (colIndex < 0 || colIndex >= collections.size())
+        return;
+
+    const SpriteCollection & col = collections[colIndex];
+    if (spriteIndex < 0 || spriteIndex >= col.sprites.size())
+        return;
+
+    const CollectionSprite & sprite = col.sprites[spriteIndex];
+    int palLine = qBound(0, sprite.paletteLine, 3);
+
+    // Get tile data for this sprite
+    QByteArray tileBytes;
+    if (sprite.source == "embedded" && !sprite.tileData.isEmpty())
+    {
+        tileBytes = sprite.tileData;
+    }
+    else if (!sprite.romOffset.isEmpty() && theRom.isOpen())
+    {
+        bool ok = false;
+        QString offsetStr = sprite.romOffset;
+        if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+            offsetStr = offsetStr.mid(2);
+        uint32_t offset = offsetStr.toUInt(&ok, 16);
+        if (ok)
+        {
+            int totalBytes = sprite.widthTiles * sprite.heightTiles * 32;
+            tileBytes = theRom.readBytes(offset, totalBytes);
+        }
+    }
+
+    if (tileBytes.isEmpty())
+    {
+        int totalBytes = sprite.widthTiles * sprite.heightTiles * 32;
+        tileBytes = QByteArray(totalBytes, '\0');
+    }
+
+    // Get palette from the collection
+    GenesisPalette pal = TileDecoder::greyPalette();
+    if (palLine < col.palettes.size())
+        pal = TileDecoder::decodePaletteFromCram(col.palettes[palLine].cramValues);
+
+    // Store which sprite we're editing
+    theEditCollectionIndex = colIndex;
+    theEditSpriteIndex = spriteIndex;
+
+    // Load into pixel editor
+    theSpritePixelEditor->loadSprite(tileBytes, sprite.widthTiles, sprite.heightTiles,
+                                     pal, sprite.hFlip, sprite.vFlip);
+    theSpritePixelEditor->setZoom(theEditorZoomSpin->value());
+    theSpritePixelEditor->setShowGrid(theEditorGridCheck->isChecked());
+
+    // Set palette display
+    theEditorPalette->setPalette(pal);
+
+    // Update info label
+    bool canSaveTiles = !sprite.romOffset.isEmpty() && theRom.isOpen();
+    bool canSavePalette = false;
+    if (palLine < col.palettes.size())
+        canSavePalette = !col.palettes[palLine].dmaSource.isEmpty() && theRom.isOpen();
+
+    QString info = QString("Sprite #%1 | %2x%3 tiles | Palette: %4 | ROM: %5 | %6")
+        .arg(sprite.index)
+        .arg(sprite.widthTiles).arg(sprite.heightTiles)
+        .arg(palLine)
+        .arg(sprite.romOffset.isEmpty() ? "N/A" : sprite.romOffset)
+        .arg(canSaveTiles ? "Editable" : "Read-only (no ROM offset)");
+    theEditorInfoLabel->setText(info);
+
+    // Enable/disable save buttons
+    theEditorSaveButton->setEnabled(canSaveTiles);
+    theEditorSavePaletteButton->setEnabled(canSavePalette);
+
+    // Switch to the editor tab
+    int editorTabIndex = ui->theTabWidget->indexOf(theSpriteEditorTab);
+    if (editorTabIndex >= 0)
+        ui->theTabWidget->setCurrentIndex(editorTabIndex);
+
+    statusBar()->showMessage(
+        QString("Editing sprite #%1 from collection \"%2\"")
+            .arg(sprite.index).arg(col.name));
+}
+
+void MainWindow::onEditorPaletteSelected(int index)
+{
+    theSpritePixelEditor->setPenIndex(index);
+    statusBar()->showMessage(
+        QString("Pen color: index %1  CRAM: 0x%2")
+        .arg(index)
+        .arg(theEditorPalette->selectedCramWord(), 4, 16, QChar('0')).toUpper());
+}
+
+void MainWindow::onEditorPaletteEditRequested(int index)
+{
+    // Only allow editing if we can save the palette
+    int colIndex = theEditCollectionIndex;
+    const auto & collections = theDef.spriteCollections();
+    if (colIndex < 0 || colIndex >= collections.size())
+        return;
+
+    const SpriteCollection & col = collections[colIndex];
+    if (theEditSpriteIndex < 0 || theEditSpriteIndex >= col.sprites.size())
+        return;
+
+    int palLine = qBound(0, col.sprites[theEditSpriteIndex].paletteLine, 3);
+    bool canSavePalette = false;
+    if (palLine < col.palettes.size())
+        canSavePalette = !col.palettes[palLine].dmaSource.isEmpty() && theRom.isOpen();
+
+    if (!canSavePalette)
+    {
+        statusBar()->showMessage("Palette editing disabled — no DMA source address known");
+        return;
+    }
+
+    QColor current = theEditorPalette->palette()[index];
+    GenesisColorDialog dlg(current, index, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    theEditorPalette->setColorAt(index, dlg.selectedColor());
+    theSpritePixelEditor->updatePalette(theEditorPalette->palette());
+
+    statusBar()->showMessage(
+        QString("Color %1 changed to CRAM 0x%2")
+        .arg(index)
+        .arg(dlg.selectedCramWord(), 4, 16, QChar('0')).toUpper());
+}
+
+void MainWindow::onEditorSave()
+{
+    if (!theRom.isOpen() || !theSpritePixelEditor->isModified())
+    {
+        statusBar()->showMessage("Nothing to save.");
+        return;
+    }
+
+    int colIndex = theEditCollectionIndex;
+    const auto & collections = theDef.spriteCollections();
+    if (colIndex < 0 || colIndex >= collections.size())
+        return;
+
+    const SpriteCollection & col = collections[colIndex];
+    if (theEditSpriteIndex < 0 || theEditSpriteIndex >= col.sprites.size())
+        return;
+
+    const CollectionSprite & sprite = col.sprites[theEditSpriteIndex];
+    if (sprite.romOffset.isEmpty())
+    {
+        QMessageBox::warning(this, "Cannot Save",
+            "This sprite has no ROM offset — tile data cannot be saved.");
+        return;
+    }
+
+    bool ok = false;
+    QString offsetStr = sprite.romOffset;
+    if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+        offsetStr = offsetStr.mid(2);
+    uint32_t offset = offsetStr.toUInt(&ok, 16);
+    if (!ok)
+    {
+        QMessageBox::critical(this, "Error", "Invalid ROM offset: " + sprite.romOffset);
+        return;
+    }
+
+    QByteArray data = theSpritePixelEditor->modifiedTileData();
+    if (!theRom.writeBytes(offset, data))
+    {
+        QMessageBox::critical(this, "Error",
+            QString("Failed to write %1 bytes at ROM offset 0x%2")
+            .arg(data.size())
+            .arg(offset, 6, 16, QChar('0')).toUpper());
+        return;
+    }
+
+    updateWindowTitle();
+    statusBar()->showMessage(
+        QString("Saved %1 bytes of tile data to ROM at 0x%2. Use File > Save ROM to persist.")
+        .arg(data.size())
+        .arg(offset, 6, 16, QChar('0')).toUpper());
+
+    // Refresh the collection view to show the changes
+    onSpriteCollectionSelected(colIndex);
+}
+
+void MainWindow::onEditorSavePalette()
+{
+    if (!theRom.isOpen())
+        return;
+
+    int colIndex = theEditCollectionIndex;
+    const auto & collections = theDef.spriteCollections();
+    if (colIndex < 0 || colIndex >= collections.size())
+        return;
+
+    const SpriteCollection & col = collections[colIndex];
+    if (theEditSpriteIndex < 0 || theEditSpriteIndex >= col.sprites.size())
+        return;
+
+    int palLine = qBound(0, col.sprites[theEditSpriteIndex].paletteLine, 3);
+    if (palLine >= col.palettes.size())
+        return;
+
+    const ScreenCapturePalette & scp = col.palettes[palLine];
+    if (scp.dmaSource.isEmpty())
+    {
+        QMessageBox::warning(this, "Cannot Save Palette",
+            "No DMA source address known for this palette line.");
+        return;
+    }
+
+    bool ok = false;
+    QString offsetStr = scp.dmaSource;
+    if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+        offsetStr = offsetStr.mid(2);
+    uint32_t offset = offsetStr.toUInt(&ok, 16);
+    if (!ok)
+    {
+        QMessageBox::critical(this, "Error", "Invalid palette offset: " + scp.dmaSource);
+        return;
+    }
+
+    QByteArray palData = TileDecoder::encodePalette(theEditorPalette->palette());
+    if (!theRom.writeBytes(offset, palData))
+    {
+        QMessageBox::critical(this, "Error",
+            QString("Failed to write palette at ROM offset 0x%1")
+            .arg(offset, 6, 16, QChar('0')).toUpper());
+        return;
+    }
+
+    updateWindowTitle();
+    statusBar()->showMessage(
+        QString("Saved palette to ROM at 0x%1. Use File > Save ROM to persist.")
+        .arg(offset, 6, 16, QChar('0')).toUpper());
+}
+
+void MainWindow::onEditorClose()
+{
+    if (theSpritePixelEditor->isModified())
+    {
+        QMessageBox::StandardButton reply = QMessageBox::question(
+            this, "Unsaved Pixel Edits",
+            "You have unsaved pixel edits. Discard them?",
+            QMessageBox::Discard | QMessageBox::Cancel);
+
+        if (reply == QMessageBox::Cancel)
+            return;
+    }
+
+    theSpritePixelEditor->clearSprite();
+    theEditorInfoLabel->setText("No sprite selected — click a sprite in the Collections tab");
+    theEditorSaveButton->setEnabled(false);
+    theEditorSavePaletteButton->setEnabled(false);
+
+    // Switch back to collections tab
+    int colTabIndex = ui->theTabWidget->indexOf(theSpriteColTab);
+    if (colTabIndex >= 0)
+        ui->theTabWidget->setCurrentIndex(colTabIndex);
+}
+
+void MainWindow::onEditorZoomChanged(int value)
+{
+    theSpritePixelEditor->setZoom(value);
+}
+
+void MainWindow::onEditorGridToggled(bool checked)
+{
+    theSpritePixelEditor->setShowGrid(checked);
 }

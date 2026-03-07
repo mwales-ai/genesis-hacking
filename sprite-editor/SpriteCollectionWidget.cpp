@@ -11,6 +11,8 @@ SpriteCollectionWidget::SpriteCollectionWidget(QWidget *parent)
     , theRomFile(nullptr)
     , theZoom(2)
     , theHasCollection(false)
+    , theHoveredSpriteIndex(-1)
+    , theSelectedSpriteIndex(-1)
 {
     setMouseTracking(true);
 }
@@ -40,7 +42,16 @@ void SpriteCollectionWidget::clearCollection()
 {
     theHasCollection = false;
     theCompositeImage = QImage();
+    theHoveredSpriteIndex = -1;
+    theSelectedSpriteIndex = -1;
     updateGeometry();
+    update();
+}
+
+void SpriteCollectionWidget::clearSelection()
+{
+    theHoveredSpriteIndex = -1;
+    theSelectedSpriteIndex = -1;
     update();
 }
 
@@ -193,6 +204,31 @@ void SpriteCollectionWidget::rebuildImage()
               << " from " << theCollection.sprites.size() << " sprites" << std::endl;
 }
 
+int SpriteCollectionWidget::hitTestSprite(const QPoint & widgetPos) const
+{
+    if (!theHasCollection)
+        return -1;
+
+    QRect bbox = theCollection.boundingBox;
+    int worldX = widgetPos.x() / theZoom + bbox.x();
+    int worldY = widgetPos.y() / theZoom + bbox.y();
+
+    // Check sprites in order (first = highest priority)
+    for (int i = 0; i < theCollection.sprites.size(); ++i)
+    {
+        const CollectionSprite & s = theCollection.sprites[i];
+        int sw = s.widthTiles * 8;
+        int sh = s.heightTiles * 8;
+
+        if (worldX >= s.x && worldX < s.x + sw &&
+            worldY >= s.y && worldY < s.y + sh)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void SpriteCollectionWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -224,6 +260,34 @@ void SpriteCollectionWidget::paintEvent(QPaintEvent *event)
                                               Qt::IgnoreAspectRatio,
                                               Qt::FastTransformation);
     p.drawImage(0, 0, scaled);
+
+    // Draw green outlines around hovered and selected sprites
+    QRect bbox = theCollection.boundingBox;
+    for (int i = 0; i < theCollection.sprites.size(); ++i)
+    {
+        bool isSelected = (i == theSelectedSpriteIndex);
+        bool isHovered  = (i == theHoveredSpriteIndex && !isSelected);
+
+        if (!isSelected && !isHovered)
+            continue;
+
+        const CollectionSprite & s = theCollection.sprites[i];
+        int rx = (s.x - bbox.x()) * theZoom;
+        int ry = (s.y - bbox.y()) * theZoom;
+        int rw = s.widthTiles * 8 * theZoom;
+        int rh = s.heightTiles * 8 * theZoom;
+
+        if (isSelected)
+        {
+            p.setPen(QPen(QColor(0, 220, 0), 2));
+            p.drawRect(rx, ry, rw - 1, rh - 1);
+        }
+        else  // hovered
+        {
+            p.setPen(QPen(QColor(100, 255, 100), 1, Qt::DashLine));
+            p.drawRect(rx, ry, rw - 1, rh - 1);
+        }
+    }
 }
 
 void SpriteCollectionWidget::mouseMoveEvent(QMouseEvent *event)
@@ -231,41 +295,55 @@ void SpriteCollectionWidget::mouseMoveEvent(QMouseEvent *event)
     if (!theHasCollection)
         return;
 
+    int oldHover = theHoveredSpriteIndex;
+    theHoveredSpriteIndex = hitTestSprite(event->pos());
+
+    if (theHoveredSpriteIndex != oldHover)
+        update();
+
     QRect bbox = theCollection.boundingBox;
     int worldX = event->pos().x() / theZoom + bbox.x();
     int worldY = event->pos().y() / theZoom + bbox.y();
 
-    // Find which sprite is under the cursor
-    for (int i = 0; i < theCollection.sprites.size(); ++i)
+    if (theHoveredSpriteIndex >= 0)
     {
-        const CollectionSprite & s = theCollection.sprites[i];
-        int sx = s.x;
-        int sy = s.y;
+        const CollectionSprite & s = theCollection.sprites[theHoveredSpriteIndex];
         int sw = s.widthTiles * 8;
         int sh = s.heightTiles * 8;
 
-        if (worldX >= sx && worldX < sx + sw &&
-            worldY >= sy && worldY < sy + sh)
-        {
-            QString tip = QString("Sprite #%1\nPos: (%2, %3)  Size: %4x%5\n"
-                                  "Pattern: %6  Palette: %7\n"
-                                  "Flip H:%8 V:%9  Priority: %10\n"
-                                  "ROM: %11  Source: %12")
-                .arg(s.index)
-                .arg(s.x).arg(s.y)
-                .arg(sw).arg(sh)
-                .arg(s.pattern).arg(s.paletteLine)
-                .arg(s.hFlip ? "yes" : "no")
-                .arg(s.vFlip ? "yes" : "no")
-                .arg(s.priority ? "yes" : "no")
-                .arg(s.romOffset.isEmpty() ? "N/A" : s.romOffset)
-                .arg(s.source);
+        QString tip = QString("Sprite #%1\nPos: (%2, %3)  Size: %4x%5\n"
+                              "Pattern: %6  Palette: %7\n"
+                              "Flip H:%8 V:%9  Priority: %10\n"
+                              "ROM: %11  Source: %12\nClick to edit")
+            .arg(s.index)
+            .arg(s.x).arg(s.y)
+            .arg(sw).arg(sh)
+            .arg(s.pattern).arg(s.paletteLine)
+            .arg(s.hFlip ? "yes" : "no")
+            .arg(s.vFlip ? "yes" : "no")
+            .arg(s.priority ? "yes" : "no")
+            .arg(s.romOffset.isEmpty() ? "N/A" : s.romOffset)
+            .arg(s.source);
 
-            QToolTip::showText(event->globalPosition().toPoint(), tip, this);
-            emit spriteHovered(i, worldX, worldY);
-            return;
-        }
+        QToolTip::showText(event->globalPosition().toPoint(), tip, this);
+        emit spriteHovered(theHoveredSpriteIndex, worldX, worldY);
     }
+    else
+    {
+        QToolTip::hideText();
+    }
+}
 
-    QToolTip::hideText();
+void SpriteCollectionWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (!theHasCollection || event->button() != Qt::LeftButton)
+        return;
+
+    int idx = hitTestSprite(event->pos());
+    if (idx >= 0)
+    {
+        theSelectedSpriteIndex = idx;
+        update();
+        emit spriteClicked(idx);
+    }
 }

@@ -24,7 +24,8 @@ SOURCES += \
     SpriteReplaceDialog.cpp \
     TileMapWidget.cpp \
     GenesisColorDialog.cpp \
-    SpriteCollectionWidget.cpp
+    SpriteCollectionWidget.cpp \
+    SpritePixelEditor.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -42,7 +43,8 @@ HEADERS += \
     SpriteReplaceDialog.h \
     TileMapWidget.h \
     GenesisColorDialog.h \
-    SpriteCollectionWidget.h
+    SpriteCollectionWidget.h \
+    SpritePixelEditor.h
 
 FORMS += \
     MainWindow.ui \

@@ -5,6 +5,9 @@
 #include <QSettings>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QCheckBox>
+#include <QLabel>
+#include <QPushButton>
 #include <iostream>
 
 #include "RomFile.h"
@@ -22,6 +25,7 @@ class TileCanvasWidget;
 class PaletteWidget;
 class TileMapWidget;
 class SpriteCollectionWidget;
+class SpritePixelEditor;
 
 class MainWindow : public QMainWindow
 {
@@ -69,6 +73,16 @@ private slots:
     // Sprite Collections tab
     void onSpriteCollectionSelected(int index);
     void onSpriteCollectionZoomChanged(int value);
+
+    // Sprite Editor tab
+    void onCollectionSpriteClicked(int spriteIndex);
+    void onEditorPaletteSelected(int index);
+    void onEditorPaletteEditRequested(int index);
+    void onEditorSave();
+    void onEditorSavePalette();
+    void onEditorClose();
+    void onEditorZoomChanged(int value);
+    void onEditorGridToggled(bool checked);
 
     // Palette editing
     void onPaletteColorSelected(int index);
@@ -131,6 +145,21 @@ private:
     QComboBox            *theSpriteColCombo;
     QSpinBox             *theSpriteColZoomSpin;
     SpriteCollectionWidget *theSpriteColWidget;
+
+    // Sprite Editor tab (added programmatically)
+    QWidget              *theSpriteEditorTab;
+    SpritePixelEditor    *theSpritePixelEditor;
+    PaletteWidget        *theEditorPalette;
+    QLabel               *theEditorInfoLabel;
+    QPushButton          *theEditorSaveButton;
+    QPushButton          *theEditorSavePaletteButton;
+    QPushButton          *theEditorCloseButton;
+    QSpinBox             *theEditorZoomSpin;
+    QCheckBox            *theEditorGridCheck;
+
+    // Editor state: which collection + sprite is being edited
+    int                   theEditCollectionIndex;
+    int                   theEditSpriteIndex;
 };
 
 #endif // MAINWINDOW_H

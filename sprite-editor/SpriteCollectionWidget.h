@@ -29,16 +29,27 @@ public:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
+    /** Returns the currently loaded collection (for editor access) */
+    const SpriteCollection & collection() const { return theCollection; }
+
+    /** Returns the decoded palette for a given CRAM line (0-3) */
+    const GenesisPalette & decodedPalette(int line) const { return thePalettes[qBound(0, line, 3)]; }
+
+    void clearSelection();
+
 signals:
     void spriteHovered(int spriteIndex, int x, int y);
+    void spriteClicked(int spriteIndex);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     void rebuildImage();
     QByteArray tileDataForSprite(const CollectionSprite & sprite) const;
+    int hitTestSprite(const QPoint & widgetPos) const;
 
     SpriteCollection     theCollection;
     GenesisPalette       thePalettes[4];  // decoded palette for each CRAM line
@@ -46,6 +57,8 @@ private:
     QImage               theCompositeImage;  // pre-rendered composite
     int                  theZoom;
     bool                 theHasCollection;
+    int                  theHoveredSpriteIndex;
+    int                  theSelectedSpriteIndex;
 };
 
 #endif // SPRITECOLLECTIONWIDGET_H
