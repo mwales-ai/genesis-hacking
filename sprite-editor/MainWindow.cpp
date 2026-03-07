@@ -1,13 +1,6 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
-#include "SpriteSheetWidget.h"
-#include "RawTileBrowserWidget.h"
-#include "TileCanvasWidget.h"
-#include "PaletteWidget.h"
 #include "SpriteReplaceDialog.h"
-#include "TileMapWidget.h"
-#include "SpriteCollectionWidget.h"
-#include "SpritePixelEditor.h"
 #include "GenesisColorDialog.h"
 
 #include <QFileDialog>
@@ -17,10 +10,7 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QScrollArea>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QCloseEvent>
-#include <QCheckBox>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -36,7 +26,6 @@ MainWindow::MainWindow(QWidget *parent)
     , theEditSpriteIndex(-1)
 {
     ui->setupUi(this);
-    setupCustomWidgets();
     setupMenus();
     setupConnections();
     loadSettings();
@@ -106,129 +95,6 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
     }
 }
 
-void MainWindow::setupCustomWidgets()
-{
-    // --- Sprite Viewer Tab ---
-
-    // SpriteSheetWidget inside the scroll area
-    theSpriteSheet = new SpriteSheetWidget();
-    ui->spriteScrollContents->layout()->addWidget(theSpriteSheet);
-
-    // PaletteWidget inside the palette placeholder
-    thePaletteDisplay = new PaletteWidget();
-    ui->thePalettePlaceholder->layout()->addWidget(thePaletteDisplay);
-
-    // TileCanvasWidget inside the detail placeholder
-    theSpriteDetail = new TileCanvasWidget();
-    ui->theDetailPlaceholder->layout()->addWidget(theSpriteDetail);
-
-    // --- Raw Tile Browser Tab ---
-    theRawBrowser = new RawTileBrowserWidget();
-    ui->rawScrollContents->layout()->addWidget(theRawBrowser);
-
-    // --- Screen Captures Tab (added programmatically) ---
-    theScreenCapTab = new QWidget();
-    QVBoxLayout *capLayout = new QVBoxLayout(theScreenCapTab);
-
-    // Top bar: combo box for capture selection + zoom spin
-    QHBoxLayout *capTopBar = new QHBoxLayout();
-    QLabel *capLabel = new QLabel("Capture:");
-    theScreenCapCombo = new QComboBox();
-    theScreenCapCombo->setEnabled(false);
-    QLabel *capZoomLabel = new QLabel("Zoom:");
-    theScreenCapZoomSpin = new QSpinBox();
-    theScreenCapZoomSpin->setRange(1, 8);
-    theScreenCapZoomSpin->setValue(2);
-    capTopBar->addWidget(capLabel);
-    capTopBar->addWidget(theScreenCapCombo, 1);
-    capTopBar->addWidget(capZoomLabel);
-    capTopBar->addWidget(theScreenCapZoomSpin);
-    capLayout->addLayout(capTopBar);
-
-    // Scrollable tile map widget
-    QScrollArea *capScroll = new QScrollArea();
-    theTileMapWidget = new TileMapWidget();
-    capScroll->setWidget(theTileMapWidget);
-    capScroll->setWidgetResizable(false);
-    capLayout->addWidget(capScroll, 1);
-
-    ui->theTabWidget->addTab(theScreenCapTab, "Screen Captures");
-
-    // --- Sprite Collections Tab (added programmatically) ---
-    theSpriteColTab = new QWidget();
-    QVBoxLayout *colLayout = new QVBoxLayout(theSpriteColTab);
-
-    // Top bar: combo box + zoom spin
-    QHBoxLayout *colTopBar = new QHBoxLayout();
-    QLabel *colLabel = new QLabel("Collection:");
-    theSpriteColCombo = new QComboBox();
-    theSpriteColCombo->setEnabled(false);
-    QLabel *colZoomLabel = new QLabel("Zoom:");
-    theSpriteColZoomSpin = new QSpinBox();
-    theSpriteColZoomSpin->setRange(1, 8);
-    theSpriteColZoomSpin->setValue(4);
-    colTopBar->addWidget(colLabel);
-    colTopBar->addWidget(theSpriteColCombo, 1);
-    colTopBar->addWidget(colZoomLabel);
-    colTopBar->addWidget(theSpriteColZoomSpin);
-    colLayout->addLayout(colTopBar);
-
-    // Scrollable sprite collection widget
-    QScrollArea *colScroll = new QScrollArea();
-    theSpriteColWidget = new SpriteCollectionWidget();
-    colScroll->setWidget(theSpriteColWidget);
-    colScroll->setWidgetResizable(false);
-    colLayout->addWidget(colScroll, 1);
-
-    ui->theTabWidget->addTab(theSpriteColTab, "Sprite Collections");
-
-    // --- Sprite Editor Tab (added programmatically) ---
-    theSpriteEditorTab = new QWidget();
-    QVBoxLayout *editorLayout = new QVBoxLayout(theSpriteEditorTab);
-
-    // Info label at top
-    theEditorInfoLabel = new QLabel("No sprite selected — click a sprite in the Collections tab");
-    theEditorInfoLabel->setWordWrap(true);
-    editorLayout->addWidget(theEditorInfoLabel);
-
-    // Main area: pixel editor in scroll area
-    QScrollArea *editorScroll = new QScrollArea();
-    theSpritePixelEditor = new SpritePixelEditor();
-    editorScroll->setWidget(theSpritePixelEditor);
-    editorScroll->setWidgetResizable(false);
-    editorLayout->addWidget(editorScroll, 1);
-
-    // Palette row
-    theEditorPalette = new PaletteWidget();
-    editorLayout->addWidget(theEditorPalette);
-
-    // Bottom bar: zoom, grid, save buttons
-    QHBoxLayout *editorBottomBar = new QHBoxLayout();
-    QLabel *edZoomLabel = new QLabel("Zoom:");
-    theEditorZoomSpin = new QSpinBox();
-    theEditorZoomSpin->setRange(1, 32);
-    theEditorZoomSpin->setValue(8);
-    theEditorGridCheck = new QCheckBox("Grid");
-    theEditorGridCheck->setChecked(true);
-
-    theEditorSaveButton = new QPushButton("Save Tiles to ROM");
-    theEditorSaveButton->setEnabled(false);
-    theEditorSavePaletteButton = new QPushButton("Save Palette to ROM");
-    theEditorSavePaletteButton->setEnabled(false);
-    theEditorCloseButton = new QPushButton("Close");
-
-    editorBottomBar->addWidget(edZoomLabel);
-    editorBottomBar->addWidget(theEditorZoomSpin);
-    editorBottomBar->addWidget(theEditorGridCheck);
-    editorBottomBar->addStretch();
-    editorBottomBar->addWidget(theEditorSaveButton);
-    editorBottomBar->addWidget(theEditorSavePaletteButton);
-    editorBottomBar->addWidget(theEditorCloseButton);
-    editorLayout->addLayout(editorBottomBar);
-
-    ui->theTabWidget->addTab(theSpriteEditorTab, "Sprite Editor");
-}
-
 void MainWindow::setupMenus()
 {
     connect(ui->actionOpenRom,      &QAction::triggered, this, &MainWindow::openRom);
@@ -244,7 +110,7 @@ void MainWindow::setupConnections()
 {
     connect(ui->theGroupCombo,  SIGNAL(currentIndexChanged(int)),
             this,               SLOT(onSpriteGroupChanged(int)));
-    connect(theSpriteSheet,     &SpriteSheetWidget::spriteSelected,
+    connect(ui->theSpriteSheet, &SpriteSheetWidget::spriteSelected,
             this,               &MainWindow::onSpriteSelected);
     connect(ui->theZoomSpin,    SIGNAL(valueChanged(int)),
             this,               SLOT(onZoomChanged(int)));
@@ -263,7 +129,7 @@ void MainWindow::setupConnections()
             this,                   SLOT(onRawPaletteChanged(int)));
     connect(ui->theRawZoomSpin,     SIGNAL(valueChanged(int)),
             this,                   SLOT(onRawZoomChanged(int)));
-    connect(theRawBrowser,          &RawTileBrowserWidget::tileClicked,
+    connect(ui->theRawBrowser,      &RawTileBrowserWidget::tileClicked,
             this,                   &MainWindow::onRawTileClicked);
     connect(ui->theJumpButton,      &QPushButton::clicked,
             this,                   &MainWindow::onJumpToOffset);
@@ -279,40 +145,40 @@ void MainWindow::setupConnections()
             this,                   &MainWindow::onRawExportPng);
 
     // Palette editing
-    connect(thePaletteDisplay,  &PaletteWidget::colorSelected,
-            this,               &MainWindow::onPaletteColorSelected);
-    connect(thePaletteDisplay,  &PaletteWidget::colorEditRequested,
-            this,               &MainWindow::onPaletteColorEditRequested);
+    connect(ui->thePaletteDisplay,  &PaletteWidget::colorSelected,
+            this,                   &MainWindow::onPaletteColorSelected);
+    connect(ui->thePaletteDisplay,  &PaletteWidget::colorEditRequested,
+            this,                   &MainWindow::onPaletteColorEditRequested);
 
     // Screen Captures tab
-    connect(theScreenCapCombo, SIGNAL(currentIndexChanged(int)),
-            this,              SLOT(onScreenCaptureSelected(int)));
-    connect(theScreenCapZoomSpin, SIGNAL(valueChanged(int)),
-            this,                 SLOT(onScreenCapZoomChanged(int)));
+    connect(ui->theScreenCapCombo,    SIGNAL(currentIndexChanged(int)),
+            this,                     SLOT(onScreenCaptureSelected(int)));
+    connect(ui->theScreenCapZoomSpin, SIGNAL(valueChanged(int)),
+            this,                     SLOT(onScreenCapZoomChanged(int)));
 
     // Sprite Collections tab
-    connect(theSpriteColCombo, SIGNAL(currentIndexChanged(int)),
-            this,              SLOT(onSpriteCollectionSelected(int)));
-    connect(theSpriteColZoomSpin, SIGNAL(valueChanged(int)),
-            this,                 SLOT(onSpriteCollectionZoomChanged(int)));
-    connect(theSpriteColWidget, &SpriteCollectionWidget::spriteClicked,
-            this,               &MainWindow::onCollectionSpriteClicked);
+    connect(ui->theSpriteColCombo,    SIGNAL(currentIndexChanged(int)),
+            this,                     SLOT(onSpriteCollectionSelected(int)));
+    connect(ui->theSpriteColZoomSpin, SIGNAL(valueChanged(int)),
+            this,                     SLOT(onSpriteCollectionZoomChanged(int)));
+    connect(ui->theSpriteColWidget,   &SpriteCollectionWidget::spriteClicked,
+            this,                     &MainWindow::onCollectionSpriteClicked);
 
     // Sprite Editor tab
-    connect(theEditorPalette, &PaletteWidget::colorSelected,
-            this,             &MainWindow::onEditorPaletteSelected);
-    connect(theEditorPalette, &PaletteWidget::colorEditRequested,
-            this,             &MainWindow::onEditorPaletteEditRequested);
-    connect(theEditorSaveButton,        &QPushButton::clicked,
-            this,                       &MainWindow::onEditorSave);
-    connect(theEditorSavePaletteButton, &QPushButton::clicked,
-            this,                       &MainWindow::onEditorSavePalette);
-    connect(theEditorCloseButton,       &QPushButton::clicked,
-            this,                       &MainWindow::onEditorClose);
-    connect(theEditorZoomSpin,  SIGNAL(valueChanged(int)),
-            this,               SLOT(onEditorZoomChanged(int)));
-    connect(theEditorGridCheck, &QCheckBox::toggled,
-            this,               &MainWindow::onEditorGridToggled);
+    connect(ui->theEditorPalette,          &PaletteWidget::colorSelected,
+            this,                          &MainWindow::onEditorPaletteSelected);
+    connect(ui->theEditorPalette,          &PaletteWidget::colorEditRequested,
+            this,                          &MainWindow::onEditorPaletteEditRequested);
+    connect(ui->theEditorSaveButton,       &QPushButton::clicked,
+            this,                          &MainWindow::onEditorSave);
+    connect(ui->theEditorSavePaletteButton, &QPushButton::clicked,
+            this,                          &MainWindow::onEditorSavePalette);
+    connect(ui->theEditorCloseButton,      &QPushButton::clicked,
+            this,                          &MainWindow::onEditorClose);
+    connect(ui->theEditorZoomSpin,  SIGNAL(valueChanged(int)),
+            this,                   SLOT(onEditorZoomChanged(int)));
+    connect(ui->theEditorGridCheck, &QCheckBox::toggled,
+            this,                   &MainWindow::onEditorGridToggled);
 }
 
 // ---------------------------------------------------------------------------
@@ -509,8 +375,8 @@ void MainWindow::displaySpriteGroup(int groupIndex)
         }
     }
 
-    theSpriteSheet->setSprites(thumbs);
-    theSpriteDetail->clearSprite();
+    ui->theSpriteSheet->setSprites(thumbs);
+    ui->theSpriteDetail->clearSprite();
     ui->theSpriteName->setText(group.name);
     ui->theOffsetLabel->clear();
     ui->theReplaceButton->setEnabled(false);
@@ -522,7 +388,7 @@ void MainWindow::displaySpriteGroup(int groupIndex)
     if (!group.palettes.isEmpty())
     {
         QByteArray palData = theRom.readBytes(group.palettes[0].romOffset, 32);
-        thePaletteDisplay->setPalette(TileDecoder::decodePalette(palData));
+        ui->thePaletteDisplay->setPalette(TileDecoder::decodePalette(palData));
     }
 }
 
@@ -572,11 +438,11 @@ void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx, int frameIdx)
                                            entry.widthTiles,
                                            entry.heightTiles,
                                            pal);
-    theSpriteDetail->setSprite(img);
-    theSpriteDetail->setZoom(ui->theZoomSpin->value());
-    theSpriteDetail->setShowGrid(ui->theGridCheck->isChecked());
+    ui->theSpriteDetail->setSprite(img);
+    ui->theSpriteDetail->setZoom(ui->theZoomSpin->value());
+    ui->theSpriteDetail->setShowGrid(ui->theGridCheck->isChecked());
 
-    thePaletteDisplay->setPalette(pal);
+    ui->thePaletteDisplay->setPalette(pal);
 
     QString nameLabel = entry.name;
     if (entry.frameCount > 1)
@@ -598,12 +464,12 @@ void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx, int frameIdx)
 
 void MainWindow::onZoomChanged(int value)
 {
-    theSpriteDetail->setZoom(value);
+    ui->theSpriteDetail->setZoom(value);
 }
 
 void MainWindow::onGridToggled(bool checked)
 {
-    theSpriteDetail->setShowGrid(checked);
+    ui->theSpriteDetail->setShowGrid(checked);
 }
 
 void MainWindow::replaceSprite()
@@ -662,7 +528,7 @@ void MainWindow::replaceSprite()
 
 void MainWindow::exportSprite()
 {
-    const QImage & img = theSpriteDetail->sprite();
+    const QImage & img = ui->theSpriteDetail->sprite();
     if (img.isNull())
         return;
 
@@ -818,12 +684,12 @@ void MainWindow::onRawPaletteChanged(int)
 
 void MainWindow::onRawZoomChanged(int value)
 {
-    theRawBrowser->setZoom(value);
+    ui->theRawBrowser->setZoom(value);
 }
 
 void MainWindow::onRawSpriteSizeChanged(int)
 {
-    theRawBrowser->setSpriteSize(ui->theRawSpriteWSpin->value(),
+    ui->theRawBrowser->setSpriteSize(ui->theRawSpriteWSpin->value(),
                                  ui->theRawSpriteHSpin->value());
 }
 
@@ -884,14 +750,14 @@ void MainWindow::onJumpToOffset()
 
     uint32_t byteOffset = targetOffset - rangeStart;
     int tileIndex = int(byteOffset / 32);
-    if (tileIndex >= theRawBrowser->tileCount()) {
+    if (tileIndex >= ui->theRawBrowser->tileCount()) {
         ui->theRawTileInfoLabel->setText(
             QString("0x%1 is beyond the current range end.")
             .arg(targetOffset, 6, 16, QChar('0')).toUpper());
         return;
     }
 
-    theRawBrowser->scrollToTile(tileIndex);
+    ui->theRawBrowser->scrollToTile(tileIndex);
     uint32_t actualOffset = rangeStart + uint32_t(tileIndex) * 32;
     ui->theRawTileInfoLabel->setText(
         QString("Jumped to tile %1  |  ROM offset: 0x%2")
@@ -927,15 +793,15 @@ void MainWindow::onSetAssemblyStart()
 
     uint32_t byteOffset = targetOffset - rangeStart;
     int tileIndex = int(byteOffset / 32);
-    if (tileIndex >= theRawBrowser->tileCount()) {
+    if (tileIndex >= ui->theRawBrowser->tileCount()) {
         ui->theRawTileInfoLabel->setText(
             QString("0x%1 is beyond the current range end.")
             .arg(targetOffset, 6, 16, QChar('0')).toUpper());
         return;
     }
 
-    theRawBrowser->setAssemblyStart(tileIndex);
-    theRawBrowser->scrollToTile(tileIndex);
+    ui->theRawBrowser->setAssemblyStart(tileIndex);
+    ui->theRawBrowser->scrollToTile(tileIndex);
     uint32_t actualOffset = rangeStart + uint32_t(tileIndex) * 32;
     ui->theRawTileInfoLabel->setText(
         QString("Assembly starts at tile %1  |  ROM offset: 0x%2")
@@ -1064,8 +930,8 @@ void MainWindow::refreshRawBrowser()
         }
     }
 
-    theRawBrowser->setTileData(tileData, startOffset, pal);
-    theRawBrowser->setZoom(ui->theRawZoomSpin->value());
+    ui->theRawBrowser->setTileData(tileData, startOffset, pal);
+    ui->theRawBrowser->setZoom(ui->theRawZoomSpin->value());
 
     ui->theRawTileInfoLabel->setText(
         QString("Showing %1 tiles from ROM 0x%2 — 0x%3  |  Click a tile for its offset")
@@ -1196,17 +1062,17 @@ void MainWindow::onPaletteColorSelected(int index)
     statusBar()->showMessage(
         QString("Pen color: index %1  CRAM: 0x%2")
         .arg(index)
-        .arg(thePaletteDisplay->selectedCramWord(), 4, 16, QChar('0')).toUpper());
+        .arg(ui->thePaletteDisplay->selectedCramWord(), 4, 16, QChar('0')).toUpper());
 }
 
 void MainWindow::onPaletteColorEditRequested(int index)
 {
-    QColor current = thePaletteDisplay->palette()[index];
+    QColor current = ui->thePaletteDisplay->palette()[index];
     GenesisColorDialog dlg(current, index, this);
     if (dlg.exec() != QDialog::Accepted)
         return;
 
-    thePaletteDisplay->setColorAt(index, dlg.selectedColor());
+    ui->thePaletteDisplay->setColorAt(index, dlg.selectedColor());
 
     // Re-render the current sprite with the modified palette
     if (theCurrentSpriteIndex >= 0 && theCurrentGroupIndex >= 0)
@@ -1234,8 +1100,8 @@ void MainWindow::onPaletteColorEditRequested(int index)
         QImage img = TileDecoder::decodeSprite(tileData,
                                                entry.widthTiles,
                                                entry.heightTiles,
-                                               thePaletteDisplay->palette());
-        theSpriteDetail->setSprite(img);
+                                               ui->thePaletteDisplay->palette());
+        ui->theSpriteDetail->setSprite(img);
     }
 
     statusBar()->showMessage(
@@ -1250,20 +1116,20 @@ void MainWindow::onPaletteColorEditRequested(int index)
 
 void MainWindow::populateScreenCaptures()
 {
-    theScreenCapCombo->blockSignals(true);
-    theScreenCapCombo->clear();
+    ui->theScreenCapCombo->blockSignals(true);
+    ui->theScreenCapCombo->clear();
 
     const auto & captures = theDef.screenCaptures();
     for (const auto & cap : captures)
-        theScreenCapCombo->addItem(cap.name);
+        ui->theScreenCapCombo->addItem(cap.name);
 
-    theScreenCapCombo->setEnabled(!captures.isEmpty());
-    theScreenCapCombo->blockSignals(false);
+    ui->theScreenCapCombo->setEnabled(!captures.isEmpty());
+    ui->theScreenCapCombo->blockSignals(false);
 
     if (!captures.isEmpty())
         onScreenCaptureSelected(0);
     else
-        theTileMapWidget->clearCapture();
+        ui->theTileMapWidget->clearCapture();
 }
 
 void MainWindow::onScreenCaptureSelected(int index)
@@ -1271,12 +1137,12 @@ void MainWindow::onScreenCaptureSelected(int index)
     const auto & captures = theDef.screenCaptures();
     if (index < 0 || index >= captures.size())
     {
-        theTileMapWidget->clearCapture();
+        ui->theTileMapWidget->clearCapture();
         return;
     }
 
     RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
-    theTileMapWidget->setScreenCapture(captures[index], rom);
+    ui->theTileMapWidget->setScreenCapture(captures[index], rom);
 
     statusBar()->showMessage(
         QString("Screen capture: %1 (%2x%3 tiles)")
@@ -1287,7 +1153,7 @@ void MainWindow::onScreenCaptureSelected(int index)
 
 void MainWindow::onScreenCapZoomChanged(int value)
 {
-    theTileMapWidget->setZoom(value);
+    ui->theTileMapWidget->setZoom(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -1296,20 +1162,20 @@ void MainWindow::onScreenCapZoomChanged(int value)
 
 void MainWindow::populateSpriteCollections()
 {
-    theSpriteColCombo->blockSignals(true);
-    theSpriteColCombo->clear();
+    ui->theSpriteColCombo->blockSignals(true);
+    ui->theSpriteColCombo->clear();
 
     const auto & collections = theDef.spriteCollections();
     for (const auto & col : collections)
-        theSpriteColCombo->addItem(col.name);
+        ui->theSpriteColCombo->addItem(col.name);
 
-    theSpriteColCombo->setEnabled(!collections.isEmpty());
-    theSpriteColCombo->blockSignals(false);
+    ui->theSpriteColCombo->setEnabled(!collections.isEmpty());
+    ui->theSpriteColCombo->blockSignals(false);
 
     if (!collections.isEmpty())
         onSpriteCollectionSelected(0);
     else
-        theSpriteColWidget->clearCollection();
+        ui->theSpriteColWidget->clearCollection();
 }
 
 void MainWindow::onSpriteCollectionSelected(int index)
@@ -1317,13 +1183,13 @@ void MainWindow::onSpriteCollectionSelected(int index)
     const auto & collections = theDef.spriteCollections();
     if (index < 0 || index >= collections.size())
     {
-        theSpriteColWidget->clearCollection();
+        ui->theSpriteColWidget->clearCollection();
         return;
     }
 
     RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
-    theSpriteColWidget->setCollection(collections[index], rom);
-    theSpriteColWidget->setZoom(theSpriteColZoomSpin->value());
+    ui->theSpriteColWidget->setCollection(collections[index], rom);
+    ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
 
     const SpriteCollection & col = collections[index];
     statusBar()->showMessage(
@@ -1336,7 +1202,7 @@ void MainWindow::onSpriteCollectionSelected(int index)
 
 void MainWindow::onSpriteCollectionZoomChanged(int value)
 {
-    theSpriteColWidget->setZoom(value);
+    ui->theSpriteColWidget->setZoom(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -1345,7 +1211,7 @@ void MainWindow::onSpriteCollectionZoomChanged(int value)
 
 void MainWindow::onCollectionSpriteClicked(int spriteIndex)
 {
-    int colIndex = theSpriteColCombo->currentIndex();
+    int colIndex = ui->theSpriteColCombo->currentIndex();
     const auto & collections = theDef.spriteCollections();
     if (colIndex < 0 || colIndex >= collections.size())
         return;
@@ -1393,13 +1259,13 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
     theEditSpriteIndex = spriteIndex;
 
     // Load into pixel editor
-    theSpritePixelEditor->loadSprite(tileBytes, sprite.widthTiles, sprite.heightTiles,
+    ui->theSpritePixelEditor->loadSprite(tileBytes, sprite.widthTiles, sprite.heightTiles,
                                      pal, sprite.hFlip, sprite.vFlip);
-    theSpritePixelEditor->setZoom(theEditorZoomSpin->value());
-    theSpritePixelEditor->setShowGrid(theEditorGridCheck->isChecked());
+    ui->theSpritePixelEditor->setZoom(ui->theEditorZoomSpin->value());
+    ui->theSpritePixelEditor->setShowGrid(ui->theEditorGridCheck->isChecked());
 
     // Set palette display
-    theEditorPalette->setPalette(pal);
+    ui->theEditorPalette->setPalette(pal);
 
     // Update info label
     bool canSaveTiles = !sprite.romOffset.isEmpty() && theRom.isOpen();
@@ -1413,14 +1279,14 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
         .arg(palLine)
         .arg(sprite.romOffset.isEmpty() ? "N/A" : sprite.romOffset)
         .arg(canSaveTiles ? "Editable" : "Read-only (no ROM offset)");
-    theEditorInfoLabel->setText(info);
+    ui->theEditorInfoLabel->setText(info);
 
     // Enable/disable save buttons
-    theEditorSaveButton->setEnabled(canSaveTiles);
-    theEditorSavePaletteButton->setEnabled(canSavePalette);
+    ui->theEditorSaveButton->setEnabled(canSaveTiles);
+    ui->theEditorSavePaletteButton->setEnabled(canSavePalette);
 
     // Switch to the editor tab
-    int editorTabIndex = ui->theTabWidget->indexOf(theSpriteEditorTab);
+    int editorTabIndex = ui->theTabWidget->indexOf(ui->tabSpriteEditor);
     if (editorTabIndex >= 0)
         ui->theTabWidget->setCurrentIndex(editorTabIndex);
 
@@ -1431,11 +1297,11 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
 
 void MainWindow::onEditorPaletteSelected(int index)
 {
-    theSpritePixelEditor->setPenIndex(index);
+    ui->theSpritePixelEditor->setPenIndex(index);
     statusBar()->showMessage(
         QString("Pen color: index %1  CRAM: 0x%2")
         .arg(index)
-        .arg(theEditorPalette->selectedCramWord(), 4, 16, QChar('0')).toUpper());
+        .arg(ui->theEditorPalette->selectedCramWord(), 4, 16, QChar('0')).toUpper());
 }
 
 void MainWindow::onEditorPaletteEditRequested(int index)
@@ -1461,13 +1327,13 @@ void MainWindow::onEditorPaletteEditRequested(int index)
         return;
     }
 
-    QColor current = theEditorPalette->palette()[index];
+    QColor current = ui->theEditorPalette->palette()[index];
     GenesisColorDialog dlg(current, index, this);
     if (dlg.exec() != QDialog::Accepted)
         return;
 
-    theEditorPalette->setColorAt(index, dlg.selectedColor());
-    theSpritePixelEditor->updatePalette(theEditorPalette->palette());
+    ui->theEditorPalette->setColorAt(index, dlg.selectedColor());
+    ui->theSpritePixelEditor->updatePalette(ui->theEditorPalette->palette());
 
     statusBar()->showMessage(
         QString("Color %1 changed to CRAM 0x%2")
@@ -1477,7 +1343,7 @@ void MainWindow::onEditorPaletteEditRequested(int index)
 
 void MainWindow::onEditorSave()
 {
-    if (!theRom.isOpen() || !theSpritePixelEditor->isModified())
+    if (!theRom.isOpen() || !ui->theSpritePixelEditor->isModified())
     {
         statusBar()->showMessage("Nothing to save.");
         return;
@@ -1511,7 +1377,7 @@ void MainWindow::onEditorSave()
         return;
     }
 
-    QByteArray data = theSpritePixelEditor->modifiedTileData();
+    QByteArray data = ui->theSpritePixelEditor->modifiedTileData();
     if (!theRom.writeBytes(offset, data))
     {
         QMessageBox::critical(this, "Error",
@@ -1568,7 +1434,7 @@ void MainWindow::onEditorSavePalette()
         return;
     }
 
-    QByteArray palData = TileDecoder::encodePalette(theEditorPalette->palette());
+    QByteArray palData = TileDecoder::encodePalette(ui->theEditorPalette->palette());
     if (!theRom.writeBytes(offset, palData))
     {
         QMessageBox::critical(this, "Error",
@@ -1585,7 +1451,7 @@ void MainWindow::onEditorSavePalette()
 
 void MainWindow::onEditorClose()
 {
-    if (theSpritePixelEditor->isModified())
+    if (ui->theSpritePixelEditor->isModified())
     {
         QMessageBox::StandardButton reply = QMessageBox::question(
             this, "Unsaved Pixel Edits",
@@ -1596,23 +1462,23 @@ void MainWindow::onEditorClose()
             return;
     }
 
-    theSpritePixelEditor->clearSprite();
-    theEditorInfoLabel->setText("No sprite selected — click a sprite in the Collections tab");
-    theEditorSaveButton->setEnabled(false);
-    theEditorSavePaletteButton->setEnabled(false);
+    ui->theSpritePixelEditor->clearSprite();
+    ui->theEditorInfoLabel->setText("No sprite selected — click a sprite in the Collections tab");
+    ui->theEditorSaveButton->setEnabled(false);
+    ui->theEditorSavePaletteButton->setEnabled(false);
 
     // Switch back to collections tab
-    int colTabIndex = ui->theTabWidget->indexOf(theSpriteColTab);
+    int colTabIndex = ui->theTabWidget->indexOf(ui->tabSpriteCollections);
     if (colTabIndex >= 0)
         ui->theTabWidget->setCurrentIndex(colTabIndex);
 }
 
 void MainWindow::onEditorZoomChanged(int value)
 {
-    theSpritePixelEditor->setZoom(value);
+    ui->theSpritePixelEditor->setZoom(value);
 }
 
 void MainWindow::onEditorGridToggled(bool checked)
 {
-    theSpritePixelEditor->setShowGrid(checked);
+    ui->theSpritePixelEditor->setShowGrid(checked);
 }

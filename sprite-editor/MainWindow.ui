@@ -76,7 +76,7 @@
              </item>
             </layout>
            </item>
-           <!-- Placeholder for SpriteSheetWidget (added programmatically inside a QScrollArea) -->
+           <!-- SpriteSheetWidget inside a scroll area -->
            <item>
             <widget class="QScrollArea" name="theSpriteScrollArea">
              <property name="sizePolicy">
@@ -88,31 +88,12 @@
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
-             <widget class="QWidget" name="spriteScrollContents">
-              <layout class="QVBoxLayout" name="spriteScrollLayout">
-               <property name="margin">
-                <number>0</number>
-               </property>
-               <!-- theSpriteSheet inserted here at runtime -->
-              </layout>
-             </widget>
+             <widget class="SpriteSheetWidget" name="theSpriteSheet"/>
             </widget>
            </item>
-           <!-- Placeholder for PaletteWidget (added programmatically) -->
+           <!-- PaletteWidget (promoted) -->
            <item>
-            <widget class="QWidget" name="thePalettePlaceholder">
-             <property name="minimumHeight">
-              <number>48</number>
-             </property>
-             <property name="maximumHeight">
-              <number>48</number>
-             </property>
-             <layout class="QHBoxLayout" name="palettePlaceholderLayout">
-              <property name="margin">
-               <number>0</number>
-              </property>
-             </layout>
-            </widget>
+            <widget class="PaletteWidget" name="thePaletteDisplay"/>
            </item>
           </layout>
          </widget>
@@ -137,20 +118,19 @@
              </property>
             </widget>
            </item>
-           <!-- Placeholder for TileCanvasWidget (added programmatically) -->
+           <!-- TileCanvasWidget (promoted) inside a scroll area for large sprites -->
            <item>
-            <widget class="QWidget" name="theDetailPlaceholder">
+            <widget class="QScrollArea" name="theDetailScrollArea">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                <horstretch>0</horstretch>
                <verstretch>1</verstretch>
               </sizepolicy>
              </property>
-             <layout class="QVBoxLayout" name="detailPlaceholderLayout">
-              <property name="margin">
-               <number>0</number>
-              </property>
-             </layout>
+             <property name="widgetResizable">
+              <bool>false</bool>
+             </property>
+             <widget class="TileCanvasWidget" name="theSpriteDetail"/>
             </widget>
            </item>
            <!-- Zoom + grid controls -->
@@ -418,7 +398,7 @@
           </item>
          </layout>
         </item>
-        <!-- Raw tile browser scroll area (RawTileBrowserWidget inserted at runtime) -->
+        <!-- Raw tile browser scroll area (RawTileBrowserWidget promoted) -->
         <item>
          <widget class="QScrollArea" name="theRawScrollArea">
           <property name="sizePolicy">
@@ -430,13 +410,7 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="QWidget" name="rawScrollContents">
-           <layout class="QVBoxLayout" name="rawScrollLayout">
-            <property name="margin">
-             <number>0</number>
-            </property>
-           </layout>
-          </widget>
+          <widget class="RawTileBrowserWidget" name="theRawBrowser"/>
          </widget>
         </item>
         <!-- Raw browser action buttons -->
@@ -474,6 +448,249 @@
            <enum>QFrame::StyledPanel</enum>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <!-- ===================== TAB 2: Screen Captures ===================== -->
+      <widget class="QWidget" name="tabScreenCaptures">
+       <attribute name="title">
+        <string>Screen Captures</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="screenCapLayout">
+        <!-- Top bar: capture selector + zoom -->
+        <item>
+         <layout class="QHBoxLayout" name="capControlsLayout">
+          <item>
+           <widget class="QLabel" name="capLabel">
+            <property name="text">
+             <string>Capture:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="theScreenCapCombo">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="capZoomLabel">
+            <property name="text">
+             <string>Zoom:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="theScreenCapZoomSpin">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>8</number>
+            </property>
+            <property name="value">
+             <number>2</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <!-- TileMapWidget (promoted) inside scroll area -->
+        <item>
+         <widget class="QScrollArea" name="theCapScrollArea">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="widgetResizable">
+           <bool>false</bool>
+          </property>
+          <widget class="TileMapWidget" name="theTileMapWidget"/>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <!-- ===================== TAB 3: Sprite Collections ===================== -->
+      <widget class="QWidget" name="tabSpriteCollections">
+       <attribute name="title">
+        <string>Sprite Collections</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="spriteColLayout">
+        <!-- Top bar: collection selector + zoom -->
+        <item>
+         <layout class="QHBoxLayout" name="colControlsLayout">
+          <item>
+           <widget class="QLabel" name="colLabel">
+            <property name="text">
+             <string>Collection:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="theSpriteColCombo">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="colZoomLabel">
+            <property name="text">
+             <string>Zoom:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="theSpriteColZoomSpin">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>8</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <!-- SpriteCollectionWidget (promoted) inside scroll area -->
+        <item>
+         <widget class="QScrollArea" name="theColScrollArea">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="widgetResizable">
+           <bool>false</bool>
+          </property>
+          <widget class="SpriteCollectionWidget" name="theSpriteColWidget"/>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <!-- ===================== TAB 4: Sprite Editor ===================== -->
+      <widget class="QWidget" name="tabSpriteEditor">
+       <attribute name="title">
+        <string>Sprite Editor</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="spriteEditorLayout">
+        <!-- Info label -->
+        <item>
+         <widget class="QLabel" name="theEditorInfoLabel">
+          <property name="text">
+           <string>No sprite selected — click a sprite in the Collections tab</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <!-- SpritePixelEditor (promoted) inside scroll area -->
+        <item>
+         <widget class="QScrollArea" name="theEditorScrollArea">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="widgetResizable">
+           <bool>false</bool>
+          </property>
+          <widget class="SpritePixelEditor" name="theSpritePixelEditor"/>
+         </widget>
+        </item>
+        <!-- PaletteWidget (promoted) for editor palette -->
+        <item>
+         <widget class="PaletteWidget" name="theEditorPalette"/>
+        </item>
+        <!-- Bottom bar: zoom, grid, save buttons -->
+        <item>
+         <layout class="QHBoxLayout" name="editorBottomLayout">
+          <item>
+           <widget class="QLabel" name="editorZoomLabel">
+            <property name="text">
+             <string>Zoom:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="theEditorZoomSpin">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>32</number>
+            </property>
+            <property name="value">
+             <number>8</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="theEditorGridCheck">
+            <property name="text">
+             <string>Grid</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="editorBottomSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theEditorSaveButton">
+            <property name="text">
+             <string>Save Tiles to ROM</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theEditorSavePaletteButton">
+            <property name="text">
+             <string>Save Palette to ROM</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theEditorCloseButton">
+            <property name="text">
+             <string>Close</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -571,4 +788,41 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>PaletteWidget</class>
+   <extends>QWidget</extends>
+   <header>PaletteWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TileCanvasWidget</class>
+   <extends>QWidget</extends>
+   <header>TileCanvasWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SpriteSheetWidget</class>
+   <extends>QWidget</extends>
+   <header>SpriteSheetWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>RawTileBrowserWidget</class>
+   <extends>QWidget</extends>
+   <header>RawTileBrowserWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TileMapWidget</class>
+   <extends>QWidget</extends>
+   <header>TileMapWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SpriteCollectionWidget</class>
+   <extends>QWidget</extends>
+   <header>SpriteCollectionWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SpritePixelEditor</class>
+   <extends>QWidget</extends>
+   <header>SpritePixelEditor.h</header>
+  </customwidget>
+ </customwidgets>
 </ui>

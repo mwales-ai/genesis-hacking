@@ -3,11 +3,6 @@
 
 #include <QMainWindow>
 #include <QSettings>
-#include <QComboBox>
-#include <QSpinBox>
-#include <QCheckBox>
-#include <QLabel>
-#include <QPushButton>
 #include <iostream>
 
 #include "RomFile.h"
@@ -18,14 +13,6 @@
 #define AppDebug if(0) std::cout
 
 namespace Ui { class MainWindow; }
-
-class SpriteSheetWidget;
-class RawTileBrowserWidget;
-class TileCanvasWidget;
-class PaletteWidget;
-class TileMapWidget;
-class SpriteCollectionWidget;
-class SpritePixelEditor;
 
 class MainWindow : public QMainWindow
 {
@@ -93,7 +80,6 @@ private slots:
 
 private:
     void setupMenus();
-    void setupCustomWidgets();
     void setupConnections();
     void loadSettings();
     void saveSettings();
@@ -127,35 +113,6 @@ private:
     // Raw tile browser selection state
     int                   theRawSelectedTileIndex;
     uint32_t              theRawSelectedRomOffset;
-
-    // Custom widgets added programmatically into placeholder containers in the .ui
-    SpriteSheetWidget    *theSpriteSheet;
-    RawTileBrowserWidget *theRawBrowser;
-    TileCanvasWidget     *theSpriteDetail;
-    PaletteWidget        *thePaletteDisplay;
-
-    // Screen Captures tab (added programmatically)
-    QWidget              *theScreenCapTab;
-    QComboBox            *theScreenCapCombo;
-    QSpinBox             *theScreenCapZoomSpin;
-    TileMapWidget        *theTileMapWidget;
-
-    // Sprite Collections tab (added programmatically)
-    QWidget              *theSpriteColTab;
-    QComboBox            *theSpriteColCombo;
-    QSpinBox             *theSpriteColZoomSpin;
-    SpriteCollectionWidget *theSpriteColWidget;
-
-    // Sprite Editor tab (added programmatically)
-    QWidget              *theSpriteEditorTab;
-    SpritePixelEditor    *theSpritePixelEditor;
-    PaletteWidget        *theEditorPalette;
-    QLabel               *theEditorInfoLabel;
-    QPushButton          *theEditorSaveButton;
-    QPushButton          *theEditorSavePaletteButton;
-    QPushButton          *theEditorCloseButton;
-    QSpinBox             *theEditorZoomSpin;
-    QCheckBox            *theEditorGridCheck;
 
     // Editor state: which collection + sprite is being edited
     int                   theEditCollectionIndex;
