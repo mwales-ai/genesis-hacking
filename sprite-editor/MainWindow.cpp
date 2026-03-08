@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
     , theCurrentFrameIndex(0)
     , theRawSelectedTileIndex(-1)
     , theRawSelectedRomOffset(0)
+    , theCollectionCount(0)
+    , theActiveAnimIndex(-1)
     , theEditCollectionIndex(-1)
     , theEditSpriteIndex(-1)
 {
@@ -163,6 +165,8 @@ void MainWindow::setupConnections()
             this,                     SLOT(onSpriteCollectionZoomChanged(int)));
     connect(ui->theSpriteColWidget,   &SpriteCollectionWidget::spriteClicked,
             this,                     &MainWindow::onCollectionSpriteClicked);
+    connect(ui->theColFrameSpin,      SIGNAL(valueChanged(int)),
+            this,                     SLOT(onAnimationFrameChanged(int)));
 
     // Sprite Editor tab
     connect(ui->theEditorPalette,          &PaletteWidget::colorSelected,
@@ -1169,10 +1173,22 @@ void MainWindow::populateSpriteCollections()
     for (const auto & col : collections)
         ui->theSpriteColCombo->addItem(col.name);
 
-    ui->theSpriteColCombo->setEnabled(!collections.isEmpty());
+    theCollectionCount = collections.size();
+
+    // Add sprite animations as combo entries after the regular collections
+    const auto & animations = theDef.spriteAnimations();
+    for (const auto & anim : animations)
+    {
+        QString label = QString("Animation: %1 (%2 frames)")
+            .arg(anim.gameName).arg(anim.frames.size());
+        ui->theSpriteColCombo->addItem(label);
+    }
+
+    bool hasEntries = !collections.isEmpty() || !animations.isEmpty();
+    ui->theSpriteColCombo->setEnabled(hasEntries);
     ui->theSpriteColCombo->blockSignals(false);
 
-    if (!collections.isEmpty())
+    if (hasEntries)
         onSpriteCollectionSelected(0);
     else
         ui->theSpriteColWidget->clearCollection();
@@ -1180,29 +1196,123 @@ void MainWindow::populateSpriteCollections()
 
 void MainWindow::onSpriteCollectionSelected(int index)
 {
-    const auto & collections = theDef.spriteCollections();
-    if (index < 0 || index >= collections.size())
+    if (index < 0)
     {
         ui->theSpriteColWidget->clearCollection();
         return;
     }
 
-    RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
-    ui->theSpriteColWidget->setCollection(collections[index], rom);
-    ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
+    const auto & collections = theDef.spriteCollections();
+    const auto & animations  = theDef.spriteAnimations();
 
-    const SpriteCollection & col = collections[index];
-    statusBar()->showMessage(
-        QString("Sprite collection: %1 (%2 sprites, %3x%4 bounding box)")
-            .arg(col.name)
-            .arg(col.sprites.size())
-            .arg(col.boundingBox.width())
-            .arg(col.boundingBox.height()));
+    if (index < theCollectionCount)
+    {
+        // Regular sprite collection
+        theActiveAnimIndex = -1;
+        ui->colFrameLabel->setVisible(false);
+        ui->theColFrameSpin->setVisible(false);
+        ui->theColFrameCountLabel->setVisible(false);
+
+        if (index >= collections.size())
+        {
+            ui->theSpriteColWidget->clearCollection();
+            return;
+        }
+
+        RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
+        ui->theSpriteColWidget->setCollection(collections[index], rom);
+        ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
+
+        const SpriteCollection & col = collections[index];
+        statusBar()->showMessage(
+            QString("Sprite collection: %1 (%2 sprites, %3x%4 bounding box)")
+                .arg(col.name)
+                .arg(col.sprites.size())
+                .arg(col.boundingBox.width())
+                .arg(col.boundingBox.height()));
+    }
+    else
+    {
+        // Sprite animation entry
+        int animIndex = index - theCollectionCount;
+        if (animIndex < 0 || animIndex >= animations.size())
+        {
+            ui->theSpriteColWidget->clearCollection();
+            return;
+        }
+
+        theActiveAnimIndex = animIndex;
+        const SpriteAnimation & anim = animations[animIndex];
+        int frameCount = anim.frames.size();
+
+        // Show and configure the frame selector
+        ui->colFrameLabel->setVisible(true);
+        ui->theColFrameSpin->setVisible(true);
+        ui->theColFrameCountLabel->setVisible(true);
+
+        ui->theColFrameSpin->blockSignals(true);
+        ui->theColFrameSpin->setMinimum(0);
+        ui->theColFrameSpin->setMaximum(frameCount - 1);
+        ui->theColFrameSpin->setValue(0);
+        ui->theColFrameSpin->blockSignals(false);
+        ui->theColFrameCountLabel->setText(QString("/ %1").arg(frameCount));
+
+        // Display the first frame
+        displayAnimationFrame(animIndex, 0);
+    }
 }
 
 void MainWindow::onSpriteCollectionZoomChanged(int value)
 {
     ui->theSpriteColWidget->setZoom(value);
+}
+
+void MainWindow::onAnimationFrameChanged(int frameIndex)
+{
+    if (theActiveAnimIndex < 0)
+        return;
+    displayAnimationFrame(theActiveAnimIndex, frameIndex);
+}
+
+void MainWindow::displayAnimationFrame(int animIndex, int frameIndex)
+{
+    const auto & animations = theDef.spriteAnimations();
+    if (animIndex < 0 || animIndex >= animations.size())
+        return;
+
+    const SpriteAnimation & anim = animations[animIndex];
+    if (frameIndex < 0 || frameIndex >= anim.frames.size())
+        return;
+
+    SpriteCollection col = buildCollectionFromFrame(anim, frameIndex);
+
+    RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
+    ui->theSpriteColWidget->setCollection(col, rom);
+    ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
+
+    const AnimationFrame & frame = anim.frames[frameIndex];
+    statusBar()->showMessage(
+        QString("Animation frame %1 (VDP frame %2): %3 sprites, %4x%5 bounding box")
+            .arg(frameIndex)
+            .arg(frame.frameNumber)
+            .arg(frame.sprites.size())
+            .arg(frame.boundingBox.width())
+            .arg(frame.boundingBox.height()));
+}
+
+SpriteCollection MainWindow::buildCollectionFromFrame(const SpriteAnimation & anim, int frameIndex)
+{
+    SpriteCollection col;
+    const AnimationFrame & frame = anim.frames[frameIndex];
+
+    col.name = QString("%1 - frame %2").arg(anim.gameName).arg(frame.frameNumber);
+    col.boundingBox = frame.boundingBox;
+    col.sprites     = frame.sprites;
+
+    // Copy shared palettes from the animation
+    col.palettes = anim.palettes;
+
+    return col;
 }
 
 // ---------------------------------------------------------------------------
@@ -1211,12 +1321,30 @@ void MainWindow::onSpriteCollectionZoomChanged(int value)
 
 void MainWindow::onCollectionSpriteClicked(int spriteIndex)
 {
-    int colIndex = ui->theSpriteColCombo->currentIndex();
-    const auto & collections = theDef.spriteCollections();
-    if (colIndex < 0 || colIndex >= collections.size())
+    int comboIndex = ui->theSpriteColCombo->currentIndex();
+    if (comboIndex < 0)
         return;
 
-    const SpriteCollection & col = collections[colIndex];
+    // Resolve the active collection (either a regular collection or an animation frame)
+    SpriteCollection col;
+    if (comboIndex < theCollectionCount)
+    {
+        const auto & collections = theDef.spriteCollections();
+        if (comboIndex >= collections.size())
+            return;
+        col = collections[comboIndex];
+    }
+    else
+    {
+        // Animation frame — build a temporary collection
+        const auto & animations = theDef.spriteAnimations();
+        int animIndex = comboIndex - theCollectionCount;
+        if (animIndex < 0 || animIndex >= animations.size())
+            return;
+        int frameIndex = ui->theColFrameSpin->value();
+        col = buildCollectionFromFrame(animations[animIndex], frameIndex);
+    }
+
     if (spriteIndex < 0 || spriteIndex >= col.sprites.size())
         return;
 
@@ -1255,7 +1383,7 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
         pal = TileDecoder::decodePaletteFromCram(col.palettes[palLine].cramValues);
 
     // Store which sprite we're editing
-    theEditCollectionIndex = colIndex;
+    theEditCollectionIndex = comboIndex;
     theEditSpriteIndex = spriteIndex;
 
     // Load into pixel editor

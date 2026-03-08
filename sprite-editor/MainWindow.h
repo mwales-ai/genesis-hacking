@@ -60,6 +60,7 @@ private slots:
     // Sprite Collections tab
     void onSpriteCollectionSelected(int index);
     void onSpriteCollectionZoomChanged(int value);
+    void onAnimationFrameChanged(int frameIndex);
 
     // Sprite Editor tab
     void onCollectionSpriteClicked(int spriteIndex);
@@ -95,6 +96,8 @@ private:
     void refreshRawBrowser();
     void populateScreenCaptures();
     void populateSpriteCollections();
+    void displayAnimationFrame(int animIndex, int frameIndex);
+    SpriteCollection buildCollectionFromFrame(const SpriteAnimation & anim, int frameIndex);
 
     QByteArray fetchTileData(const SpriteEntry & entry);
     GenesisPalette paletteForSprite(const SpriteEntry & entry, int groupIndex);
@@ -113,6 +116,11 @@ private:
     // Raw tile browser selection state
     int                   theRawSelectedTileIndex;
     uint32_t              theRawSelectedRomOffset;
+
+    // Sprite Collections tab: track which combo entries are animations
+    // Combo entries: first N = regular collections, then M = animations
+    int                   theCollectionCount;    // number of regular collections in combo
+    int                   theActiveAnimIndex;    // which animation is selected (-1 if none)
 
     // Editor state: which collection + sprite is being edited
     int                   theEditCollectionIndex;

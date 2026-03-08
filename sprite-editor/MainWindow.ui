@@ -525,7 +525,7 @@
         <string>Sprite Collections</string>
        </attribute>
        <layout class="QVBoxLayout" name="spriteColLayout">
-        <!-- Top bar: collection selector + zoom -->
+        <!-- Top bar: collection selector + frame selector + zoom -->
         <item>
          <layout class="QHBoxLayout" name="colControlsLayout">
           <item>
@@ -545,6 +545,42 @@
               <horstretch>1</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="colFrameLabel">
+            <property name="text">
+             <string>Frame:</string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="theColFrameSpin">
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>0</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="theColFrameCountLabel">
+            <property name="text">
+             <string></string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
             </property>
            </widget>
           </item>

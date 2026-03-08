@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QByteArray>
 #include <QRect>
+#include <QJsonArray>
 #include <stdint.h>
 
 struct PaletteDefinition
@@ -92,6 +93,20 @@ struct SpriteCollection
     QVector<CollectionSprite>     sprites;
 };
 
+struct AnimationFrame
+{
+    uint32_t                  frameNumber;
+    QRect                     boundingBox;
+    QVector<CollectionSprite> sprites;
+};
+
+struct SpriteAnimation
+{
+    QString                       gameName;
+    QVector<ScreenCapturePalette> palettes;   // shared across all frames
+    QVector<AnimationFrame>       frames;
+};
+
 class GameDefinition
 {
 public:
@@ -108,10 +123,13 @@ public:
     const QVector<TileRange>     & tileRanges() const;
     const QVector<ScreenCapture>     & screenCaptures() const;
     const QVector<SpriteCollection> & spriteCollections() const;
+    const QVector<SpriteAnimation>  & spriteAnimations() const;
 
 private:
     bool parseJson(const QByteArray & jsonData);
     static uint32_t parseOffset(const QString & hexStr, bool *ok);
+    static QVector<ScreenCapturePalette> parsePalettes(const QJsonArray & arr);
+    static QVector<CollectionSprite> parseSprites(const QJsonArray & arr);
 
     QString               theGameName;
     QString               theGameId;
@@ -119,6 +137,7 @@ private:
     QVector<TileRange>     theTileRanges;
     QVector<ScreenCapture>     theScreenCaptures;
     QVector<SpriteCollection> theSpriteCollections;
+    QVector<SpriteAnimation>  theSpriteAnimations;
     QString                theLastError;
     bool                   theLoaded;
 };
