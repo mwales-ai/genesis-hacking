@@ -3,127 +3,107 @@
   "game_id": "moonwalker_us",
   "notes": "JUE region (Japan/US/Europe). Target ROM: Moonwalker.bin (USA, checksum 0x38B2, 'MICHAEL JACKSON'S MOONWALKER'). Also tested with Moonwalker.md (checksum 0x096F, alternate revision). Both are raw binary (no SMD interleaving), 512KB. Sprite tile data at 0x0220E0 and 0x023800 is IDENTICAL across all tested revisions. Palette locations differ between revisions — offsets below are for checksum 0x38B2 (USA). Tile format: 4bpp Genesis standard (8x8px, 32 bytes/tile, column-major sprite order). ROM layout from density analysis: code 0x200-0x1A000; MAIN SPRITE BANK 0x01B000-0x02A400 (~1952 uncompressed tiles); mixed/compressed 0x02A800-0x052FFF; secondary sprites/tiles 0x053000-0x05F400 (~1568 tiles); audio samples 0x05F800+.",
 
-  "sprite_groups": [
-    {
-      "name": "MJ - Player Character",
-      "notes": "Main player character. MJ Gray Suit palette: 16-color with grayscale gradient + gold/skin tones. Use Raw Tile Browser: select 'Main Sprite Bank' range, MJ palette, set W=2 H=4, type 0x0220E0 and click Start to see aligned character sprites.",
-      "palettes": [
-        {
-          "name": "MJ Gray Suit Palette",
-          "rom_offset": "0x0082CA",
-          "_note": "USA ROM (cksum 0x38B2). 16 colors: light-to-dark gray gradient (0-4), gold/skin tones (5-7), more grays (8-11), dark brown (12-13), dark red (14), green (15). Confidence: HIGH — confirmed by rendering sprites with this palette. NOTE: was at 0x0082DA in revision 0x096F.",
-          "_decoded": "0:rgb(180,180,180) 1:rgb(144,144,144) 2:rgb(108,108,108) 3:rgb(72,72,72) 4:rgb(36,36,36) 5:rgb(216,180,108) 6:rgb(180,144,72) 7:rgb(144,108,36) 8:rgb(144,144,144) 9:rgb(108,108,108) 10:rgb(180,180,180) 11:rgb(216,216,216) 12:rgb(108,72,0) 13:rgb(72,36,0) 14:rgb(108,0,0) 15:rgb(144,252,144)"
-        },
-        {
-          "name": "MJ Walk - Alternate Palette",
-          "rom_offset": "0x00B432",
-          "_note": "USA ROM (cksum 0x38B2). Vivid: orange-gold (0-2), teal (3-5), pure colors (6-8: green/red/cyan). May be special move or cutscene palette. Confidence: MEDIUM. NOTE: was at 0x00B4C6 in revision 0x096F.",
-          "_decoded": "0:rgb(252,216,144) 1:rgb(180,144,72) 2:rgb(108,72,0) 3:rgb(72,108,108) 4:rgb(36,72,72) 5:rgb(0,36,36) 6:rgb(0,252,36) 7:rgb(252,36,36) 8:rgb(0,252,252)"
-        }
-      ],
-      "sprites": [
-        {
-          "name": "MJ Anim Set A (2x4)",
-          "rom_offset": "0x0220E0",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "frame_count": 23,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "CONFIRMED SPRITES. 23 consecutive 2x4 sprites. Humanoid figures with dark jacket and gold skin tones. Occupies 0x0220E0-0x022BA0."
-        },
-        {
-          "name": "MJ Anim Set B (2x5)",
-          "rom_offset": "0x023800",
-          "width_tiles": 2,
-          "height_tiles": 5,
-          "frame_count": 43,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "CONFIRMED SPRITES. 43 consecutive 2x5 sprites. Humanoid figures in motion — dark jacket body with gold face/hands. Occupies 0x023800-0x02672C."
-        },
-        {
-          "name": "Characters - large set (2x4)",
-          "rom_offset": "0x01D760",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "frame_count": 73,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "CONFIRMED SPRITES. 73 sprites of 2x4 tiles. Mix of MJ poses and enemies (gangsters). Occupies 0x01D760-0x022060."
-        },
-        {
-          "name": "Characters - chunk D (2x4)",
-          "rom_offset": "0x026DE0",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "frame_count": 13,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "13 sprites of 2x4. Follows group B (zero tile separator at 0x026DC0). Occupies 0x026DE0-0x027B20."
-        },
-        {
-          "name": "Characters - chunk E (2x4)",
-          "rom_offset": "0x027B60",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "frame_count": 21,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "21 sprites of 2x4. Mixed character types — some large gray figures (possibly enemies). Occupies 0x027B60-0x029060."
-        },
-        {
-          "name": "Large characters (3x5)",
-          "rom_offset": "0x0290A0",
-          "width_tiles": 3,
-          "height_tiles": 5,
-          "frame_count": 3,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "3 sprites of 3x5 tiles. Larger character sprites, possibly special poses or boss/cutscene frames."
-        },
-        {
-          "name": "Characters - chunk F (2x4)",
-          "rom_offset": "0x029660",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "frame_count": 13,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "13 sprites of 2x4. Last chunk in main sprite bank. Bank ends at 0x02A400."
-        }
-      ]
+  "palettes": {
+    "mj_gray_suit": {
+      "name": "MJ Gray Suit Palette",
+      "rom_offset": "0x0082CA",
+      "_note": "USA ROM (cksum 0x38B2). 16 colors: light-to-dark gray gradient (0-4), gold/skin tones (5-7), more grays (8-11), dark brown (12-13), dark red (14), green (15). Confidence: HIGH — confirmed by rendering sprites with this palette. NOTE: was at 0x0082DA in revision 0x096F.",
+      "_decoded": "0:rgb(180,180,180) 1:rgb(144,144,144) 2:rgb(108,108,108) 3:rgb(72,72,72) 4:rgb(36,36,36) 5:rgb(216,180,108) 6:rgb(180,144,72) 7:rgb(144,108,36) 8:rgb(144,144,144) 9:rgb(108,108,108) 10:rgb(180,180,180) 11:rgb(216,216,216) 12:rgb(108,72,0) 13:rgb(72,36,0) 14:rgb(108,0,0) 15:rgb(144,252,144)"
     },
-    {
-      "name": "Environment / Level Tiles",
-      "notes": "Level backgrounds and platform tiles. The secondary sprite bank at 0x053000-0x05F400 likely contains level tilesets.",
-      "palettes": [
-        {
-          "name": "Earth Tones / Environment",
-          "rom_offset": "0x002D30",
-          "_note": "USA ROM (cksum 0x38B2). Salmon/pink, browns, blues. Level background palette. Confidence: MEDIUM. NOTE: was at 0x002D3C in revision 0x096F.",
-          "_decoded": "0:rgb(180,216,180) 1:rgb(108,72,72) 2:rgb(72,36,36) 4:rgb(72,108,144) 5:rgb(36,72,108) 9:rgb(216,108,108)"
-        },
-        {
-          "name": "Stage 1 Warm Gradient",
-          "rom_offset": "0x004416",
-          "_note": "USA ROM. Dark-to-light warm gradient: dark red→brown→gray→gold→tan→white, with a magenta accent (15). Good for level/environment tiles. Confidence: MEDIUM.",
-          "_decoded": "0:rgb(36,0,0) 1:rgb(0,0,0) 2:rgb(36,0,36) 3:rgb(36,36,36) 4:rgb(72,36,36) 5:rgb(72,72,72) 6:rgb(108,72,72) 7:rgb(144,108,108) 8:rgb(144,144,144) 9:rgb(180,144,108) 10:rgb(216,144,108) 11:rgb(252,180,144) 12:rgb(252,216,108) 13:rgb(252,252,180) 14:rgb(252,252,252) 15:rgb(144,36,144)"
-        }
-      ],
-      "sprites": [
-        {
-          "name": "Level tile at 0x05A000 (scan target)",
-          "rom_offset": "0x05A000",
-          "width_tiles": 2,
-          "height_tiles": 4,
-          "palette_index": 0,
-          "compression": "none",
-          "notes": "Start of secondary sprite/tile bank. Density 0.42-0.56 throughout 0x05A000-0x05F400 (704 tiles). Likely level/BG tilesets or additional character sprites."
-        }
-      ]
+    "mj_walk_alt": {
+      "name": "MJ Walk - Alternate Palette",
+      "rom_offset": "0x00B432",
+      "_note": "USA ROM (cksum 0x38B2). Vivid: orange-gold (0-2), teal (3-5), pure colors (6-8: green/red/cyan). May be special move or cutscene palette. Confidence: MEDIUM. NOTE: was at 0x00B4C6 in revision 0x096F.",
+      "_decoded": "0:rgb(252,216,144) 1:rgb(180,144,72) 2:rgb(108,72,0) 3:rgb(72,108,108) 4:rgb(36,72,72) 5:rgb(0,36,36) 6:rgb(0,252,36) 7:rgb(252,36,36) 8:rgb(0,252,252)"
+    },
+    "env_earth_tones": {
+      "name": "Earth Tones / Environment",
+      "rom_offset": "0x002D30",
+      "_note": "USA ROM (cksum 0x38B2). Salmon/pink, browns, blues. Level background palette. Confidence: MEDIUM. NOTE: was at 0x002D3C in revision 0x096F.",
+      "_decoded": "0:rgb(180,216,180) 1:rgb(108,72,72) 2:rgb(72,36,36) 4:rgb(72,108,144) 5:rgb(36,72,108) 9:rgb(216,108,108)"
+    },
+    "env_stage1_warm": {
+      "name": "Stage 1 Warm Gradient",
+      "rom_offset": "0x004416",
+      "_note": "USA ROM. Dark-to-light warm gradient: dark red→brown→gray→gold→tan→white, with a magenta accent (15). Good for level/environment tiles. Confidence: MEDIUM.",
+      "_decoded": "0:rgb(36,0,0) 1:rgb(0,0,0) 2:rgb(36,0,36) 3:rgb(36,36,36) 4:rgb(72,36,36) 5:rgb(72,72,72) 6:rgb(108,72,72) 7:rgb(144,108,108) 8:rgb(144,144,144) 9:rgb(180,144,108) 10:rgb(216,144,108) 11:rgb(252,180,144) 12:rgb(252,216,108) 13:rgb(252,252,180) 14:rgb(252,252,252) 15:rgb(144,36,144)"
     }
-  ],
+  },
+
+  "patterns": {
+    "mj_anim_a_2x4": {
+      "name": "MJ Anim Set A (2x4)",
+      "rom_offset": "0x0220E0",
+      "width_tiles": 2,
+      "height_tiles": 4,
+      "frame_count": 23,
+      "compression": "none",
+      "notes": "CONFIRMED SPRITES. 23 consecutive 2x4 sprites. Humanoid figures with dark jacket and gold skin tones. Occupies 0x0220E0-0x022BA0."
+    },
+    "mj_anim_b_2x5": {
+      "name": "MJ Anim Set B (2x5)",
+      "rom_offset": "0x023800",
+      "width_tiles": 2,
+      "height_tiles": 5,
+      "frame_count": 43,
+      "compression": "none",
+      "notes": "CONFIRMED SPRITES. 43 consecutive 2x5 sprites. Humanoid figures in motion — dark jacket body with gold face/hands. Occupies 0x023800-0x02672C."
+    },
+    "mj_chars_large_2x4": {
+      "name": "Characters - large set (2x4)",
+      "rom_offset": "0x01D760",
+      "width_tiles": 2,
+      "height_tiles": 4,
+      "frame_count": 73,
+      "compression": "none",
+      "notes": "CONFIRMED SPRITES. 73 sprites of 2x4 tiles. Mix of MJ poses and enemies (gangsters). Occupies 0x01D760-0x022060."
+    },
+    "mj_chars_d_2x4": {
+      "name": "Characters - chunk D (2x4)",
+      "rom_offset": "0x026DE0",
+      "width_tiles": 2,
+      "height_tiles": 4,
+      "frame_count": 13,
+      "compression": "none",
+      "notes": "13 sprites of 2x4. Follows group B (zero tile separator at 0x026DC0). Occupies 0x026DE0-0x027B20."
+    },
+    "mj_chars_e_2x4": {
+      "name": "Characters - chunk E (2x4)",
+      "rom_offset": "0x027B60",
+      "width_tiles": 2,
+      "height_tiles": 4,
+      "frame_count": 21,
+      "compression": "none",
+      "notes": "21 sprites of 2x4. Mixed character types — some large gray figures (possibly enemies). Occupies 0x027B60-0x029060."
+    },
+    "mj_large_3x5": {
+      "name": "Large characters (3x5)",
+      "rom_offset": "0x0290A0",
+      "width_tiles": 3,
+      "height_tiles": 5,
+      "frame_count": 3,
+      "compression": "none",
+      "notes": "3 sprites of 3x5 tiles. Larger character sprites, possibly special poses or boss/cutscene frames."
+    },
+    "mj_chars_f_2x4": {
+      "name": "Characters - chunk F (2x4)",
+      "rom_offset": "0x029660",
+      "width_tiles": 2,
+      "height_tiles": 4,
+      "frame_count": 13,
+      "compression": "none",
+      "notes": "13 sprites of 2x4. Last chunk in main sprite bank. Bank ends at 0x02A400."
+    },
+    "env_level_tile_2x4": {
+      "name": "Level tile at 0x05A000 (scan target)",
+      "rom_offset": "0x05A000",
+      "width_tiles": 2,
+      "height_tiles": 4,
+      "frame_count": 1,
+      "compression": "none",
+      "notes": "Start of secondary sprite/tile bank. Density 0.42-0.56 throughout 0x05A000-0x05F400 (704 tiles). Likely level/BG tilesets or additional character sprites."
+    }
+  },
 
   "tile_ranges": [
     {
@@ -136,21 +116,21 @@
       "label": "MAIN SPRITE BANK - MJ + enemies (0x01B000-0x02A400)",
       "start_offset": "0x01B000",
       "end_offset":   "0x02A400",
-      "default_palette_group": 0,
+      "default_palette": "mj_gray_suit",
       "_note": "CONFIRMED character sprite bank. ~1952 tiles, density 0.37-0.65. Zero-tile analysis found: 23 sprites of 2x4 at 0x0220E0; 43 sprites of 2x5 at 0x023800; 3 sprites of 3x5 at 0x0290A0. Tip: set W=2 H=4, type 0x0220E0 in Jump, click Start."
     },
     {
       "label": "Secondary sprites / level tiles (0x053000-0x05F400)",
       "start_offset": "0x053000",
       "end_offset":   "0x05F400",
-      "default_palette_group": 1,
+      "default_palette": "env_earth_tones",
       "_note": "~1568 tiles. Density 0.28-0.65, sprite-like throughout. May contain level tilesets, item sprites, enemy tiles."
     },
     {
       "label": "Full ROM scan (0x200-0x5F400)",
       "start_offset": "0x000200",
       "end_offset":   "0x05F400",
-      "default_palette_group": 0,
+      "default_palette": "mj_gray_suit",
       "_note": "Full scan. Use jump-to-offset to navigate to 0x01B000 or 0x05A000."
     }
   ]

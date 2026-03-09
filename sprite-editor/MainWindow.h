@@ -34,7 +34,7 @@ private slots:
     void saveRom();
     void saveRomAs();
 
-    // Sprite Viewer tab
+    // Sprite Viewer tab (Pattern Browser in normalized mode)
     void onSpriteGroupChanged(int index);
     void onSpriteSelected(int groupIdx, int spriteIdx, int frameIdx);
     void onZoomChanged(int value);
@@ -87,20 +87,28 @@ private:
     void updateWindowTitle();
     void updateStatusLabel();
 
+    // Sprite Viewer / Pattern Browser
     void populateSpriteGroups();
+    void populatePatterns();
     void populateRawRanges();
     void populateRawPalettes();
 
     void displaySpriteGroup(int groupIndex);
+    void displayPattern(int patternIndex);
     void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
     void refreshRawBrowser();
     void populateScreenCaptures();
     void populateSpriteCollections();
     void displayAnimationFrame(int animIndex, int frameIndex);
+    void displayRecordingFrame(int recIndex, int frameIndex);
     SpriteCollection buildCollectionFromFrame(const SpriteAnimation & anim, int frameIndex);
+    SpriteCollection buildCollectionFromRecording(const SpriteRecording & rec, int frameIndex);
+    SpriteCollection buildFromNormalized(const NormalizedCollection & norm);
 
     QByteArray fetchTileData(const SpriteEntry & entry);
+    QByteArray fetchPatternTileData(const PoolPattern & pat);
     GenesisPalette paletteForSprite(const SpriteEntry & entry, int groupIndex);
+    GenesisPalette paletteFromPool(const QString & paletteId);
 
     Ui::MainWindow       *ui;
     QSettings             theSettings;
@@ -117,10 +125,16 @@ private:
     int                   theRawSelectedTileIndex;
     uint32_t              theRawSelectedRomOffset;
 
-    // Sprite Collections tab: track which combo entries are animations
-    // Combo entries: first N = regular collections, then M = animations
-    int                   theCollectionCount;    // number of regular collections in combo
+    // Sprite Collections tab: track combo segments
+    // [0, theCollectionCount) = regular collections or normalized collections
+    // [theCollectionCount, theCollectionCount + theAnimationCount) = .sprec recordings
+    int                   theCollectionCount;
+    int                   theAnimationCount;     // number of .sprec recording entries
     int                   theActiveAnimIndex;    // which animation is selected (-1 if none)
+    int                   theActiveRecIndex;     // which recording is selected (-1 if none)
+
+    // .sprec recordings loaded separately from game definition
+    QVector<SpriteRecording> theSpriteRecordings;
 
     // Editor state: which collection + sprite is being edited
     int                   theEditCollectionIndex;

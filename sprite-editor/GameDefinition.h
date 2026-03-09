@@ -9,6 +9,51 @@
 #include <QJsonArray>
 #include <stdint.h>
 
+// ---------------------------------------------------------------------------
+// New normalized pool types
+// ---------------------------------------------------------------------------
+
+struct PoolPalette
+{
+    QString           id;          // string key (e.g., "mj_gray_suit")
+    QString           name;        // display name
+    uint32_t          romOffset;   // 0 if using inline cram_values
+    QVector<uint16_t> cramValues;  // 16 CRAM words (empty if using romOffset)
+};
+
+struct PoolPattern
+{
+    QString    id;
+    QString    name;
+    uint32_t   romOffset;    // 0 if embedded only
+    int        widthTiles;   // clamped [1, 8]
+    int        heightTiles;  // clamped [1, 8]
+    int        frameCount;   // >= 1
+    QString    compression;  // "none", "kosinski", "nemesis"
+    QByteArray tileData;     // optional embedded (empty if romOffset set)
+};
+
+struct NormalizedSprite
+{
+    QString patternId;    // -> PoolPattern
+    int     frame;        // which frame within pattern (0-based)
+    QString paletteId;    // -> PoolPalette
+    int     x, y;         // position relative to collection origin
+    bool    hFlip, vFlip;
+    bool    priority;
+};
+
+struct NormalizedCollection
+{
+    QString                    id;
+    QString                    name;
+    QVector<NormalizedSprite>  sprites;
+};
+
+// ---------------------------------------------------------------------------
+// Legacy types (used by .sprec files and backward compat)
+// ---------------------------------------------------------------------------
+
 struct PaletteDefinition
 {
     QString  name;
@@ -39,7 +84,8 @@ struct TileRange
     QString  label;
     uint32_t startOffset;
     uint32_t endOffset;
-    int      defaultPaletteGroup;  // -1 = none
+    int      defaultPaletteGroup;  // -1 = none (legacy: index into sprite_groups)
+    QString  defaultPalette;       // new: palette pool ID (empty = none)
 };
 
 struct ScreenCapturePalette
@@ -107,6 +153,37 @@ struct SpriteAnimation
     QVector<AnimationFrame>       frames;
 };
 
+// ---------------------------------------------------------------------------
+// SpriteRecording — loaded from .sprec files
+// ---------------------------------------------------------------------------
+
+class SpriteRecording
+{
+public:
+    SpriteRecording();
+
+    bool loadFromFile(const QString & path);
+    bool isLoaded() const;
+    QString lastError() const;
+
+    QString gameName() const;
+    const QVector<ScreenCapturePalette> & palettes() const;
+    const QVector<AnimationFrame> & frames() const;
+
+private:
+    bool parseJson(const QByteArray & jsonData);
+
+    QString                       theGameName;
+    QVector<ScreenCapturePalette> thePalettes;
+    QVector<AnimationFrame>       theFrames;
+    QString                       theLastError;
+    bool                          theLoaded;
+};
+
+// ---------------------------------------------------------------------------
+// GameDefinition
+// ---------------------------------------------------------------------------
+
 class GameDefinition
 {
 public:
@@ -119,25 +196,44 @@ public:
     QString gameName() const;
     QString gameId() const;
 
+    // New normalized pools
+    const QMap<QString, PoolPalette> & palettePool() const;
+    const QMap<QString, PoolPattern> & patternPool() const;
+    const QVector<NormalizedCollection> & normalizedCollections() const;
+
+    // Legacy accessors (still used during transition)
     const QVector<SpriteGroup>   & spriteGroups() const;
     const QVector<TileRange>     & tileRanges() const;
     const QVector<ScreenCapture>     & screenCaptures() const;
     const QVector<SpriteCollection> & spriteCollections() const;
-    const QVector<SpriteAnimation>  & spriteAnimations() const;
 
-private:
-    bool parseJson(const QByteArray & jsonData);
+    // Whether the definition uses the new normalized format
+    bool isNormalized() const;
+
     static uint32_t parseOffset(const QString & hexStr, bool *ok);
     static QVector<ScreenCapturePalette> parsePalettes(const QJsonArray & arr);
     static QVector<CollectionSprite> parseSprites(const QJsonArray & arr);
 
+private:
+    bool parseJson(const QByteArray & jsonData);
+    void parseLegacyFormat(const QJsonObject & root);
+    void parseNormalizedFormat(const QJsonObject & root);
+
     QString               theGameName;
     QString               theGameId;
-    QVector<SpriteGroup>   theSpriteGroups;
-    QVector<TileRange>     theTileRanges;
+    bool                  theNormalized;
+
+    // New pool storage
+    QMap<QString, PoolPalette>   thePalettePool;
+    QMap<QString, PoolPattern>   thePatternPool;
+    QVector<NormalizedCollection> theNormalizedCollections;
+
+    // Legacy storage
+    QVector<SpriteGroup>       theSpriteGroups;
+    QVector<TileRange>         theTileRanges;
     QVector<ScreenCapture>     theScreenCaptures;
-    QVector<SpriteCollection> theSpriteCollections;
-    QVector<SpriteAnimation>  theSpriteAnimations;
+    QVector<SpriteCollection>  theSpriteCollections;
+
     QString                theLastError;
     bool                   theLoaded;
 };

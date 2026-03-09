@@ -23,7 +23,9 @@ MainWindow::MainWindow(QWidget *parent)
     , theRawSelectedTileIndex(-1)
     , theRawSelectedRomOffset(0)
     , theCollectionCount(0)
+    , theAnimationCount(0)
     , theActiveAnimIndex(-1)
+    , theActiveRecIndex(-1)
     , theEditCollectionIndex(-1)
     , theEditSpriteIndex(-1)
 {
@@ -41,13 +43,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadFromCommandLine(const QStringList & args)
 {
-    // args[0] = program name, args[1] = ROM path, args[2] = definition path
+    // args[0] = program name, rest = ROM path, definition path, or .sprec files
     QString romPath, defPath;
+    QStringList sprecPaths;
 
     for (int i = 1; i < args.size(); ++i)
     {
         QString arg = args[i];
-        if (arg.endsWith(".json", Qt::CaseInsensitive))
+        if (arg.endsWith(".sprec", Qt::CaseInsensitive))
+            sprecPaths.append(arg);
+        else if (arg.endsWith(".json", Qt::CaseInsensitive))
             defPath = arg;
         else
             romPath = arg;
@@ -83,14 +88,34 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
         }
     }
 
+    // Load .sprec files
+    for (const QString & sp : sprecPaths)
+    {
+        SpriteRecording rec;
+        if (rec.loadFromFile(sp))
+        {
+            theSpriteRecordings.append(rec);
+            statusBar()->showMessage("Recording loaded: " + rec.gameName());
+        }
+        else
+        {
+            statusBar()->showMessage("Failed to load .sprec: " + rec.lastError());
+        }
+    }
+
     if (theRom.isOpen())
     {
         if (theDef.isLoaded())
-            populateSpriteGroups();
+        {
+            if (theDef.isNormalized())
+                populatePatterns();
+            else
+                populateSpriteGroups();
+        }
         populateRawRanges();
         populateRawPalettes();
     }
-    if (theDef.isLoaded())
+    if (theDef.isLoaded() || !theSpriteRecordings.isEmpty())
     {
         populateScreenCaptures();
         populateSpriteCollections();
@@ -217,7 +242,12 @@ void MainWindow::openRom()
     updateStatusLabel();
 
     if (theDef.isLoaded())
-        populateSpriteGroups();
+    {
+        if (theDef.isNormalized())
+            populatePatterns();
+        else
+            populateSpriteGroups();
+    }
 
     // Enable raw browser with default range even without a definition
     populateRawRanges();
@@ -230,11 +260,27 @@ void MainWindow::openGameDefinition()
 {
     QString lastPath = theSettings.value("lastDefPath", "").toString();
     QString path = QFileDialog::getOpenFileName(
-        this, "Open Game Definition", lastPath,
-        "Game Definition (*.json);;All Files (*)");
+        this, "Open Game Definition / Recording", lastPath,
+        "Game Files (*.json *.sprec);;Game Definition (*.json);;Sprite Recording (*.sprec);;All Files (*)");
 
     if (path.isEmpty())
         return;
+
+    // Route .sprec files to SpriteRecording loader
+    if (path.endsWith(".sprec", Qt::CaseInsensitive))
+    {
+        SpriteRecording rec;
+        if (!rec.loadFromFile(path))
+        {
+            QMessageBox::critical(this, "Error",
+                "Failed to load sprite recording:\n" + rec.lastError());
+            return;
+        }
+        theSpriteRecordings.append(rec);
+        populateSpriteCollections();
+        statusBar()->showMessage("Sprite recording loaded: " + rec.gameName());
+        return;
+    }
 
     if (!theDef.loadFromFile(path))
     {
@@ -249,7 +295,10 @@ void MainWindow::openGameDefinition()
 
     if (theRom.isOpen())
     {
-        populateSpriteGroups();
+        if (theDef.isNormalized())
+            populatePatterns();
+        else
+            populateSpriteGroups();
         populateRawRanges();
         populateRawPalettes();
     }
@@ -295,7 +344,7 @@ void MainWindow::saveRomAs()
 }
 
 // ---------------------------------------------------------------------------
-// Sprite Viewer tab
+// Sprite Viewer tab (legacy mode)
 // ---------------------------------------------------------------------------
 
 void MainWindow::populateSpriteGroups()
@@ -319,10 +368,45 @@ void MainWindow::populateSpriteGroups()
     }
 }
 
+// ---------------------------------------------------------------------------
+// Pattern Browser (normalized mode)
+// ---------------------------------------------------------------------------
+
+void MainWindow::populatePatterns()
+{
+    ui->theGroupCombo->blockSignals(true);
+    ui->theGroupCombo->clear();
+
+    const auto & patterns = theDef.patternPool();
+    for (auto it = patterns.begin(); it != patterns.end(); ++it)
+    {
+        const PoolPattern & pat = it.value();
+        QString label = QString("%1 (%2x%3, %4 frames)")
+            .arg(pat.name).arg(pat.widthTiles).arg(pat.heightTiles).arg(pat.frameCount);
+        ui->theGroupCombo->addItem(label);
+    }
+
+    ui->theGroupCombo->setEnabled(!patterns.isEmpty());
+    ui->theGroupCombo->blockSignals(false);
+
+    if (!patterns.isEmpty())
+    {
+        ui->theGroupCombo->setCurrentIndex(0);
+        onSpriteGroupChanged(0);
+    }
+}
+
 void MainWindow::onSpriteGroupChanged(int index)
 {
     if (!theDef.isLoaded() || !theRom.isOpen() || index < 0)
         return;
+
+    if (theDef.isNormalized())
+    {
+        displayPattern(index);
+        return;
+    }
+
     if (index >= theDef.spriteGroups().size())
         return;
 
@@ -331,6 +415,85 @@ void MainWindow::onSpriteGroupChanged(int index)
     theSettings.setValue("lastGroupIndex", index);
 
     displaySpriteGroup(index);
+}
+
+void MainWindow::displayPattern(int patternIndex)
+{
+    const auto & patterns = theDef.patternPool();
+    QList<QString> keys = patterns.keys();
+    if (patternIndex < 0 || patternIndex >= keys.size())
+        return;
+
+    const PoolPattern & pat = patterns[keys[patternIndex]];
+
+    // Use the first palette from the pool for rendering
+    GenesisPalette pal = TileDecoder::greyPalette();
+    if (!theDef.palettePool().isEmpty())
+    {
+        pal = paletteFromPool(theDef.palettePool().begin().key());
+    }
+
+    QVector<SpriteThumb> thumbs;
+    int bytesPerFrame = pat.widthTiles * pat.heightTiles * 32;
+
+    for (int f = 0; f < pat.frameCount; ++f)
+    {
+        QByteArray frameData;
+        if (pat.romOffset != 0 && theRom.isOpen())
+        {
+            uint32_t frameOffset = pat.romOffset + uint32_t(f * bytesPerFrame);
+            if (f == 0 && pat.compression != "none")
+            {
+                frameData = fetchPatternTileData(pat);
+            }
+            else
+            {
+                frameData = theRom.readBytes(frameOffset, bytesPerFrame);
+            }
+        }
+        else if (!pat.tileData.isEmpty())
+        {
+            int start = f * bytesPerFrame;
+            if (start + bytesPerFrame <= pat.tileData.size())
+                frameData = pat.tileData.mid(start, bytesPerFrame);
+        }
+
+        if (frameData.size() < bytesPerFrame)
+            continue;
+
+        QImage img = TileDecoder::decodeSprite(frameData,
+                                               pat.widthTiles,
+                                               pat.heightTiles,
+                                               pal);
+        SpriteThumb thumb;
+        thumb.image       = img;
+        thumb.groupIndex  = patternIndex;
+        thumb.spriteIndex = 0;
+        thumb.frameIndex  = f;
+
+        if (pat.frameCount == 1)
+            thumb.name = pat.name;
+        else
+            thumb.name = QString("%1 [%2/%3]")
+                .arg(pat.name).arg(f + 1).arg(pat.frameCount);
+
+        thumbs.append(thumb);
+    }
+
+    ui->theSpriteSheet->setSprites(thumbs);
+    ui->theSpriteDetail->clearSprite();
+    ui->theSpriteName->setText(pat.name);
+    ui->theOffsetLabel->clear();
+    ui->theReplaceButton->setEnabled(false);
+    ui->theExportButton->setEnabled(false);
+    ui->theExportAllButton->setEnabled(!thumbs.isEmpty());
+    ui->actionReplaceSprite->setEnabled(false);
+
+    // Show palette
+    if (!theDef.palettePool().isEmpty())
+    {
+        ui->thePaletteDisplay->setPalette(pal);
+    }
 }
 
 void MainWindow::displaySpriteGroup(int groupIndex)
@@ -408,6 +571,65 @@ void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx, int frameIdx)
 {
     if (!theDef.isLoaded() || !theRom.isOpen())
         return;
+
+    // In normalized mode, the "group" is a pattern index and spriteIdx is always 0
+    if (theDef.isNormalized())
+    {
+        const auto & patterns = theDef.patternPool();
+        QList<QString> keys = patterns.keys();
+        if (groupIdx < 0 || groupIdx >= keys.size())
+            return;
+
+        const PoolPattern & pat = patterns[keys[groupIdx]];
+        GenesisPalette pal = TileDecoder::greyPalette();
+        if (!theDef.palettePool().isEmpty())
+            pal = paletteFromPool(theDef.palettePool().begin().key());
+
+        int bytesPerFrame = pat.widthTiles * pat.heightTiles * 32;
+        QByteArray tileData;
+        uint32_t frameOffset = pat.romOffset + uint32_t(frameIdx * bytesPerFrame);
+
+        if (pat.compression == "none")
+        {
+            tileData = theRom.readBytes(frameOffset, bytesPerFrame);
+        }
+        else
+        {
+            QByteArray fullData = fetchPatternTileData(pat);
+            int start = frameIdx * bytesPerFrame;
+            if (start + bytesPerFrame <= fullData.size())
+                tileData = fullData.mid(start, bytesPerFrame);
+            else
+                tileData = fullData.left(bytesPerFrame);
+            frameOffset = pat.romOffset;
+        }
+
+        QImage img = TileDecoder::decodeSprite(tileData, pat.widthTiles, pat.heightTiles, pal);
+        ui->theSpriteDetail->setSprite(img);
+        ui->theSpriteDetail->setZoom(ui->theZoomSpin->value());
+        ui->theSpriteDetail->setShowGrid(ui->theGridCheck->isChecked());
+        ui->thePaletteDisplay->setPalette(pal);
+
+        QString nameLabel = pat.name;
+        if (pat.frameCount > 1)
+            nameLabel = QString("%1 [frame %2/%3]").arg(pat.name).arg(frameIdx + 1).arg(pat.frameCount);
+        ui->theSpriteName->setText(nameLabel);
+
+        ui->theOffsetLabel->setText(
+            QString("ROM 0x%1  |  %2x%3 tiles  |  %4 bytes  |  [%5]")
+            .arg(frameOffset, 6, 16, QChar('0')).toUpper()
+            .arg(pat.widthTiles)
+            .arg(pat.heightTiles)
+            .arg(bytesPerFrame)
+            .arg(pat.compression));
+
+        ui->theReplaceButton->setEnabled(true);
+        ui->theExportButton->setEnabled(true);
+        ui->actionReplaceSprite->setEnabled(true);
+        return;
+    }
+
+    // Legacy mode
     if (groupIdx < 0 || groupIdx >= theDef.spriteGroups().size())
         return;
 
@@ -483,6 +705,13 @@ void MainWindow::replaceSprite()
     if (theCurrentGroupIndex < 0 || theCurrentSpriteIndex < 0)
         return;
 
+    // Only support replace in legacy mode for now
+    if (theDef.isNormalized())
+    {
+        statusBar()->showMessage("Replace not yet supported in normalized format.");
+        return;
+    }
+
     const SpriteGroup & group  = theDef.spriteGroups()[theCurrentGroupIndex];
     const SpriteEntry & entry  = group.sprites[theCurrentSpriteIndex];
     GenesisPalette pal = paletteForSprite(entry, theCurrentGroupIndex);
@@ -537,7 +766,8 @@ void MainWindow::exportSprite()
         return;
 
     QString suggestedName;
-    if (theDef.isLoaded() && theCurrentGroupIndex >= 0 && theCurrentSpriteIndex >= 0)
+    if (theDef.isLoaded() && !theDef.isNormalized() &&
+        theCurrentGroupIndex >= 0 && theCurrentSpriteIndex >= 0)
     {
         const SpriteEntry & e = theDef.spriteGroups()[theCurrentGroupIndex].sprites[theCurrentSpriteIndex];
         suggestedName = e.name;
@@ -571,6 +801,13 @@ void MainWindow::exportAllSprites()
 {
     if (!theDef.isLoaded() || !theRom.isOpen() || theCurrentGroupIndex < 0)
         return;
+
+    // Only support in legacy mode for now
+    if (theDef.isNormalized())
+    {
+        statusBar()->showMessage("Export all not yet implemented for normalized format.");
+        return;
+    }
 
     const SpriteGroup & group = theDef.spriteGroups()[theCurrentGroupIndex];
     if (group.sprites.isEmpty())
@@ -664,11 +901,24 @@ void MainWindow::populateRawPalettes()
 
     if (theDef.isLoaded())
     {
-        for (const auto & g : theDef.spriteGroups())
+        if (theDef.isNormalized())
         {
-            for (const auto & pal : g.palettes)
-                ui->theRawPaletteCombo->addItem(
-                    QString("%1 / %2").arg(g.name, pal.name));
+            // Populate from palette pool
+            const auto & pool = theDef.palettePool();
+            for (auto it = pool.begin(); it != pool.end(); ++it)
+            {
+                ui->theRawPaletteCombo->addItem(it.value().name);
+            }
+        }
+        else
+        {
+            // Legacy: from sprite groups
+            for (const auto & g : theDef.spriteGroups())
+            {
+                for (const auto & pal : g.palettes)
+                    ui->theRawPaletteCombo->addItem(
+                        QString("%1 / %2").arg(g.name, pal.name));
+            }
         }
     }
 
@@ -714,7 +964,7 @@ void MainWindow::onRawTileClicked(int tileIndex, uint32_t romOffset)
     }
     else
     {
-        label = QString("Sprite %1  (tiles %2–%3, %4×%5)  |  ROM offset: 0x%6")
+        label = QString("Sprite %1  (tiles %2-%3, %4x%5)  |  ROM offset: 0x%6")
             .arg(tileIndex / tilesPerSprite)
             .arg(tileIndex)
             .arg(tileIndex + tilesPerSprite - 1)
@@ -834,18 +1084,29 @@ void MainWindow::onRawExportPng()
     int palIdx = ui->theRawPaletteCombo->currentIndex();
     if (palIdx > 0 && theDef.isLoaded())
     {
-        int flatIdx = 1;
-        for (const auto & g : theDef.spriteGroups())
+        if (theDef.isNormalized())
         {
-            for (const auto & p : g.palettes)
+            const auto & pool = theDef.palettePool();
+            QList<QString> keys = pool.keys();
+            int poolIdx = palIdx - 1;
+            if (poolIdx >= 0 && poolIdx < keys.size())
+                pal = paletteFromPool(keys[poolIdx]);
+        }
+        else
+        {
+            int flatIdx = 1;
+            for (const auto & g : theDef.spriteGroups())
             {
-                if (flatIdx == palIdx)
+                for (const auto & p : g.palettes)
                 {
-                    QByteArray palData = theRom.readBytes(p.romOffset, 32);
-                    pal = TileDecoder::decodePalette(palData);
-                    break;
+                    if (flatIdx == palIdx)
+                    {
+                        QByteArray palData = theRom.readBytes(p.romOffset, 32);
+                        pal = TileDecoder::decodePalette(palData);
+                        break;
+                    }
+                    ++flatIdx;
                 }
-                ++flatIdx;
             }
         }
     }
@@ -914,23 +1175,34 @@ void MainWindow::refreshRawBrowser()
     int palIdx = ui->theRawPaletteCombo->currentIndex();
     if (palIdx > 0 && theDef.isLoaded())
     {
-        // palIdx 0 = greyscale, 1+ = from definition
-        int flatIdx = 1;
-        bool found = false;
-        for (const auto & g : theDef.spriteGroups())
+        if (theDef.isNormalized())
         {
-            for (const auto & p : g.palettes)
+            const auto & pool = theDef.palettePool();
+            QList<QString> keys = pool.keys();
+            int poolIdx = palIdx - 1;
+            if (poolIdx >= 0 && poolIdx < keys.size())
+                pal = paletteFromPool(keys[poolIdx]);
+        }
+        else
+        {
+            // palIdx 0 = greyscale, 1+ = from definition
+            int flatIdx = 1;
+            bool found = false;
+            for (const auto & g : theDef.spriteGroups())
             {
-                if (flatIdx == palIdx)
+                for (const auto & p : g.palettes)
                 {
-                    QByteArray palData = theRom.readBytes(p.romOffset, 32);
-                    pal = TileDecoder::decodePalette(palData);
-                    found = true;
-                    break;
+                    if (flatIdx == palIdx)
+                    {
+                        QByteArray palData = theRom.readBytes(p.romOffset, 32);
+                        pal = TileDecoder::decodePalette(palData);
+                        found = true;
+                        break;
+                    }
+                    ++flatIdx;
                 }
-                ++flatIdx;
+                if (found) break;
             }
-            if (found) break;
         }
     }
 
@@ -938,7 +1210,7 @@ void MainWindow::refreshRawBrowser()
     ui->theRawBrowser->setZoom(ui->theRawZoomSpin->value());
 
     ui->theRawTileInfoLabel->setText(
-        QString("Showing %1 tiles from ROM 0x%2 — 0x%3  |  Click a tile for its offset")
+        QString("Showing %1 tiles from ROM 0x%2 - 0x%3  |  Click a tile for its offset")
         .arg(tileData.size() / 32)
         .arg(startOffset, 6, 16, QChar('0')).toUpper()
         .arg(startOffset + tileData.size(), 6, 16, QChar('0')).toUpper());
@@ -964,6 +1236,21 @@ QByteArray MainWindow::fetchTileData(const SpriteEntry & entry)
     return result;
 }
 
+QByteArray MainWindow::fetchPatternTileData(const PoolPattern & pat)
+{
+    if (!pat.tileData.isEmpty())
+        return pat.tileData;
+
+    int rawBytes = pat.widthTiles * pat.heightTiles * pat.frameCount * 32;
+    QByteArray romSlice = theRom.readBytes(pat.romOffset,
+                                           theRom.romSize() - pat.romOffset);
+    if (pat.compression == "none")
+        return romSlice.left(rawBytes);
+
+    uint32_t consumed = 0;
+    return theCompressor.decompress(pat.compression, romSlice, 0, rawBytes, &consumed);
+}
+
 GenesisPalette MainWindow::paletteForSprite(const SpriteEntry & entry, int groupIndex)
 {
     if (!theDef.isLoaded())
@@ -983,6 +1270,28 @@ GenesisPalette MainWindow::paletteForSprite(const SpriteEntry & entry, int group
     return TileDecoder::decodePalette(palData);
 }
 
+GenesisPalette MainWindow::paletteFromPool(const QString & paletteId)
+{
+    if (!theDef.isLoaded() || !theDef.palettePool().contains(paletteId))
+        return TileDecoder::greyPalette();
+
+    const PoolPalette & pp = theDef.palettePool()[paletteId];
+
+    // Prefer CRAM values if available
+    if (!pp.cramValues.isEmpty())
+        return TileDecoder::decodePaletteFromCram(pp.cramValues);
+
+    // Otherwise read from ROM
+    if (pp.romOffset != 0 && theRom.isOpen())
+    {
+        QByteArray palData = theRom.readBytes(pp.romOffset, 32);
+        if (palData.size() >= 32)
+            return TileDecoder::decodePalette(palData);
+    }
+
+    return TileDecoder::greyPalette();
+}
+
 // ---------------------------------------------------------------------------
 // Window state
 // ---------------------------------------------------------------------------
@@ -993,7 +1302,7 @@ void MainWindow::updateWindowTitle()
     if (theRom.isOpen())
     {
         QFileInfo fi(theRom.romPath());
-        title += " — " + fi.fileName();
+        title += " - " + fi.fileName();
         if (theRom.isModified())
             title += " *";
     }
@@ -1078,8 +1387,9 @@ void MainWindow::onPaletteColorEditRequested(int index)
 
     ui->thePaletteDisplay->setColorAt(index, dlg.selectedColor());
 
-    // Re-render the current sprite with the modified palette
-    if (theCurrentSpriteIndex >= 0 && theCurrentGroupIndex >= 0)
+    // Re-render the current sprite with the modified palette (legacy mode only)
+    if (!theDef.isNormalized() &&
+        theCurrentSpriteIndex >= 0 && theCurrentGroupIndex >= 0)
     {
         const SpriteGroup & group = theDef.spriteGroups()[theCurrentGroupIndex];
         const SpriteEntry & entry = group.sprites[theCurrentSpriteIndex];
@@ -1169,22 +1479,40 @@ void MainWindow::populateSpriteCollections()
     ui->theSpriteColCombo->blockSignals(true);
     ui->theSpriteColCombo->clear();
 
-    const auto & collections = theDef.spriteCollections();
-    for (const auto & col : collections)
-        ui->theSpriteColCombo->addItem(col.name);
+    theCollectionCount = 0;
+    theAnimationCount  = 0;
 
-    theCollectionCount = collections.size();
-
-    // Add sprite animations as combo entries after the regular collections
-    const auto & animations = theDef.spriteAnimations();
-    for (const auto & anim : animations)
+    if (theDef.isLoaded())
     {
-        QString label = QString("Animation: %1 (%2 frames)")
-            .arg(anim.gameName).arg(anim.frames.size());
-        ui->theSpriteColCombo->addItem(label);
+        if (theDef.isNormalized())
+        {
+            // Add normalized collections
+            const auto & normCols = theDef.normalizedCollections();
+            for (const auto & col : normCols)
+                ui->theSpriteColCombo->addItem(col.name);
+            theCollectionCount = normCols.size();
+        }
+        else
+        {
+            // Legacy: add sprite collections
+            const auto & collections = theDef.spriteCollections();
+            for (const auto & col : collections)
+                ui->theSpriteColCombo->addItem(col.name);
+            theCollectionCount = collections.size();
+        }
     }
 
-    bool hasEntries = !collections.isEmpty() || !animations.isEmpty();
+    // Add .sprec recordings after collections
+    for (int i = 0; i < theSpriteRecordings.size(); ++i)
+    {
+        const SpriteRecording & rec = theSpriteRecordings[i];
+        QString label = QString("Recording: %1 (%2 frames)")
+            .arg(rec.gameName()).arg(rec.frames().size());
+        ui->theSpriteColCombo->addItem(label);
+    }
+    theAnimationCount = theSpriteRecordings.size();
+
+    bool hasEntries = (theCollectionCount + theAnimationCount) > 0;
     ui->theSpriteColCombo->setEnabled(hasEntries);
     ui->theSpriteColCombo->blockSignals(false);
 
@@ -1202,48 +1530,70 @@ void MainWindow::onSpriteCollectionSelected(int index)
         return;
     }
 
-    const auto & collections = theDef.spriteCollections();
-    const auto & animations  = theDef.spriteAnimations();
+    theActiveAnimIndex = -1;
+    theActiveRecIndex  = -1;
 
     if (index < theCollectionCount)
     {
-        // Regular sprite collection
-        theActiveAnimIndex = -1;
+        // Regular collection (legacy or normalized)
         ui->colFrameLabel->setVisible(false);
         ui->theColFrameSpin->setVisible(false);
         ui->theColFrameCountLabel->setVisible(false);
 
-        if (index >= collections.size())
+        if (theDef.isNormalized())
         {
-            ui->theSpriteColWidget->clearCollection();
-            return;
+            const auto & normCols = theDef.normalizedCollections();
+            if (index >= normCols.size())
+            {
+                ui->theSpriteColWidget->clearCollection();
+                return;
+            }
+
+            SpriteCollection col = buildFromNormalized(normCols[index]);
+            RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
+            ui->theSpriteColWidget->setCollection(col, rom);
+            ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
+
+            statusBar()->showMessage(
+                QString("Collection: %1 (%2 sprites)")
+                    .arg(col.name)
+                    .arg(col.sprites.size()));
         }
+        else
+        {
+            const auto & collections = theDef.spriteCollections();
+            if (index >= collections.size())
+            {
+                ui->theSpriteColWidget->clearCollection();
+                return;
+            }
 
-        RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
-        ui->theSpriteColWidget->setCollection(collections[index], rom);
-        ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
+            RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
+            ui->theSpriteColWidget->setCollection(collections[index], rom);
+            ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
 
-        const SpriteCollection & col = collections[index];
-        statusBar()->showMessage(
-            QString("Sprite collection: %1 (%2 sprites, %3x%4 bounding box)")
-                .arg(col.name)
-                .arg(col.sprites.size())
-                .arg(col.boundingBox.width())
-                .arg(col.boundingBox.height()));
+            const SpriteCollection & col = collections[index];
+            statusBar()->showMessage(
+                QString("Sprite collection: %1 (%2 sprites, %3x%4 bounding box)")
+                    .arg(col.name)
+                    .arg(col.sprites.size())
+                    .arg(col.boundingBox.width())
+                    .arg(col.boundingBox.height()));
+        }
     }
     else
     {
-        // Sprite animation entry
-        int animIndex = index - theCollectionCount;
-        if (animIndex < 0 || animIndex >= animations.size())
+        // .sprec recording entry
+        int recIndex = index - theCollectionCount;
+        if (recIndex < 0 || recIndex >= theSpriteRecordings.size())
         {
             ui->theSpriteColWidget->clearCollection();
             return;
         }
 
-        theActiveAnimIndex = animIndex;
-        const SpriteAnimation & anim = animations[animIndex];
-        int frameCount = anim.frames.size();
+        theActiveRecIndex = recIndex;
+        const SpriteRecording & rec = theSpriteRecordings[recIndex];
+        int frameCount = rec.frames().size();
 
         // Show and configure the frame selector
         ui->colFrameLabel->setVisible(true);
@@ -1258,7 +1608,7 @@ void MainWindow::onSpriteCollectionSelected(int index)
         ui->theColFrameCountLabel->setText(QString("/ %1").arg(frameCount));
 
         // Display the first frame
-        displayAnimationFrame(animIndex, 0);
+        displayRecordingFrame(recIndex, 0);
     }
 }
 
@@ -1269,30 +1619,43 @@ void MainWindow::onSpriteCollectionZoomChanged(int value)
 
 void MainWindow::onAnimationFrameChanged(int frameIndex)
 {
-    if (theActiveAnimIndex < 0)
+    if (theActiveRecIndex >= 0)
+    {
+        displayRecordingFrame(theActiveRecIndex, frameIndex);
         return;
-    displayAnimationFrame(theActiveAnimIndex, frameIndex);
+    }
+    if (theActiveAnimIndex >= 0)
+    {
+        displayAnimationFrame(theActiveAnimIndex, frameIndex);
+        return;
+    }
 }
 
 void MainWindow::displayAnimationFrame(int animIndex, int frameIndex)
 {
-    const auto & animations = theDef.spriteAnimations();
-    if (animIndex < 0 || animIndex >= animations.size())
+    // This is kept for backward compat but recordings use displayRecordingFrame
+    (void)animIndex;
+    (void)frameIndex;
+}
+
+void MainWindow::displayRecordingFrame(int recIndex, int frameIndex)
+{
+    if (recIndex < 0 || recIndex >= theSpriteRecordings.size())
         return;
 
-    const SpriteAnimation & anim = animations[animIndex];
-    if (frameIndex < 0 || frameIndex >= anim.frames.size())
+    const SpriteRecording & rec = theSpriteRecordings[recIndex];
+    if (frameIndex < 0 || frameIndex >= rec.frames().size())
         return;
 
-    SpriteCollection col = buildCollectionFromFrame(anim, frameIndex);
+    SpriteCollection col = buildCollectionFromRecording(rec, frameIndex);
 
     RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
     ui->theSpriteColWidget->setCollection(col, rom);
     ui->theSpriteColWidget->setZoom(ui->theSpriteColZoomSpin->value());
 
-    const AnimationFrame & frame = anim.frames[frameIndex];
+    const AnimationFrame & frame = rec.frames()[frameIndex];
     statusBar()->showMessage(
-        QString("Animation frame %1 (VDP frame %2): %3 sprites, %4x%5 bounding box")
+        QString("Recording frame %1 (VDP frame %2): %3 sprites, %4x%5 bounding box")
             .arg(frameIndex)
             .arg(frame.frameNumber)
             .arg(frame.sprites.size())
@@ -1315,6 +1678,121 @@ SpriteCollection MainWindow::buildCollectionFromFrame(const SpriteAnimation & an
     return col;
 }
 
+SpriteCollection MainWindow::buildCollectionFromRecording(const SpriteRecording & rec, int frameIndex)
+{
+    SpriteCollection col;
+    const AnimationFrame & frame = rec.frames()[frameIndex];
+
+    col.name = QString("%1 - frame %2").arg(rec.gameName()).arg(frame.frameNumber);
+    col.boundingBox = frame.boundingBox;
+    col.sprites     = frame.sprites;
+
+    // Copy shared palettes from the recording
+    col.palettes = rec.palettes();
+
+    return col;
+}
+
+SpriteCollection MainWindow::buildFromNormalized(const NormalizedCollection & norm)
+{
+    SpriteCollection col;
+    col.name = norm.name;
+
+    const auto & palPool = theDef.palettePool();
+    const auto & patPool = theDef.patternPool();
+
+    // Track unique palettes used (max 4 lines)
+    QMap<QString, int> palLineMap;  // paletteId -> assigned palette line
+    QVector<ScreenCapturePalette> usedPalettes;
+
+    // First pass: assign palette lines
+    for (const auto & ns : norm.sprites)
+    {
+        if (!palLineMap.contains(ns.paletteId) && palLineMap.size() < 4)
+        {
+            int line = palLineMap.size();
+            palLineMap.insert(ns.paletteId, line);
+
+            ScreenCapturePalette scp;
+            scp.line = line;
+
+            if (palPool.contains(ns.paletteId))
+            {
+                const PoolPalette & pp = palPool[ns.paletteId];
+                if (!pp.cramValues.isEmpty())
+                {
+                    scp.cramValues = pp.cramValues;
+                }
+                else if (pp.romOffset != 0 && theRom.isOpen())
+                {
+                    QByteArray palData = theRom.readBytes(pp.romOffset, 32);
+                    // Convert ROM palette data to CRAM values
+                    for (int i = 0; i + 1 < palData.size() && scp.cramValues.size() < 16; i += 2)
+                    {
+                        uint16_t word = (uint8_t(palData[i]) << 8) | uint8_t(palData[i + 1]);
+                        scp.cramValues.append(word);
+                    }
+                }
+                if (pp.romOffset != 0)
+                    scp.dmaSource = QString("0x%1").arg(pp.romOffset, 0, 16).toUpper();
+            }
+
+            usedPalettes.append(scp);
+        }
+    }
+    col.palettes = usedPalettes;
+
+    // Calculate bounding box and build sprites
+    int16_t minX = 32767, minY = 32767, maxX = -32768, maxY = -32768;
+
+    for (int i = 0; i < norm.sprites.size(); ++i)
+    {
+        const NormalizedSprite & ns = norm.sprites[i];
+        CollectionSprite cs;
+        cs.index = i;
+        cs.x = ns.x;
+        cs.y = ns.y;
+        cs.hFlip = ns.hFlip;
+        cs.vFlip = ns.vFlip;
+        cs.priority = ns.priority;
+        cs.paletteLine = palLineMap.value(ns.paletteId, 0);
+
+        if (patPool.contains(ns.patternId))
+        {
+            const PoolPattern & pat = patPool[ns.patternId];
+            cs.widthTiles = pat.widthTiles;
+            cs.heightTiles = pat.heightTiles;
+            cs.pattern = 0;
+
+            int bytesPerFrame = pat.widthTiles * pat.heightTiles * 32;
+            uint32_t frameRomOffset = pat.romOffset + uint32_t(ns.frame * bytesPerFrame);
+            cs.romOffset = QString("0x%1").arg(frameRomOffset, 0, 16).toUpper();
+            cs.source = "dma";
+            cs.vramAddr = "";
+        }
+        else
+        {
+            cs.widthTiles = 1;
+            cs.heightTiles = 1;
+            cs.source = "embedded";
+        }
+
+        if (cs.x < minX) minX = cs.x;
+        if (cs.y < minY) minY = cs.y;
+        int right = cs.x + cs.widthTiles * 8;
+        int bottom = cs.y + cs.heightTiles * 8;
+        if (right > maxX) maxX = right;
+        if (bottom > maxY) maxY = bottom;
+
+        col.sprites.append(cs);
+    }
+
+    if (!norm.sprites.isEmpty())
+        col.boundingBox = QRect(minX, minY, maxX - minX, maxY - minY);
+
+    return col;
+}
+
 // ---------------------------------------------------------------------------
 // Sprite Editor tab
 // ---------------------------------------------------------------------------
@@ -1325,24 +1803,33 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
     if (comboIndex < 0)
         return;
 
-    // Resolve the active collection (either a regular collection or an animation frame)
+    // Resolve the active collection
     SpriteCollection col;
     if (comboIndex < theCollectionCount)
     {
-        const auto & collections = theDef.spriteCollections();
-        if (comboIndex >= collections.size())
-            return;
-        col = collections[comboIndex];
+        if (theDef.isNormalized())
+        {
+            const auto & normCols = theDef.normalizedCollections();
+            if (comboIndex >= normCols.size())
+                return;
+            col = buildFromNormalized(normCols[comboIndex]);
+        }
+        else
+        {
+            const auto & collections = theDef.spriteCollections();
+            if (comboIndex >= collections.size())
+                return;
+            col = collections[comboIndex];
+        }
     }
     else
     {
-        // Animation frame — build a temporary collection
-        const auto & animations = theDef.spriteAnimations();
-        int animIndex = comboIndex - theCollectionCount;
-        if (animIndex < 0 || animIndex >= animations.size())
+        // Recording frame
+        int recIndex = comboIndex - theCollectionCount;
+        if (recIndex < 0 || recIndex >= theSpriteRecordings.size())
             return;
         int frameIndex = ui->theColFrameSpin->value();
-        col = buildCollectionFromFrame(animations[animIndex], frameIndex);
+        col = buildCollectionFromRecording(theSpriteRecordings[recIndex], frameIndex);
     }
 
     if (spriteIndex < 0 || spriteIndex >= col.sprites.size())
@@ -1436,11 +1923,42 @@ void MainWindow::onEditorPaletteEditRequested(int index)
 {
     // Only allow editing if we can save the palette
     int colIndex = theEditCollectionIndex;
-    const auto & collections = theDef.spriteCollections();
-    if (colIndex < 0 || colIndex >= collections.size())
-        return;
 
-    const SpriteCollection & col = collections[colIndex];
+    // Get the active collection to find palette info
+    SpriteCollection col;
+    if (colIndex >= 0 && colIndex < theCollectionCount)
+    {
+        if (theDef.isNormalized())
+        {
+            const auto & normCols = theDef.normalizedCollections();
+            if (colIndex < normCols.size())
+                col = buildFromNormalized(normCols[colIndex]);
+            else
+                return;
+        }
+        else
+        {
+            const auto & collections = theDef.spriteCollections();
+            if (colIndex < collections.size())
+                col = collections[colIndex];
+            else
+                return;
+        }
+    }
+    else
+    {
+        int recIndex = colIndex - theCollectionCount;
+        if (recIndex >= 0 && recIndex < theSpriteRecordings.size())
+        {
+            int frameIndex = ui->theColFrameSpin->value();
+            col = buildCollectionFromRecording(theSpriteRecordings[recIndex], frameIndex);
+        }
+        else
+        {
+            return;
+        }
+    }
+
     if (theEditSpriteIndex < 0 || theEditSpriteIndex >= col.sprites.size())
         return;
 
@@ -1451,7 +1969,7 @@ void MainWindow::onEditorPaletteEditRequested(int index)
 
     if (!canSavePalette)
     {
-        statusBar()->showMessage("Palette editing disabled — no DMA source address known");
+        statusBar()->showMessage("Palette editing disabled - no DMA source address known");
         return;
     }
 
@@ -1478,11 +1996,42 @@ void MainWindow::onEditorSave()
     }
 
     int colIndex = theEditCollectionIndex;
-    const auto & collections = theDef.spriteCollections();
-    if (colIndex < 0 || colIndex >= collections.size())
-        return;
 
-    const SpriteCollection & col = collections[colIndex];
+    // Get the active collection
+    SpriteCollection col;
+    if (colIndex >= 0 && colIndex < theCollectionCount)
+    {
+        if (theDef.isNormalized())
+        {
+            const auto & normCols = theDef.normalizedCollections();
+            if (colIndex < normCols.size())
+                col = buildFromNormalized(normCols[colIndex]);
+            else
+                return;
+        }
+        else
+        {
+            const auto & collections = theDef.spriteCollections();
+            if (colIndex < collections.size())
+                col = collections[colIndex];
+            else
+                return;
+        }
+    }
+    else
+    {
+        int recIndex = colIndex - theCollectionCount;
+        if (recIndex >= 0 && recIndex < theSpriteRecordings.size())
+        {
+            int frameIndex = ui->theColFrameSpin->value();
+            col = buildCollectionFromRecording(theSpriteRecordings[recIndex], frameIndex);
+        }
+        else
+        {
+            return;
+        }
+    }
+
     if (theEditSpriteIndex < 0 || theEditSpriteIndex >= col.sprites.size())
         return;
 
@@ -1490,7 +2039,7 @@ void MainWindow::onEditorSave()
     if (sprite.romOffset.isEmpty())
     {
         QMessageBox::warning(this, "Cannot Save",
-            "This sprite has no ROM offset — tile data cannot be saved.");
+            "This sprite has no ROM offset - tile data cannot be saved.");
         return;
     }
 
@@ -1531,11 +2080,42 @@ void MainWindow::onEditorSavePalette()
         return;
 
     int colIndex = theEditCollectionIndex;
-    const auto & collections = theDef.spriteCollections();
-    if (colIndex < 0 || colIndex >= collections.size())
-        return;
 
-    const SpriteCollection & col = collections[colIndex];
+    // Get the active collection
+    SpriteCollection col;
+    if (colIndex >= 0 && colIndex < theCollectionCount)
+    {
+        if (theDef.isNormalized())
+        {
+            const auto & normCols = theDef.normalizedCollections();
+            if (colIndex < normCols.size())
+                col = buildFromNormalized(normCols[colIndex]);
+            else
+                return;
+        }
+        else
+        {
+            const auto & collections = theDef.spriteCollections();
+            if (colIndex < collections.size())
+                col = collections[colIndex];
+            else
+                return;
+        }
+    }
+    else
+    {
+        int recIndex = colIndex - theCollectionCount;
+        if (recIndex >= 0 && recIndex < theSpriteRecordings.size())
+        {
+            int frameIndex = ui->theColFrameSpin->value();
+            col = buildCollectionFromRecording(theSpriteRecordings[recIndex], frameIndex);
+        }
+        else
+        {
+            return;
+        }
+    }
+
     if (theEditSpriteIndex < 0 || theEditSpriteIndex >= col.sprites.size())
         return;
 
@@ -1591,7 +2171,7 @@ void MainWindow::onEditorClose()
     }
 
     ui->theSpritePixelEditor->clearSprite();
-    ui->theEditorInfoLabel->setText("No sprite selected — click a sprite in the Collections tab");
+    ui->theEditorInfoLabel->setText("No sprite selected - click a sprite in the Collections tab");
     ui->theEditorSaveButton->setEnabled(false);
     ui->theEditorSavePaletteButton->setEnabled(false);
 
