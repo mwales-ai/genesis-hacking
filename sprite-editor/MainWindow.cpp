@@ -5,6 +5,7 @@
 
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QInputDialog>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
@@ -130,6 +131,7 @@ void MainWindow::setupMenus()
     connect(ui->actionSaveRomAs,    &QAction::triggered, this, &MainWindow::saveRomAs);
     connect(ui->actionQuit,         &QAction::triggered, this, &MainWindow::close);
     connect(ui->actionReplaceSprite,&QAction::triggered, this, &MainWindow::replaceSprite);
+    connect(ui->actionSaveGameDef, &QAction::triggered, this, &MainWindow::onSaveGameDefinition);
     connect(ui->actionAbout,        &QAction::triggered, this, &MainWindow::showAbout);
 }
 
@@ -190,8 +192,18 @@ void MainWindow::setupConnections()
             this,                     SLOT(onSpriteCollectionZoomChanged(int)));
     connect(ui->theSpriteColWidget,   &SpriteCollectionWidget::spriteClicked,
             this,                     &MainWindow::onCollectionSpriteClicked);
+    connect(ui->theSpriteColWidget,   &SpriteCollectionWidget::selectionChanged,
+            this,                     &MainWindow::onCollectionSelectionChanged);
     connect(ui->theColFrameSpin,      SIGNAL(valueChanged(int)),
             this,                     SLOT(onAnimationFrameChanged(int)));
+
+    // Capture workflow buttons
+    connect(ui->theCaptureGroupButton,  &QPushButton::clicked,
+            this,                       &MainWindow::onCaptureSpriteGroup);
+    connect(ui->theHideSpritesButton,   &QPushButton::clicked,
+            this,                       &MainWindow::onHideSelectedSprites);
+    connect(ui->theUnhideSpritesButton, &QPushButton::clicked,
+            this,                       &MainWindow::onUnhideSelectedSprites);
 
     // Sprite Editor tab
     connect(ui->theEditorPalette,          &PaletteWidget::colorSelected,
@@ -1530,6 +1542,15 @@ void MainWindow::onSpriteCollectionSelected(int index)
         return;
     }
 
+    // Clear hidden and selection state on collection change
+    theHiddenSpriteIndices.clear();
+    ui->theSpriteColWidget->clearHiddenSprites();
+    ui->theSpriteColWidget->clearSelection();
+    ui->theColSelectionLabel->setText("No sprites selected");
+    ui->theCaptureGroupButton->setEnabled(false);
+    ui->theHideSpritesButton->setEnabled(false);
+    ui->theUnhideSpritesButton->setEnabled(false);
+
     theActiveAnimIndex = -1;
     theActiveRecIndex  = -1;
 
@@ -1619,6 +1640,15 @@ void MainWindow::onSpriteCollectionZoomChanged(int value)
 
 void MainWindow::onAnimationFrameChanged(int frameIndex)
 {
+    // Clear hidden/selection on frame change
+    theHiddenSpriteIndices.clear();
+    ui->theSpriteColWidget->clearHiddenSprites();
+    ui->theSpriteColWidget->clearSelection();
+    ui->theColSelectionLabel->setText("No sprites selected");
+    ui->theCaptureGroupButton->setEnabled(false);
+    ui->theHideSpritesButton->setEnabled(false);
+    ui->theUnhideSpritesButton->setEnabled(false);
+
     if (theActiveRecIndex >= 0)
     {
         displayRecordingFrame(theActiveRecIndex, frameIndex);
@@ -2189,4 +2219,263 @@ void MainWindow::onEditorZoomChanged(int value)
 void MainWindow::onEditorGridToggled(bool checked)
 {
     ui->theSpritePixelEditor->setShowGrid(checked);
+}
+
+// ---------------------------------------------------------------------------
+// Capture workflow
+// ---------------------------------------------------------------------------
+
+void MainWindow::onCollectionSelectionChanged(const QSet<int> & selectedIndices)
+{
+    int count = selectedIndices.size();
+    if (count == 0)
+        ui->theColSelectionLabel->setText("No sprites selected");
+    else
+        ui->theColSelectionLabel->setText(QString("%1 sprite%2 selected")
+            .arg(count).arg(count == 1 ? "" : "s"));
+
+    bool hasSelection = count > 0;
+    bool canCapture = hasSelection && theDef.isLoaded();
+    ui->theCaptureGroupButton->setEnabled(canCapture);
+    ui->theHideSpritesButton->setEnabled(hasSelection);
+    ui->theUnhideSpritesButton->setEnabled(!theHiddenSpriteIndices.isEmpty());
+}
+
+void MainWindow::onCaptureSpriteGroup()
+{
+    const QSet<int> & selectedIndices = ui->theSpriteColWidget->selectedSpriteIndices();
+    if (selectedIndices.isEmpty() || !theDef.isLoaded())
+        return;
+
+    // Get the current collection (we need the sprites and palettes)
+    int comboIndex = ui->theSpriteColCombo->currentIndex();
+    if (comboIndex < 0)
+        return;
+
+    SpriteCollection col;
+    if (comboIndex < theCollectionCount)
+    {
+        if (theDef.isNormalized())
+        {
+            const auto & normCols = theDef.normalizedCollections();
+            if (comboIndex < normCols.size())
+                col = buildFromNormalized(normCols[comboIndex]);
+            else
+                return;
+        }
+        else
+        {
+            const auto & collections = theDef.spriteCollections();
+            if (comboIndex < collections.size())
+                col = collections[comboIndex];
+            else
+                return;
+        }
+    }
+    else
+    {
+        int recIndex = comboIndex - theCollectionCount;
+        if (recIndex >= 0 && recIndex < theSpriteRecordings.size())
+        {
+            int frameIndex = ui->theColFrameSpin->value();
+            col = buildCollectionFromRecording(theSpriteRecordings[recIndex], frameIndex);
+        }
+        else
+            return;
+    }
+
+    // Ask for a group name
+    bool ok = false;
+    QString name = QInputDialog::getText(this, "Capture Sprite Group",
+        "Enter a name for this sprite group:", QLineEdit::Normal,
+        "New Sprite Group", &ok);
+    if (!ok || name.isEmpty())
+        return;
+
+    // Generate an ID from the name (lowercase, underscores)
+    QString id = name.toLower();
+    id.replace(QRegularExpression("[^a-z0-9]+"), "_");
+    id.replace(QRegularExpression("^_|_$"), "");
+
+    if (theDef.hasCollectionId(id))
+    {
+        QMessageBox::warning(this, "Duplicate ID",
+            QString("A sprite collection with ID '%1' already exists.").arg(id));
+        return;
+    }
+
+    // Make sure definition is normalized format before adding
+    if (!theDef.isNormalized())
+    {
+        QMessageBox::warning(this, "Format Not Supported",
+            "Capture requires a normalized format game definition.\n"
+            "Convert your game definition to use palettes/patterns objects.");
+        return;
+    }
+
+    // Calculate min X/Y for normalization
+    int minX = 32767, minY = 32767;
+    for (int idx : selectedIndices)
+    {
+        if (idx < 0 || idx >= col.sprites.size())
+            continue;
+        const CollectionSprite & s = col.sprites[idx];
+        if (s.x < minX) minX = s.x;
+        if (s.y < minY) minY = s.y;
+    }
+
+    // Build palettes, patterns, and the collection
+    QMap<int, QString> palLineToId;   // palette_line -> assigned palette ID
+    QMap<QString, QString> romToPatId; // romOffset -> assigned pattern ID
+
+    NormalizedCollection normCol;
+    normCol.id = id;
+    normCol.name = name;
+
+    for (int idx : selectedIndices)
+    {
+        if (idx < 0 || idx >= col.sprites.size())
+            continue;
+        const CollectionSprite & s = col.sprites[idx];
+
+        // Create or reuse palette
+        int palLine = qBound(0, s.paletteLine, 3);
+        if (!palLineToId.contains(palLine))
+        {
+            QString palId = QString("%1_pal%2").arg(id).arg(palLine);
+            if (!theDef.hasPaletteId(palId))
+            {
+                PoolPalette pp;
+                pp.id = palId;
+                pp.name = QString("%1 Palette Line %2").arg(name).arg(palLine);
+                pp.romOffset = 0;
+
+                // Get CRAM values from the collection palette
+                if (palLine < col.palettes.size())
+                {
+                    pp.cramValues = col.palettes[palLine].cramValues;
+                    if (!col.palettes[palLine].dmaSource.isEmpty())
+                    {
+                        bool romOk = false;
+                        pp.romOffset = GameDefinition::parseOffset(
+                            col.palettes[palLine].dmaSource, &romOk);
+                        if (!romOk) pp.romOffset = 0;
+                    }
+                }
+                theDef.addPoolPalette(pp);
+            }
+            palLineToId[palLine] = palId;
+        }
+
+        // Create or reuse pattern
+        QString patKey = s.romOffset.isEmpty()
+            ? QString("embedded_%1_%2").arg(idx).arg(s.vramAddr)
+            : s.romOffset;
+        if (!romToPatId.contains(patKey))
+        {
+            QString patId = QString("%1_pat_%2x%3_%4")
+                .arg(id).arg(s.widthTiles).arg(s.heightTiles)
+                .arg(romToPatId.size());
+            if (!theDef.hasPatternId(patId))
+            {
+                PoolPattern pat;
+                pat.id = patId;
+                pat.name = QString("%1 %2x%3 #%4")
+                    .arg(name).arg(s.widthTiles).arg(s.heightTiles)
+                    .arg(romToPatId.size());
+                pat.widthTiles = s.widthTiles;
+                pat.heightTiles = s.heightTiles;
+                pat.frameCount = 1;
+                pat.compression = "none";
+                pat.romOffset = 0;
+
+                if (!s.romOffset.isEmpty() && (s.source == "dma" || s.source == "search"))
+                {
+                    bool romOk = false;
+                    pat.romOffset = GameDefinition::parseOffset(s.romOffset, &romOk);
+                    if (!romOk) pat.romOffset = 0;
+                }
+                else if (s.source == "embedded" && !s.tileData.isEmpty())
+                {
+                    pat.tileData = s.tileData;
+                }
+
+                theDef.addPoolPattern(pat);
+            }
+            romToPatId[patKey] = patId;
+        }
+
+        // Build the normalized sprite entry
+        NormalizedSprite ns;
+        ns.patternId = romToPatId[patKey];
+        ns.frame = 0;
+        ns.paletteId = palLineToId[palLine];
+        ns.x = s.x - minX;
+        ns.y = s.y - minY;
+        ns.hFlip = s.hFlip;
+        ns.vFlip = s.vFlip;
+        ns.priority = s.priority;
+        normCol.sprites.append(ns);
+    }
+
+    theDef.addNormalizedCollection(normCol);
+
+    // Save the game definition
+    if (!theDef.saveToFile(theDef.definitionPath()))
+    {
+        QMessageBox::critical(this, "Save Failed",
+            "Failed to save game definition:\n" + theDef.lastError());
+        return;
+    }
+
+    // Refresh the collections combo
+    populateSpriteCollections();
+    statusBar()->showMessage(
+        QString("Captured sprite group '%1' with %2 sprites")
+        .arg(name).arg(normCol.sprites.size()));
+}
+
+void MainWindow::onHideSelectedSprites()
+{
+    const QSet<int> & sel = ui->theSpriteColWidget->selectedSpriteIndices();
+    theHiddenSpriteIndices.unite(sel);
+    ui->theSpriteColWidget->setHiddenSprites(theHiddenSpriteIndices);
+    ui->theUnhideSpritesButton->setEnabled(!theHiddenSpriteIndices.isEmpty());
+    statusBar()->showMessage(
+        QString("%1 sprites now hidden").arg(theHiddenSpriteIndices.size()));
+}
+
+void MainWindow::onUnhideSelectedSprites()
+{
+    theHiddenSpriteIndices.clear();
+    ui->theSpriteColWidget->clearHiddenSprites();
+    ui->theUnhideSpritesButton->setEnabled(false);
+    statusBar()->showMessage("All sprites unhidden");
+}
+
+void MainWindow::onSaveGameDefinition()
+{
+    if (!theDef.isLoaded())
+    {
+        statusBar()->showMessage("No game definition loaded.");
+        return;
+    }
+
+    QString path = theDef.definitionPath();
+    if (path.isEmpty())
+    {
+        path = QFileDialog::getSaveFileName(this, "Save Game Definition",
+            "", "Game Definition (*.json);;All Files (*)");
+        if (path.isEmpty())
+            return;
+    }
+
+    if (!theDef.saveToFile(path))
+    {
+        QMessageBox::critical(this, "Save Failed",
+            "Failed to save game definition:\n" + theDef.lastError());
+        return;
+    }
+
+    statusBar()->showMessage("Game definition saved: " + path);
 }

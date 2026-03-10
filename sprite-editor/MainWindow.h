@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSettings>
+#include <QSet>
 #include <iostream>
 
 #include "RomFile.h"
@@ -76,6 +77,13 @@ private slots:
     void onPaletteColorSelected(int index);
     void onPaletteColorEditRequested(int index);
 
+    // Capture workflow
+    void onCaptureSpriteGroup();
+    void onHideSelectedSprites();
+    void onUnhideSelectedSprites();
+    void onCollectionSelectionChanged(const QSet<int> & selectedIndices);
+    void onSaveGameDefinition();
+
     // Help
     void showAbout();
 
@@ -139,6 +147,9 @@ private:
     // Editor state: which collection + sprite is being edited
     int                   theEditCollectionIndex;
     int                   theEditSpriteIndex;
+
+    // Hidden sprites per-frame state (capture workflow)
+    QSet<int>             theHiddenSpriteIndices;
 };
 
 #endif // MAINWINDOW_H

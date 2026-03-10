@@ -606,6 +606,64 @@
           </item>
          </layout>
         </item>
+        <!-- Second row: selection info + capture/hide buttons -->
+        <item>
+         <layout class="QHBoxLayout" name="colSelectionLayout">
+          <item>
+           <widget class="QLabel" name="theColSelectionLabel">
+            <property name="text">
+             <string>No sprites selected</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="colSelectionSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theCaptureGroupButton">
+            <property name="text">
+             <string>Capture Sprite Group</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Save selected sprites as a reusable sprite group in the game definition</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theHideSpritesButton">
+            <property name="text">
+             <string>Hide Selected</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Hide selected sprites from rendering (they remain selectable)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theUnhideSpritesButton">
+            <property name="text">
+             <string>Unhide All</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Show all hidden sprites again</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <!-- SpriteCollectionWidget (promoted) inside scroll area -->
         <item>
          <widget class="QScrollArea" name="theColScrollArea">
@@ -753,6 +811,7 @@
     <addaction name="separator"/>
     <addaction name="actionSaveRom"/>
     <addaction name="actionSaveRomAs"/>
+    <addaction name="actionSaveGameDef"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -810,6 +869,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionSaveGameDef">
+   <property name="text">
+    <string>Save Game Definition</string>
    </property>
   </action>
   <action name="actionReplaceSprite">
