@@ -155,6 +155,7 @@ bool GameDefinition::loadFromFile(const QString & path)
     theLoaded = false;
     theNormalized = false;
     theLastError.clear();
+    theDefinitionPath.clear();
     thePalettePool.clear();
     thePatternPool.clear();
     theNormalizedCollections.clear();
@@ -170,7 +171,10 @@ bool GameDefinition::loadFromFile(const QString & path)
         return false;
     }
     QByteArray data = f.readAll();
-    return parseJson(data);
+    bool ok = parseJson(data);
+    if (ok)
+        theDefinitionPath = path;
+    return ok;
 }
 
 bool GameDefinition::isLoaded() const
@@ -595,4 +599,229 @@ void GameDefinition::parseNormalizedFormat(const QJsonObject & root)
 
         theNormalizedCollections.append(col);
     }
+}
+
+// ===========================================================================
+// Mutable accessors for capture workflow
+// ===========================================================================
+
+void GameDefinition::addPoolPalette(const PoolPalette & pal)
+{
+    thePalettePool.insert(pal.id, pal);
+}
+
+void GameDefinition::addPoolPattern(const PoolPattern & pat)
+{
+    thePatternPool.insert(pat.id, pat);
+}
+
+void GameDefinition::addNormalizedCollection(const NormalizedCollection & col)
+{
+    theNormalizedCollections.append(col);
+}
+
+bool GameDefinition::hasPaletteId(const QString & id) const
+{
+    return thePalettePool.contains(id);
+}
+
+bool GameDefinition::hasPatternId(const QString & id) const
+{
+    return thePatternPool.contains(id);
+}
+
+bool GameDefinition::hasCollectionId(const QString & id) const
+{
+    for (const auto & col : theNormalizedCollections)
+    {
+        if (col.id == id)
+            return true;
+    }
+    return false;
+}
+
+QString GameDefinition::definitionPath() const
+{
+    return theDefinitionPath;
+}
+
+// ===========================================================================
+// Serialization
+// ===========================================================================
+
+QJsonObject GameDefinition::toJson() const
+{
+    QJsonObject root;
+    root["game_name"] = theGameName;
+    root["game_id"]   = theGameId;
+
+    // Palettes (keyed object)
+    QJsonObject palettesObj;
+    for (auto it = thePalettePool.begin(); it != thePalettePool.end(); ++it)
+    {
+        const PoolPalette & pal = it.value();
+        QJsonObject po;
+        po["name"] = pal.name;
+        if (pal.romOffset != 0)
+            po["rom_offset"] = QString("0x%1").arg(pal.romOffset, 0, 16);
+        if (!pal.cramValues.isEmpty())
+        {
+            QJsonArray cramArr;
+            for (uint16_t cval : pal.cramValues)
+                cramArr.append(QString("0x%1").arg(cval, 4, 16, QChar('0')));
+            po["cram_values"] = cramArr;
+        }
+        palettesObj[pal.id] = po;
+    }
+    root["palettes"] = palettesObj;
+
+    // Patterns (keyed object)
+    QJsonObject patternsObj;
+    for (auto it = thePatternPool.begin(); it != thePatternPool.end(); ++it)
+    {
+        const PoolPattern & pat = it.value();
+        QJsonObject po;
+        po["name"]        = pat.name;
+        po["width_tiles"]  = pat.widthTiles;
+        po["height_tiles"] = pat.heightTiles;
+        if (pat.frameCount > 1)
+            po["frame_count"] = pat.frameCount;
+        if (pat.compression != "none")
+            po["compression"] = pat.compression;
+        if (pat.romOffset != 0)
+            po["rom_offset"] = QString("0x%1").arg(pat.romOffset, 0, 16);
+        if (!pat.tileData.isEmpty())
+            po["tile_data"] = QString(pat.tileData.toHex());
+        patternsObj[pat.id] = po;
+    }
+    root["patterns"] = patternsObj;
+
+    // Sprite collections (keyed object)
+    QJsonObject colsObj;
+    for (const auto & col : theNormalizedCollections)
+    {
+        QJsonObject co;
+        co["name"] = col.name;
+        QJsonArray spritesArr;
+        for (const auto & ns : col.sprites)
+        {
+            QJsonObject so;
+            so["pattern"]  = ns.patternId;
+            if (ns.frame != 0)
+                so["frame"] = ns.frame;
+            so["palette"]  = ns.paletteId;
+            so["x"]        = ns.x;
+            so["y"]        = ns.y;
+            if (ns.hFlip)    so["h_flip"]   = true;
+            if (ns.vFlip)    so["v_flip"]   = true;
+            if (ns.priority) so["priority"] = true;
+            spritesArr.append(so);
+        }
+        co["sprites"] = spritesArr;
+        colsObj[col.id] = co;
+    }
+    root["sprite_collections"] = colsObj;
+
+    // Tile ranges (array)
+    QJsonArray rangesArr;
+    for (const auto & r : theTileRanges)
+    {
+        QJsonObject ro;
+        ro["label"]        = r.label;
+        ro["start_offset"] = QString("0x%1").arg(r.startOffset, 0, 16);
+        ro["end_offset"]   = QString("0x%1").arg(r.endOffset, 0, 16);
+        if (r.defaultPaletteGroup >= 0)
+            ro["default_palette_group"] = r.defaultPaletteGroup;
+        if (!r.defaultPalette.isEmpty())
+            ro["default_palette"] = r.defaultPalette;
+        rangesArr.append(ro);
+    }
+    if (!rangesArr.isEmpty())
+        root["tile_ranges"] = rangesArr;
+
+    // Screen captures (array)
+    QJsonArray capsArr;
+    for (const auto & cap : theScreenCaptures)
+    {
+        QJsonObject co;
+        co["name"]         = cap.name;
+        co["width_tiles"]  = cap.widthTiles;
+        co["height_tiles"] = cap.heightTiles;
+
+        // Palettes
+        QJsonArray palsArr;
+        for (const auto & pal : cap.palettes)
+        {
+            QJsonObject po;
+            po["line"] = pal.line;
+            QJsonArray cramArr;
+            for (uint16_t cval : pal.cramValues)
+                cramArr.append(QString("0x%1").arg(cval, 4, 16, QChar('0')));
+            po["cram_values"] = cramArr;
+            if (!pal.dmaSource.isEmpty())
+                po["dma_source"] = pal.dmaSource;
+            else
+                po["dma_source"] = QJsonValue(QJsonValue::Null);
+            palsArr.append(po);
+        }
+        co["palettes"] = palsArr;
+
+        // Tile map
+        QJsonArray tmArr;
+        for (const auto & t : cap.tileMap)
+        {
+            QJsonObject to_;
+            to_["row"]          = t.row;
+            to_["col"]          = t.col;
+            to_["pattern"]      = t.pattern;
+            to_["palette_line"] = t.paletteLine;
+            to_["h_flip"]       = t.hFlip;
+            to_["v_flip"]       = t.vFlip;
+            to_["priority"]     = t.priority;
+            if (!t.romOffset.isEmpty())
+                to_["rom_offset"] = t.romOffset;
+            else
+                to_["rom_offset"] = QJsonValue(QJsonValue::Null);
+            to_["source"] = t.source;
+            tmArr.append(to_);
+        }
+        co["tile_map"] = tmArr;
+
+        // Embedded tiles
+        if (!cap.embeddedTiles.isEmpty())
+        {
+            QJsonObject embedObj;
+            for (auto eit = cap.embeddedTiles.begin(); eit != cap.embeddedTiles.end(); ++eit)
+                embedObj[eit.key()] = QString(eit.value().toHex());
+            co["embedded_tiles"] = embedObj;
+        }
+
+        capsArr.append(co);
+    }
+    if (!capsArr.isEmpty())
+        root["screen_captures"] = capsArr;
+
+    return root;
+}
+
+bool GameDefinition::saveToFile(const QString & path)
+{
+    QString savePath = path.isEmpty() ? theDefinitionPath : path;
+    if (savePath.isEmpty())
+        return false;
+
+    QJsonDocument doc(toJson());
+    QByteArray jsonData = doc.toJson(QJsonDocument::Indented);
+
+    QFile f(savePath);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        theLastError = "Cannot write file: " + savePath;
+        return false;
+    }
+    f.write(jsonData);
+    f.close();
+
+    theDefinitionPath = savePath;
+    return true;
 }

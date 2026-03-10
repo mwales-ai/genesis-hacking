@@ -210,17 +210,32 @@ public:
     // Whether the definition uses the new normalized format
     bool isNormalized() const;
 
+    // Mutable accessors for capture workflow
+    void addPoolPalette(const PoolPalette & pal);
+    void addPoolPattern(const PoolPattern & pat);
+    void addNormalizedCollection(const NormalizedCollection & col);
+    bool hasPaletteId(const QString & id) const;
+    bool hasPatternId(const QString & id) const;
+    bool hasCollectionId(const QString & id) const;
+
+    // Serialization
+    bool saveToFile(const QString & path);
+    QString definitionPath() const;
+
     static uint32_t parseOffset(const QString & hexStr, bool *ok);
     static QVector<ScreenCapturePalette> parsePalettes(const QJsonArray & arr);
     static QVector<CollectionSprite> parseSprites(const QJsonArray & arr);
 
 private:
+    QJsonObject toJson() const;
+
     bool parseJson(const QByteArray & jsonData);
     void parseLegacyFormat(const QJsonObject & root);
     void parseNormalizedFormat(const QJsonObject & root);
 
     QString               theGameName;
     QString               theGameId;
+    QString               theDefinitionPath;
     bool                  theNormalized;
 
     // New pool storage
