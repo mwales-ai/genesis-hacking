@@ -12,7 +12,7 @@ SpriteCollectionWidget::SpriteCollectionWidget(QWidget *parent)
     , theZoom(2)
     , theHasCollection(false)
     , theHoveredSpriteIndex(-1)
-    , theSelectedSpriteIndex(-1)
+    , theRubberBanding(false)
 {
     setMouseTracking(true);
 }
@@ -43,7 +43,9 @@ void SpriteCollectionWidget::clearCollection()
     theHasCollection = false;
     theCompositeImage = QImage();
     theHoveredSpriteIndex = -1;
-    theSelectedSpriteIndex = -1;
+    theSelectedSpriteIndices.clear();
+    theHiddenSpriteIndices.clear();
+    theRubberBanding = false;
     updateGeometry();
     update();
 }
@@ -51,7 +53,21 @@ void SpriteCollectionWidget::clearCollection()
 void SpriteCollectionWidget::clearSelection()
 {
     theHoveredSpriteIndex = -1;
-    theSelectedSpriteIndex = -1;
+    theSelectedSpriteIndices.clear();
+    update();
+}
+
+void SpriteCollectionWidget::setHiddenSprites(const QSet<int> & indices)
+{
+    theHiddenSpriteIndices = indices;
+    rebuildImage();
+    update();
+}
+
+void SpriteCollectionWidget::clearHiddenSprites()
+{
+    theHiddenSpriteIndices.clear();
+    rebuildImage();
     update();
 }
 
@@ -144,6 +160,10 @@ void SpriteCollectionWidget::rebuildImage()
     // Reverse order so earlier sprites draw on top
     for (int i = theCollection.sprites.size() - 1; i >= 0; --i)
     {
+        // Skip hidden sprites
+        if (theHiddenSpriteIndices.contains(i))
+            continue;
+
         const CollectionSprite & sprite = theCollection.sprites[i];
         int palLine = qBound(0, sprite.paletteLine, 3);
 
@@ -261,14 +281,15 @@ void SpriteCollectionWidget::paintEvent(QPaintEvent *event)
                                               Qt::FastTransformation);
     p.drawImage(0, 0, scaled);
 
-    // Draw green outlines around hovered and selected sprites
+    // Draw outlines around hovered, selected, and hidden sprites
     QRect bbox = theCollection.boundingBox;
     for (int i = 0; i < theCollection.sprites.size(); ++i)
     {
-        bool isSelected = (i == theSelectedSpriteIndex);
+        bool isSelected = theSelectedSpriteIndices.contains(i);
         bool isHovered  = (i == theHoveredSpriteIndex && !isSelected);
+        bool isHidden   = theHiddenSpriteIndices.contains(i);
 
-        if (!isSelected && !isHovered)
+        if (!isSelected && !isHovered && !isHidden)
             continue;
 
         const CollectionSprite & s = theCollection.sprites[i];
@@ -277,7 +298,21 @@ void SpriteCollectionWidget::paintEvent(QPaintEvent *event)
         int rw = s.widthTiles * 8 * theZoom;
         int rh = s.heightTiles * 8 * theZoom;
 
-        if (isSelected)
+        if (isHidden)
+        {
+            // Hidden sprites: show dashed outline only on hover or select
+            if (isSelected)
+            {
+                p.setPen(QPen(QColor(0, 220, 0), 2, Qt::DashLine));
+                p.drawRect(rx, ry, rw - 1, rh - 1);
+            }
+            else if (isHovered)
+            {
+                p.setPen(QPen(QColor(160, 160, 160), 1, Qt::DashLine));
+                p.drawRect(rx, ry, rw - 1, rh - 1);
+            }
+        }
+        else if (isSelected)
         {
             p.setPen(QPen(QColor(0, 220, 0), 2));
             p.drawRect(rx, ry, rw - 1, rh - 1);
@@ -288,12 +323,28 @@ void SpriteCollectionWidget::paintEvent(QPaintEvent *event)
             p.drawRect(rx, ry, rw - 1, rh - 1);
         }
     }
+
+    // Draw rubber-band rectangle
+    if (theRubberBanding && !theRubberBandRect.isNull())
+    {
+        p.setPen(QPen(QColor(60, 120, 255), 1, Qt::DashLine));
+        p.setBrush(QColor(60, 120, 255, 40));
+        p.drawRect(theRubberBandRect);
+    }
 }
 
 void SpriteCollectionWidget::mouseMoveEvent(QMouseEvent *event)
 {
     if (!theHasCollection)
         return;
+
+    // Rubber-band dragging
+    if (theRubberBanding)
+    {
+        theRubberBandRect = QRect(theRubberBandOrigin, event->pos()).normalized();
+        update();
+        return;
+    }
 
     int oldHover = theHoveredSpriteIndex;
     theHoveredSpriteIndex = hitTestSprite(event->pos());
@@ -311,10 +362,12 @@ void SpriteCollectionWidget::mouseMoveEvent(QMouseEvent *event)
         int sw = s.widthTiles * 8;
         int sh = s.heightTiles * 8;
 
-        QString tip = QString("Sprite #%1\nPos: (%2, %3)  Size: %4x%5\n"
+        QString hiddenTag = theHiddenSpriteIndices.contains(theHoveredSpriteIndex)
+            ? " [HIDDEN]" : "";
+        QString tip = QString("Sprite #%1%12\nPos: (%2, %3)  Size: %4x%5\n"
                               "Pattern: %6  Palette: %7\n"
                               "Flip H:%8 V:%9  Priority: %10\n"
-                              "ROM: %11  Source: %12\nClick to edit")
+                              "ROM: %11  Source: %13\nClick to edit, Ctrl+click to multi-select")
             .arg(s.index)
             .arg(s.x).arg(s.y)
             .arg(sw).arg(sh)
@@ -323,6 +376,7 @@ void SpriteCollectionWidget::mouseMoveEvent(QMouseEvent *event)
             .arg(s.vFlip ? "yes" : "no")
             .arg(s.priority ? "yes" : "no")
             .arg(s.romOffset.isEmpty() ? "N/A" : s.romOffset)
+            .arg(hiddenTag)
             .arg(s.source);
 
         QToolTip::showText(event->globalPosition().toPoint(), tip, this);
@@ -340,10 +394,84 @@ void SpriteCollectionWidget::mousePressEvent(QMouseEvent *event)
         return;
 
     int idx = hitTestSprite(event->pos());
+
     if (idx >= 0)
     {
-        theSelectedSpriteIndex = idx;
+        bool ctrl = (event->modifiers() & Qt::ControlModifier);
+        if (ctrl)
+        {
+            // Ctrl+click: toggle in selection set
+            if (theSelectedSpriteIndices.contains(idx))
+                theSelectedSpriteIndices.remove(idx);
+            else
+                theSelectedSpriteIndices.insert(idx);
+        }
+        else
+        {
+            // Plain click: replace selection with single sprite
+            theSelectedSpriteIndices.clear();
+            theSelectedSpriteIndices.insert(idx);
+            emit spriteClicked(idx);  // backward compat: single-sprite editor
+        }
+        emit selectionChanged(theSelectedSpriteIndices);
         update();
-        emit spriteClicked(idx);
+    }
+    else
+    {
+        // Click on empty area: start rubber-band
+        theRubberBanding = true;
+        theRubberBandOrigin = event->pos();
+        theRubberBandRect = QRect();
+    }
+}
+
+void SpriteCollectionWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (!theHasCollection || event->button() != Qt::LeftButton)
+        return;
+
+    if (theRubberBanding)
+    {
+        theRubberBanding = false;
+
+        // Convert rubber-band rect to world coordinates
+        QRect bbox = theCollection.boundingBox;
+        QRect rb = QRect(theRubberBandOrigin, event->pos()).normalized();
+        int worldLeft   = rb.left()   / theZoom + bbox.x();
+        int worldTop    = rb.top()    / theZoom + bbox.y();
+        int worldRight  = rb.right()  / theZoom + bbox.x();
+        int worldBottom = rb.bottom() / theZoom + bbox.y();
+
+        // Find all sprites that intersect the rubber-band
+        QSet<int> hitSprites;
+        for (int i = 0; i < theCollection.sprites.size(); ++i)
+        {
+            const CollectionSprite & s = theCollection.sprites[i];
+            int sw = s.widthTiles * 8;
+            int sh = s.heightTiles * 8;
+
+            // Check intersection
+            if (s.x + sw > worldLeft && s.x < worldRight + 1 &&
+                s.y + sh > worldTop  && s.y < worldBottom + 1)
+            {
+                hitSprites.insert(i);
+            }
+        }
+
+        bool ctrl = (event->modifiers() & Qt::ControlModifier);
+        if (ctrl)
+        {
+            // Ctrl+rubber-band: add to existing selection
+            theSelectedSpriteIndices.unite(hitSprites);
+        }
+        else
+        {
+            // Plain rubber-band: replace selection
+            theSelectedSpriteIndices = hitSprites;
+        }
+
+        theRubberBandRect = QRect();
+        emit selectionChanged(theSelectedSpriteIndices);
+        update();
     }
 }

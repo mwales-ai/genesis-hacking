@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QImage>
+#include <QSet>
 #include "GameDefinition.h"
 #include "TileDecoder.h"
 #include "RomFile.h"
@@ -11,6 +12,7 @@
  * Renders a composite sprite from multiple Genesis hardware sprites.
  * Each sprite is placed at its correct screen position, composited
  * with transparency into a single image.
+ * Supports multi-select via Ctrl+click and rubber-band selection.
  */
 class SpriteCollectionWidget : public QWidget
 {
@@ -37,14 +39,23 @@ public:
 
     void clearSelection();
 
+    /** Multi-select accessors */
+    const QSet<int> & selectedSpriteIndices() const { return theSelectedSpriteIndices; }
+
+    /** Set which sprites are hidden (not rendered, shown as dashed outline on hover) */
+    void setHiddenSprites(const QSet<int> & indices);
+    void clearHiddenSprites();
+
 signals:
     void spriteHovered(int spriteIndex, int x, int y);
     void spriteClicked(int spriteIndex);
+    void selectionChanged(const QSet<int> & selectedIndices);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     void rebuildImage();
@@ -58,7 +69,15 @@ private:
     int                  theZoom;
     bool                 theHasCollection;
     int                  theHoveredSpriteIndex;
-    int                  theSelectedSpriteIndex;
+
+    // Multi-select state
+    QSet<int>            theSelectedSpriteIndices;
+    QPoint               theRubberBandOrigin;
+    QRect                theRubberBandRect;
+    bool                 theRubberBanding;
+
+    // Hidden sprites (not rendered, dashed outline on hover/select)
+    QSet<int>            theHiddenSpriteIndices;
 };
 
 #endif // SPRITECOLLECTIONWIDGET_H
