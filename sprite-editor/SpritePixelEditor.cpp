@@ -11,12 +11,15 @@ SpritePixelEditor::SpritePixelEditor(QWidget *parent)
     , theHeightTiles(0)
     , theHFlip(false)
     , theVFlip(false)
+    , theGroupMode(false)
     , theZoom(8)
     , thePenIndex(1)
     , theShowGrid(true)
     , theModified(false)
     , thePainting(false)
     , theHasSprite(false)
+    , theCompW(0)
+    , theCompH(0)
 {
     setMouseTracking(true);
     setCursor(Qt::CrossCursor);
@@ -34,6 +37,8 @@ void SpritePixelEditor::loadSprite(const QByteArray & tileData, int widthTiles,
     theVFlip = vFlip;
     theModified = false;
     theHasSprite = true;
+    theGroupMode = false;
+    theGroupSprites.clear();
 
     int expectedBytes = widthTiles * heightTiles * 32;
     if (theTileData.size() < expectedBytes)
@@ -49,12 +54,43 @@ void SpritePixelEditor::loadSprite(const QByteArray & tileData, int widthTiles,
              << " V:" << vFlip << std::endl;
 }
 
+void SpritePixelEditor::loadSpriteGroup(const QVector<EditorSprite> & sprites,
+                                        const GenesisPalette palettes[4])
+{
+    theGroupSprites = sprites;
+    for (int i = 0; i < 4; ++i)
+        theGroupPalettes[i] = palettes[i];
+    theGroupMode = true;
+    theModified = false;
+    theHasSprite = true;
+
+    // Ensure tile data is correctly sized
+    for (int i = 0; i < theGroupSprites.size(); ++i)
+    {
+        EditorSprite & es = theGroupSprites[i];
+        int expectedBytes = es.widthTiles * es.heightTiles * 32;
+        if (es.tileData.size() < expectedBytes)
+            es.tileData.append(QByteArray(expectedBytes - es.tileData.size(), '\0'));
+    }
+
+    rebuildGroupDisplayImage();
+    resize(sizeHint());
+    updateGeometry();
+    update();
+
+    PxlDebug << "SpritePixelEditor: loaded group of " << sprites.size()
+             << " sprites" << std::endl;
+}
+
 void SpritePixelEditor::updatePalette(const GenesisPalette & palette)
 {
     thePalette = palette;
     if (theHasSprite)
     {
-        rebuildDisplayImage();
+        if (theGroupMode)
+            rebuildGroupDisplayImage();
+        else
+            rebuildDisplayImage();
         update();
     }
 }
@@ -62,6 +98,13 @@ void SpritePixelEditor::updatePalette(const GenesisPalette & palette)
 void SpritePixelEditor::setPenIndex(int paletteIndex)
 {
     thePenIndex = qBound(0, paletteIndex, 15);
+}
+
+QByteArray SpritePixelEditor::modifiedGroupTileData(int spriteIndex) const
+{
+    if (spriteIndex >= 0 && spriteIndex < theGroupSprites.size())
+        return theGroupSprites[spriteIndex].tileData;
+    return QByteArray();
 }
 
 void SpritePixelEditor::setZoom(int factor)
@@ -83,9 +126,13 @@ void SpritePixelEditor::setShowGrid(bool show)
 void SpritePixelEditor::clearSprite()
 {
     theHasSprite = false;
+    theGroupMode = false;
     theTileData.clear();
+    theGroupSprites.clear();
     theDisplayImage = QImage();
     theModified = false;
+    theCompW = 0;
+    theCompH = 0;
     updateGeometry();
     update();
 }
@@ -94,6 +141,8 @@ QSize SpritePixelEditor::sizeHint() const
 {
     if (!theHasSprite)
         return QSize(256, 256);
+    if (theGroupMode)
+        return QSize(theCompW * theZoom, theCompH * theZoom);
     return QSize(theWidthTiles * 8 * theZoom,
                  theHeightTiles * 8 * theZoom);
 }
@@ -102,12 +151,14 @@ QSize SpritePixelEditor::minimumSizeHint() const
 {
     if (!theHasSprite)
         return QSize(128, 128);
+    if (theGroupMode)
+        return QSize(theCompW * 2, theCompH * 2);
     return QSize(theWidthTiles * 8 * 2,
                  theHeightTiles * 8 * 2);
 }
 
 // ---------------------------------------------------------------------------
-// 4bpp nibble access — the core of the pixel editor
+// 4bpp nibble access — the core of the pixel editor (single sprite mode)
 // ---------------------------------------------------------------------------
 
 int SpritePixelEditor::getNibbleAt(int px, int py) const
@@ -184,6 +235,164 @@ void SpritePixelEditor::setNibbleAt(int px, int py, int paletteIndex)
 }
 
 // ---------------------------------------------------------------------------
+// Group mode helpers
+// ---------------------------------------------------------------------------
+
+void SpritePixelEditor::rebuildGroupDisplayImage()
+{
+    if (!theGroupMode || theGroupSprites.isEmpty())
+        return;
+
+    // Calculate composite dimensions from all sprites
+    int maxX = 0, maxY = 0;
+    for (const EditorSprite & es : theGroupSprites)
+    {
+        int right  = es.x + es.widthTiles * 8;
+        int bottom = es.y + es.heightTiles * 8;
+        if (right > maxX)  maxX = right;
+        if (bottom > maxY) maxY = bottom;
+    }
+
+    theCompW = maxX;
+    theCompH = maxY;
+    if (theCompW <= 0 || theCompH <= 0) return;
+
+    theDisplayImage = QImage(theCompW, theCompH, QImage::Format_ARGB32);
+    theDisplayImage.fill(Qt::transparent);
+
+    // Render sprites in reverse order (last = background, first = foreground)
+    for (int si = theGroupSprites.size() - 1; si >= 0; --si)
+    {
+        const EditorSprite & es = theGroupSprites[si];
+        int palLine = qBound(0, es.paletteLine, 3);
+        const GenesisPalette & pal = theGroupPalettes[palLine];
+
+        for (int col = 0; col < es.widthTiles; ++col)
+        {
+            for (int row = 0; row < es.heightTiles; ++row)
+            {
+                int tileIdx = col * es.heightTiles + row;
+                int tileOffset = tileIdx * 32;
+                if (tileOffset + 32 > es.tileData.size())
+                    continue;
+
+                QImage tile = TileDecoder::decodeTileFlipped(
+                    es.tileData, tileOffset, pal, es.hFlip, es.vFlip);
+
+                int tileX, tileY;
+                if (es.hFlip)
+                    tileX = (es.widthTiles - 1 - col) * 8;
+                else
+                    tileX = col * 8;
+                if (es.vFlip)
+                    tileY = (es.heightTiles - 1 - row) * 8;
+                else
+                    tileY = row * 8;
+
+                int dx = es.x + tileX;
+                int dy = es.y + tileY;
+
+                for (int ty = 0; ty < 8; ++ty)
+                {
+                    for (int tx = 0; tx < 8; ++tx)
+                    {
+                        int px = dx + tx;
+                        int py = dy + ty;
+                        if (px < 0 || px >= theCompW || py < 0 || py >= theCompH)
+                            continue;
+                        QRgb pixel = tile.pixel(tx, ty);
+                        if (qAlpha(pixel) > 0)
+                            theDisplayImage.setPixel(px, py, pixel);
+                    }
+                }
+            }
+        }
+    }
+}
+
+int SpritePixelEditor::findSpriteAtPixel(int px, int py) const
+{
+    // Check sprites in order (first = foreground priority)
+    for (int si = 0; si < theGroupSprites.size(); ++si)
+    {
+        const EditorSprite & es = theGroupSprites[si];
+        int sw = es.widthTiles * 8;
+        int sh = es.heightTiles * 8;
+
+        if (px >= es.x && px < es.x + sw &&
+            py >= es.y && py < es.y + sh)
+        {
+            return si;
+        }
+    }
+    return -1;
+}
+
+void SpritePixelEditor::setGroupNibbleAt(int px, int py, int paletteIndex)
+{
+    int si = findSpriteAtPixel(px, py);
+    if (si < 0)
+        return;
+
+    EditorSprite & es = theGroupSprites[si];
+
+    // Convert composite coords to local sprite coords
+    int localX = px - es.x;
+    int localY = py - es.y;
+
+    int totalW = es.widthTiles * 8;
+    int totalH = es.heightTiles * 8;
+
+    // Account for flip
+    int rawX = es.hFlip ? (totalW - 1 - localX) : localX;
+    int rawY = es.vFlip ? (totalH - 1 - localY) : localY;
+
+    if (rawX < 0 || rawX >= totalW || rawY < 0 || rawY >= totalH)
+        return;
+
+    int tileCol = rawX / 8;
+    int tileRow = rawY / 8;
+    int tileIdx = tileCol * es.heightTiles + tileRow;
+
+    int lx = rawX % 8;
+    int ly = rawY % 8;
+
+    int byteOffset = tileIdx * 32 + ly * 4 + lx / 2;
+    if (byteOffset < 0 || byteOffset >= es.tileData.size())
+        return;
+
+    uint8_t byte = (uint8_t)es.tileData[byteOffset];
+    int idx = qBound(0, paletteIndex, 15);
+
+    if (lx % 2 == 0)
+        byte = (byte & 0x0F) | (idx << 4);
+    else
+        byte = (byte & 0xF0) | idx;
+
+    es.tileData[byteOffset] = (char)byte;
+}
+
+bool SpritePixelEditor::paintGroupPixelAt(const QPoint & widgetPos)
+{
+    if (!theHasSprite || !theGroupMode)
+        return false;
+
+    int px = widgetPos.x() / theZoom;
+    int py = widgetPos.y() / theZoom;
+
+    if (px < 0 || px >= theCompW || py < 0 || py >= theCompH)
+        return false;
+
+    setGroupNibbleAt(px, py, thePenIndex);
+    theModified = true;
+    rebuildGroupDisplayImage();
+    update();
+
+    emit pixelPainted(px, py, thePenIndex);
+    return true;
+}
+
+// ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
@@ -251,14 +460,28 @@ void SpritePixelEditor::paintEvent(QPaintEvent *event)
             p.drawLine(0, y * theZoom, scaledW, y * theZoom);
     }
 
-    // Tile grid (every 8 pixels)
-    if (theShowGrid && theZoom >= 2)
+    // Tile grid (every 8 pixels) — single sprite mode
+    if (theShowGrid && theZoom >= 2 && !theGroupMode)
     {
         p.setPen(QPen(QColor(255, 255, 0, 100), 1));
         for (int x = 0; x <= theWidthTiles; ++x)
             p.drawLine(x * 8 * theZoom, 0, x * 8 * theZoom, scaledH);
         for (int y = 0; y <= theHeightTiles; ++y)
             p.drawLine(0, y * 8 * theZoom, scaledW, y * 8 * theZoom);
+    }
+
+    // Sprite outlines in group mode
+    if (theShowGrid && theZoom >= 2 && theGroupMode)
+    {
+        p.setPen(QPen(QColor(255, 200, 0, 120), 1, Qt::DashLine));
+        for (const EditorSprite & es : theGroupSprites)
+        {
+            int rx = es.x * theZoom;
+            int ry = es.y * theZoom;
+            int rw = es.widthTiles * 8 * theZoom;
+            int rh = es.heightTiles * 8 * theZoom;
+            p.drawRect(rx, ry, rw - 1, rh - 1);
+        }
     }
 }
 
@@ -298,14 +521,22 @@ void SpritePixelEditor::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton && theHasSprite)
     {
         thePainting = true;
-        paintPixelAt(event->pos());
+        if (theGroupMode)
+            paintGroupPixelAt(event->pos());
+        else
+            paintPixelAt(event->pos());
     }
 }
 
 void SpritePixelEditor::mouseMoveEvent(QMouseEvent *event)
 {
     if (thePainting && (event->buttons() & Qt::LeftButton))
-        paintPixelAt(event->pos());
+    {
+        if (theGroupMode)
+            paintGroupPixelAt(event->pos());
+        else
+            paintPixelAt(event->pos());
+    }
 }
 
 void SpritePixelEditor::mouseReleaseEvent(QMouseEvent *event)

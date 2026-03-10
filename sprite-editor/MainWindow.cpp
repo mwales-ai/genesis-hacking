@@ -1835,6 +1835,9 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
 
     // Resolve the active collection
     SpriteCollection col;
+    bool isNormCol = false;
+    int normColIndex = -1;
+
     if (comboIndex < theCollectionCount)
     {
         if (theDef.isNormalized())
@@ -1843,6 +1846,8 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
             if (comboIndex >= normCols.size())
                 return;
             col = buildFromNormalized(normCols[comboIndex]);
+            isNormCol = true;
+            normColIndex = comboIndex;
         }
         else
         {
@@ -1865,6 +1870,102 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
     if (spriteIndex < 0 || spriteIndex >= col.sprites.size())
         return;
 
+    // Store which collection we're editing
+    theEditCollectionIndex = comboIndex;
+    theEditSpriteIndex = spriteIndex;
+
+    // Check if this is a multi-sprite normalized collection -> group mode
+    if (isNormCol && col.sprites.size() > 1)
+    {
+        // Build EditorSprite list from the collection
+        QVector<EditorSprite> edSprites;
+        for (int i = 0; i < col.sprites.size(); ++i)
+        {
+            const CollectionSprite & cs = col.sprites[i];
+            EditorSprite es;
+            es.widthTiles = cs.widthTiles;
+            es.heightTiles = cs.heightTiles;
+            es.x = cs.x;
+            es.y = cs.y;
+            es.hFlip = cs.hFlip;
+            es.vFlip = cs.vFlip;
+            es.paletteLine = cs.paletteLine;
+            es.romOffset = cs.romOffset;
+
+            // Get tile data
+            if (cs.source == "embedded" && !cs.tileData.isEmpty())
+            {
+                es.tileData = cs.tileData;
+            }
+            else if (!cs.romOffset.isEmpty() && theRom.isOpen())
+            {
+                bool ok = false;
+                QString offsetStr = cs.romOffset;
+                if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+                    offsetStr = offsetStr.mid(2);
+                uint32_t offset = offsetStr.toUInt(&ok, 16);
+                if (ok)
+                {
+                    int totalBytes = cs.widthTiles * cs.heightTiles * 32;
+                    es.tileData = theRom.readBytes(offset, totalBytes);
+                }
+            }
+
+            if (es.tileData.isEmpty())
+            {
+                int totalBytes = cs.widthTiles * cs.heightTiles * 32;
+                es.tileData = QByteArray(totalBytes, '\0');
+            }
+
+            edSprites.append(es);
+        }
+
+        // Decode palettes
+        GenesisPalette pals[4];
+        for (int i = 0; i < 4; ++i)
+        {
+            if (i < col.palettes.size() && !col.palettes[i].cramValues.isEmpty())
+                pals[i] = TileDecoder::decodePaletteFromCram(col.palettes[i].cramValues);
+            else
+                pals[i] = TileDecoder::greyPalette();
+        }
+
+        // Load group into pixel editor
+        ui->theSpritePixelEditor->loadSpriteGroup(edSprites, pals);
+        ui->theSpritePixelEditor->setZoom(ui->theEditorZoomSpin->value());
+        ui->theSpritePixelEditor->setShowGrid(ui->theEditorGridCheck->isChecked());
+
+        // Set editor palette to line 0 (user can still paint with any index)
+        ui->theEditorPalette->setPalette(pals[0]);
+
+        // Enable save if any sprite has a ROM offset
+        bool canSave = false;
+        for (const EditorSprite & es : edSprites)
+        {
+            if (!es.romOffset.isEmpty())
+            {
+                canSave = true;
+                break;
+            }
+        }
+        ui->theEditorSaveButton->setEnabled(canSave && theRom.isOpen());
+        ui->theEditorSavePaletteButton->setEnabled(false);
+
+        QString info = QString("Group: %1 | %2 sprites | Click to edit")
+            .arg(col.name).arg(col.sprites.size());
+        ui->theEditorInfoLabel->setText(info);
+
+        int editorTabIndex = ui->theTabWidget->indexOf(ui->tabSpriteEditor);
+        if (editorTabIndex >= 0)
+            ui->theTabWidget->setCurrentIndex(editorTabIndex);
+
+        statusBar()->showMessage(
+            QString("Editing sprite group \"%1\" (%2 sprites)")
+            .arg(col.name).arg(col.sprites.size()));
+        return;
+    }
+
+    // Single sprite mode (original behavior)
     const CollectionSprite & sprite = col.sprites[spriteIndex];
     int palLine = qBound(0, sprite.paletteLine, 3);
 
@@ -1898,10 +1999,6 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
     GenesisPalette pal = TileDecoder::greyPalette();
     if (palLine < col.palettes.size())
         pal = TileDecoder::decodePaletteFromCram(col.palettes[palLine].cramValues);
-
-    // Store which sprite we're editing
-    theEditCollectionIndex = comboIndex;
-    theEditSpriteIndex = spriteIndex;
 
     // Load into pixel editor
     ui->theSpritePixelEditor->loadSprite(tileBytes, sprite.widthTiles, sprite.heightTiles,
@@ -2027,7 +2124,40 @@ void MainWindow::onEditorSave()
 
     int colIndex = theEditCollectionIndex;
 
-    // Get the active collection
+    // Group mode: save each sprite's tile data to its ROM offset
+    if (ui->theSpritePixelEditor->isGroupMode())
+    {
+        int saved = 0;
+        int count = ui->theSpritePixelEditor->groupSpriteCount();
+        for (int i = 0; i < count; ++i)
+        {
+            const EditorSprite & es = ui->theSpritePixelEditor->groupSprite(i);
+            if (es.romOffset.isEmpty())
+                continue;
+
+            bool ok = false;
+            QString offsetStr = es.romOffset;
+            if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+                offsetStr = offsetStr.mid(2);
+            uint32_t offset = offsetStr.toUInt(&ok, 16);
+            if (!ok)
+                continue;
+
+            QByteArray data = ui->theSpritePixelEditor->modifiedGroupTileData(i);
+            if (theRom.writeBytes(offset, data))
+                ++saved;
+        }
+
+        updateWindowTitle();
+        statusBar()->showMessage(
+            QString("Saved %1 of %2 sprite tile data blocks to ROM. Use File > Save ROM to persist.")
+            .arg(saved).arg(count));
+
+        onSpriteCollectionSelected(colIndex);
+        return;
+    }
+
+    // Single sprite mode
     SpriteCollection col;
     if (colIndex >= 0 && colIndex < theCollectionCount)
     {
