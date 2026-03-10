@@ -258,6 +258,134 @@ When `frame_count` > 1, the editor treats the data at `rom_offset` as N consecut
 
 See `examples/moonwalker.json` for a complete working example.
 
+### Normalized Format
+
+The normalized format uses shared palette and pattern pools referenced by ID,
+rather than duplicating data in each sprite group:
+
+```json
+{
+  "game_name": "Game Title",
+  "game_id": "game_id",
+  "palettes": {
+    "pal_id": {
+      "name": "Palette Name",
+      "rom_offset": "0x8000",
+      "cram_values": ["0x0000", "0x0eee", ...]
+    }
+  },
+  "patterns": {
+    "pat_id": {
+      "name": "Pattern Name",
+      "rom_offset": "0x20000",
+      "width_tiles": 2,
+      "height_tiles": 4,
+      "frame_count": 1,
+      "compression": "none"
+    }
+  },
+  "sprite_collections": {
+    "col_id": {
+      "name": "Collection Name",
+      "sprites": [
+        {
+          "pattern": "pat_id",
+          "palette": "pal_id",
+          "x": 0, "y": 0,
+          "h_flip": false, "v_flip": false
+        }
+      ]
+    }
+  }
+}
+```
+
+## Sprite Recording Workflow (.sprec files)
+
+Sprite recordings capture hardware sprite data across multiple frames from
+BlastEm's debugger, allowing frame-by-frame analysis of game animations.
+
+### Recording Sprites in BlastEm
+
+1. Run your ROM in BlastEm with the debugger: `blastem -d rom.bin`
+2. Play until the sprites you want to capture are on screen
+3. Enter the debugger (press backtick)
+4. Run: `spritecap output.sprec` to start recording sprite data
+5. Resume the game to capture frames, then stop recording in the debugger
+
+### Loading Recordings
+
+```bash
+./build/SpriteEditor rom.bin definition.json recording.sprec
+```
+
+Or use **File > Open Game Definition** and select a `.sprec` file.
+Recordings appear in the **Sprite Collections** tab with a "Recording:" prefix
+and a frame navigation spinbox.
+
+### Aladdin Example Walkthrough
+
+The `examples/` directory includes Aladdin sample files:
+- `aladdin_spriterecord.sprec` — multi-frame sprite recording
+- `aladdin_market_screencap.json` — market scene screen capture
+- `aladdin_title_screencap.json` — title screen capture
+
+To explore:
+```bash
+./build/SpriteEditor aladdin.bin examples/aladdin_spriterecord.sprec
+```
+
+## Multi-Select and Capture Workflow
+
+The Sprite Collections tab supports multi-select for identifying and
+capturing sprite groups from recordings.
+
+### Multi-Select
+
+- **Click** a sprite to select it (opens in pixel editor)
+- **Ctrl+Click** to toggle additional sprites in/out of the selection
+- **Rubber-band drag** on empty space to select all sprites in a rectangle
+- **Ctrl+rubber-band** adds to existing selection
+
+The selection label below the controls shows how many sprites are selected.
+
+### Capturing Sprite Groups
+
+After selecting sprites that form a character or object:
+
+1. Click **Capture Sprite Group**
+2. Enter a name for the group (e.g., "Aladdin Walk Frame 1")
+3. The editor creates palette pool entries, pattern pool entries, and a
+   normalized sprite collection in the game definition JSON
+4. The game definition is auto-saved
+
+Sprite positions are normalized relative to the group's bounding box origin.
+
+### Hide/Unhide Sprites
+
+After capturing a group, you can hide those sprites to reduce visual
+clutter when analyzing subsequent frames:
+
+- **Hide Selected** — removes selected sprites from rendering (they still
+  appear as dashed outlines when hovered or selected)
+- **Unhide All** — restores all hidden sprites
+
+Hidden state resets when changing frames or collections.
+
+## Composite Sprite Editor
+
+When clicking a multi-sprite normalized collection in the Collections tab,
+the pixel editor opens in **group mode**:
+
+- All sprites are composited at their correct positions
+- Painting works across sprite boundaries — the editor automatically
+  determines which sprite owns each pixel
+- Dashed yellow outlines show individual sprite boundaries
+- **Save Tiles to ROM** writes each sprite's modified tile data to its
+  own ROM offset
+
+This is essential for editing characters that span multiple hardware sprites.
+
 ## Genesis Tile Format Reference
 
 - **Tile size**: 8x8 pixels, 4 bits per pixel = 32 bytes per tile
