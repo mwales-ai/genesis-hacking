@@ -12,6 +12,7 @@ SpritePixelEditor::SpritePixelEditor(QWidget *parent)
     , theHFlip(false)
     , theVFlip(false)
     , theGroupMode(false)
+    , theActiveGroupPaletteLine(0)
     , theZoom(8)
     , thePenIndex(1)
     , theShowGrid(true)
@@ -61,6 +62,7 @@ void SpritePixelEditor::loadSpriteGroup(const QVector<EditorSprite> & sprites,
     for (int i = 0; i < 4; ++i)
         theGroupPalettes[i] = palettes[i];
     theGroupMode = true;
+    theActiveGroupPaletteLine = 0;
     theModified = false;
     theHasSprite = true;
 
@@ -91,6 +93,17 @@ void SpritePixelEditor::updatePalette(const GenesisPalette & palette)
             rebuildGroupDisplayImage();
         else
             rebuildDisplayImage();
+        update();
+    }
+}
+
+void SpritePixelEditor::updateGroupPalette(int paletteLine, const GenesisPalette & palette)
+{
+    int line = qBound(0, paletteLine, 3);
+    theGroupPalettes[line] = palette;
+    if (theHasSprite && theGroupMode)
+    {
+        rebuildGroupDisplayImage();
         update();
     }
 }
@@ -470,16 +483,39 @@ void SpritePixelEditor::paintEvent(QPaintEvent *event)
             p.drawLine(0, y * 8 * theZoom, scaledW, y * 8 * theZoom);
     }
 
-    // Sprite outlines in group mode
+    // Sprite outlines in group mode — color-coded by palette line
     if (theShowGrid && theZoom >= 2 && theGroupMode)
     {
-        p.setPen(QPen(QColor(255, 200, 0, 120), 1, Qt::DashLine));
+        // Palette line colors
+        static const QColor palLineColors[4] = {
+            QColor(255, 200,   0),   // line 0: yellow
+            QColor(  0, 200, 255),   // line 1: cyan
+            QColor(255, 100, 255),   // line 2: magenta
+            QColor(100, 255, 100)    // line 3: green
+        };
+
         for (const EditorSprite & es : theGroupSprites)
         {
             int rx = es.x * theZoom;
             int ry = es.y * theZoom;
             int rw = es.widthTiles * 8 * theZoom;
             int rh = es.heightTiles * 8 * theZoom;
+
+            int line = qBound(0, es.paletteLine, 3);
+            QColor lineColor = palLineColors[line];
+
+            if (line == theActiveGroupPaletteLine)
+            {
+                // Active palette line: solid, 2px
+                lineColor.setAlpha(200);
+                p.setPen(QPen(lineColor, 2, Qt::SolidLine));
+            }
+            else
+            {
+                // Other lines: dashed, 1px
+                lineColor.setAlpha(120);
+                p.setPen(QPen(lineColor, 1, Qt::DashLine));
+            }
             p.drawRect(rx, ry, rw - 1, rh - 1);
         }
     }
@@ -525,6 +561,23 @@ void SpritePixelEditor::mousePressEvent(QMouseEvent *event)
             paintGroupPixelAt(event->pos());
         else
             paintPixelAt(event->pos());
+    }
+    else if (event->button() == Qt::MiddleButton && theHasSprite && theGroupMode)
+    {
+        // Middle-click: switch active palette line to the clicked sprite's line
+        int px = event->pos().x() / theZoom;
+        int py = event->pos().y() / theZoom;
+        int sprIdx = findSpriteAtPixel(px, py);
+        if (sprIdx >= 0)
+        {
+            int newLine = theGroupSprites[sprIdx].paletteLine;
+            if (newLine != theActiveGroupPaletteLine)
+            {
+                theActiveGroupPaletteLine = newLine;
+                update();   // repaint to update outline styling
+                emit groupPaletteLineChanged(newLine);
+            }
+        }
     }
 }
 

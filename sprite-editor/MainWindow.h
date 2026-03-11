@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSettings>
+#include <QMap>
 #include <QSet>
 #include <iostream>
 
@@ -65,6 +66,7 @@ private slots:
 
     // Sprite Editor tab
     void onCollectionSpriteClicked(int spriteIndex);
+    void onEditorGroupPaletteLineChanged(int paletteLine);
     void onEditorPaletteSelected(int index);
     void onEditorPaletteEditRequested(int index);
     void onEditorSave();
@@ -152,6 +154,8 @@ private:
     // Editor state: which collection + sprite is being edited
     int                   theEditCollectionIndex;
     int                   theEditSpriteIndex;
+    int                   theEditorActivePaletteLine;
+    QMap<int, QString>    theEditPalLineToId;  // palette line -> palette pool ID for current group
 
     // Hidden sprites by ROM offset (persists across frames)
     QSet<QString>         theHiddenRomOffsets;

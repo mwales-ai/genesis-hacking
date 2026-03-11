@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
+#include "SpritePixelEditor.h"
 #include "SpriteReplaceDialog.h"
 #include "GenesisColorDialog.h"
 
@@ -32,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     , theActiveRecIndex(-1)
     , theEditCollectionIndex(-1)
     , theEditSpriteIndex(-1)
+    , theEditorActivePaletteLine(0)
 {
     ui->setupUi(this);
     setupMenus();
@@ -209,6 +211,8 @@ void MainWindow::setupConnections()
             this,                       &MainWindow::onUnhideSelectedSprites);
 
     // Sprite Editor tab
+    connect(ui->theSpritePixelEditor,      &SpritePixelEditor::groupPaletteLineChanged,
+            this,                          &MainWindow::onEditorGroupPaletteLineChanged);
     connect(ui->theEditorPalette,          &PaletteWidget::colorSelected,
             this,                          &MainWindow::onEditorPaletteSelected);
     connect(ui->theEditorPalette,          &PaletteWidget::colorEditRequested,
@@ -2081,7 +2085,24 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
         ui->theSpritePixelEditor->setZoom(ui->theEditorZoomSpin->value());
         ui->theSpritePixelEditor->setShowGrid(ui->theEditorGridCheck->isChecked());
 
-        // Set editor palette to line 0 (user can still paint with any index)
+        // Init multi-palette state
+        theEditorActivePaletteLine = 0;
+        theEditPalLineToId.clear();
+        if (isNormCol && comboIndex < theDef.normalizedCollections().size())
+        {
+            const NormalizedCollection & norm = theDef.normalizedCollections()[comboIndex];
+            // Build palette line -> ID mapping (same logic as buildFromNormalized)
+            QMap<QString, int> palLineMap;
+            for (const auto & ns : norm.sprites)
+            {
+                if (!palLineMap.contains(ns.paletteId) && palLineMap.size() < 4)
+                    palLineMap.insert(ns.paletteId, palLineMap.size());
+            }
+            for (auto it = palLineMap.begin(); it != palLineMap.end(); ++it)
+                theEditPalLineToId[it.value()] = it.key();
+        }
+
+        // Set editor palette to line 0 (middle-click sprite to switch)
         ui->theEditorPalette->setPalette(pals[0]);
 
         // Enable save if any sprite has a ROM offset
@@ -2183,6 +2204,16 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
             .arg(sprite.index).arg(col.name));
 }
 
+void MainWindow::onEditorGroupPaletteLineChanged(int paletteLine)
+{
+    theEditorActivePaletteLine = paletteLine;
+    ui->theEditorPalette->setPalette(
+        ui->theSpritePixelEditor->groupPalette(paletteLine));
+    statusBar()->showMessage(
+        QString("Palette line %1 selected (middle-click sprite to switch)")
+        .arg(paletteLine));
+}
+
 void MainWindow::onEditorPaletteSelected(int index)
 {
     ui->theSpritePixelEditor->setPenIndex(index);
@@ -2252,7 +2283,12 @@ void MainWindow::onEditorPaletteEditRequested(int index)
         return;
 
     ui->theEditorPalette->setColorAt(index, dlg.selectedColor());
-    ui->theSpritePixelEditor->updatePalette(ui->theEditorPalette->palette());
+
+    if (ui->theSpritePixelEditor->isGroupMode())
+        ui->theSpritePixelEditor->updateGroupPalette(
+            theEditorActivePaletteLine, ui->theEditorPalette->palette());
+    else
+        ui->theSpritePixelEditor->updatePalette(ui->theEditorPalette->palette());
 
     statusBar()->showMessage(
         QString("Color %1 changed to CRAM 0x%2")

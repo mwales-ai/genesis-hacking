@@ -43,6 +43,13 @@ public:
     /** Update palette without changing tile data (for live color editing). */
     void updatePalette(const GenesisPalette & palette);
 
+    /** Update a specific palette line in group mode. */
+    void updateGroupPalette(int paletteLine, const GenesisPalette & palette);
+
+    /** Active palette line in group mode (0-3). */
+    int activeGroupPaletteLine() const { return theActiveGroupPaletteLine; }
+    const GenesisPalette & groupPalette(int line) const { return theGroupPalettes[qBound(0, line, 3)]; }
+
     /** Set the pen color (palette index 0-15). */
     void setPenIndex(int paletteIndex);
     int penIndex() const { return thePenIndex; }
@@ -73,6 +80,7 @@ public:
 
 signals:
     void pixelPainted(int x, int y, int paletteIndex);
+    void groupPaletteLineChanged(int paletteLine);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -111,6 +119,7 @@ private:
     QVector<EditorSprite> theGroupSprites;
     GenesisPalette   theGroupPalettes[4];
     bool             theGroupMode;
+    int              theActiveGroupPaletteLine;
 
     // Shared state
     QImage           theDisplayImage;
