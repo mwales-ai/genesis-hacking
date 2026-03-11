@@ -1543,7 +1543,7 @@ void MainWindow::onSpriteCollectionSelected(int index)
     }
 
     // Clear hidden and selection state on collection change
-    theHiddenSpriteIndices.clear();
+    theHiddenRomOffsets.clear();
     ui->theSpriteColWidget->clearHiddenSprites();
     ui->theSpriteColWidget->clearSelection();
     ui->theColSelectionLabel->setText("No sprites selected");
@@ -1640,23 +1640,22 @@ void MainWindow::onSpriteCollectionZoomChanged(int value)
 
 void MainWindow::onAnimationFrameChanged(int frameIndex)
 {
-    // Clear hidden/selection on frame change
-    theHiddenSpriteIndices.clear();
-    ui->theSpriteColWidget->clearHiddenSprites();
+    // Clear selection but preserve hidden state across frames
     ui->theSpriteColWidget->clearSelection();
     ui->theColSelectionLabel->setText("No sprites selected");
     ui->theCaptureGroupButton->setEnabled(false);
     ui->theHideSpritesButton->setEnabled(false);
-    ui->theUnhideSpritesButton->setEnabled(false);
 
     if (theActiveRecIndex >= 0)
     {
         displayRecordingFrame(theActiveRecIndex, frameIndex);
+        applyPersistentHidden();
         return;
     }
     if (theActiveAnimIndex >= 0)
     {
         displayAnimationFrame(theActiveAnimIndex, frameIndex);
+        applyPersistentHidden();
         return;
     }
 }
@@ -1821,6 +1820,20 @@ SpriteCollection MainWindow::buildFromNormalized(const NormalizedCollection & no
         col.boundingBox = QRect(minX, minY, maxX - minX, maxY - minY);
 
     return col;
+}
+
+void MainWindow::applyPersistentHidden()
+{
+    const SpriteCollection & col = ui->theSpriteColWidget->collection();
+    QSet<int> indexSet;
+    for (int i = 0; i < col.sprites.size(); ++i)
+    {
+        const QString & rom = col.sprites[i].romOffset;
+        if (!rom.isEmpty() && theHiddenRomOffsets.contains(rom))
+            indexSet.insert(i);
+    }
+    ui->theSpriteColWidget->setHiddenSprites(indexSet);
+    ui->theUnhideSpritesButton->setEnabled(!theHiddenRomOffsets.isEmpty());
 }
 
 // ---------------------------------------------------------------------------
@@ -2367,7 +2380,7 @@ void MainWindow::onCollectionSelectionChanged(const QSet<int> & selectedIndices)
     bool hasSelection = count > 0;
     ui->theCaptureGroupButton->setEnabled(hasSelection);
     ui->theHideSpritesButton->setEnabled(hasSelection);
-    ui->theUnhideSpritesButton->setEnabled(!theHiddenSpriteIndices.isEmpty());
+    ui->theUnhideSpritesButton->setEnabled(!theHiddenRomOffsets.isEmpty());
 }
 
 void MainWindow::onCaptureSpriteGroup()
@@ -2576,18 +2589,25 @@ void MainWindow::onCaptureSpriteGroup()
 void MainWindow::onHideSelectedSprites()
 {
     const QSet<int> & sel = ui->theSpriteColWidget->selectedSpriteIndices();
-    theHiddenSpriteIndices.unite(sel);
-    ui->theSpriteColWidget->setHiddenSprites(theHiddenSpriteIndices);
-    ui->theUnhideSpritesButton->setEnabled(!theHiddenSpriteIndices.isEmpty());
+    const SpriteCollection & col = ui->theSpriteColWidget->collection();
+    for (int idx : sel)
+    {
+        if (idx >= 0 && idx < col.sprites.size())
+        {
+            const QString & rom = col.sprites[idx].romOffset;
+            if (!rom.isEmpty())
+                theHiddenRomOffsets.insert(rom);
+        }
+    }
+    applyPersistentHidden();
     statusBar()->showMessage(
-        QString("%1 sprites now hidden").arg(theHiddenSpriteIndices.size()));
+        QString("%1 ROM offsets now hidden").arg(theHiddenRomOffsets.size()));
 }
 
 void MainWindow::onUnhideSelectedSprites()
 {
-    theHiddenSpriteIndices.clear();
-    ui->theSpriteColWidget->clearHiddenSprites();
-    ui->theUnhideSpritesButton->setEnabled(false);
+    theHiddenRomOffsets.clear();
+    applyPersistentHidden();
     statusBar()->showMessage("All sprites unhidden");
 }
 

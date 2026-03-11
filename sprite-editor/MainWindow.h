@@ -112,6 +112,7 @@ private:
     SpriteCollection buildCollectionFromFrame(const SpriteAnimation & anim, int frameIndex);
     SpriteCollection buildCollectionFromRecording(const SpriteRecording & rec, int frameIndex);
     SpriteCollection buildFromNormalized(const NormalizedCollection & norm);
+    void applyPersistentHidden();
 
     QByteArray fetchTileData(const SpriteEntry & entry);
     QByteArray fetchPatternTileData(const PoolPattern & pat);
@@ -148,8 +149,8 @@ private:
     int                   theEditCollectionIndex;
     int                   theEditSpriteIndex;
 
-    // Hidden sprites per-frame state (capture workflow)
-    QSet<int>             theHiddenSpriteIndices;
+    // Hidden sprites by ROM offset (persists across frames)
+    QSet<QString>         theHiddenRomOffsets;
 };
 
 #endif // MAINWINDOW_H
