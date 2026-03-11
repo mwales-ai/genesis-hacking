@@ -640,6 +640,16 @@ bool GameDefinition::hasCollectionId(const QString & id) const
     return false;
 }
 
+int GameDefinition::countPaletteReferences(const QString & paletteId) const
+{
+    int count = 0;
+    for (const auto & col : theNormalizedCollections)
+        for (const auto & ns : col.sprites)
+            if (ns.paletteId == paletteId)
+                ++count;
+    return count;
+}
+
 QString GameDefinition::definitionPath() const
 {
     return theDefinitionPath;

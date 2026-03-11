@@ -2116,7 +2116,13 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
             }
         }
         ui->theEditorSaveButton->setEnabled(canSave && theRom.isOpen());
-        ui->theEditorSavePaletteButton->setEnabled(false);
+
+        // Enable palette save if active palette has a known ROM offset
+        bool canSavePal = false;
+        QString firstPalId = theEditPalLineToId.value(0);
+        if (!firstPalId.isEmpty() && theDef.palettePool().contains(firstPalId))
+            canSavePal = theDef.palettePool()[firstPalId].romOffset != 0;
+        ui->theEditorSavePaletteButton->setEnabled(canSavePal && theRom.isOpen());
 
         QString info = QString("Group: %1 | %2 sprites | Click to edit")
             .arg(col.name).arg(col.sprites.size());
@@ -2209,6 +2215,14 @@ void MainWindow::onEditorGroupPaletteLineChanged(int paletteLine)
     theEditorActivePaletteLine = paletteLine;
     ui->theEditorPalette->setPalette(
         ui->theSpritePixelEditor->groupPalette(paletteLine));
+
+    // Update save palette button based on whether this palette has a ROM offset
+    bool canSavePal = false;
+    QString palId = theEditPalLineToId.value(paletteLine);
+    if (!palId.isEmpty() && theDef.palettePool().contains(palId))
+        canSavePal = theDef.palettePool()[palId].romOffset != 0;
+    ui->theEditorSavePaletteButton->setEnabled(canSavePal && theRom.isOpen());
+
     statusBar()->showMessage(
         QString("Palette line %1 selected (middle-click sprite to switch)")
         .arg(paletteLine));
@@ -2266,6 +2280,66 @@ void MainWindow::onEditorPaletteEditRequested(int index)
     if (theEditSpriteIndex < 0 || theEditSpriteIndex >= col.sprites.size())
         return;
 
+    // Group mode: use active palette line and check ROM offset from pool
+    if (ui->theSpritePixelEditor->isGroupMode())
+    {
+        QString palId = theEditPalLineToId.value(theEditorActivePaletteLine);
+        if (palId.isEmpty())
+        {
+            statusBar()->showMessage("No palette assigned to this line");
+            return;
+        }
+
+        const auto & palPool = theDef.palettePool();
+        if (!palPool.contains(palId))
+        {
+            statusBar()->showMessage("Palette ID not found in pool: " + palId);
+            return;
+        }
+
+        const PoolPalette & pp = palPool[palId];
+        if (pp.romOffset == 0)
+        {
+            statusBar()->showMessage(
+                "Palette has no known ROM location - color editing disabled");
+            return;
+        }
+
+        // Show shared palette reference count
+        int totalRefs = theDef.countPaletteReferences(palId);
+        // Count how many sprites in the current group use this palette
+        int localCount = 0;
+        if (colIndex < theDef.normalizedCollections().size())
+        {
+            const NormalizedCollection & norm = theDef.normalizedCollections()[colIndex];
+            for (const auto & ns : norm.sprites)
+                if (ns.paletteId == palId)
+                    ++localCount;
+        }
+        if (totalRefs > localCount)
+        {
+            statusBar()->showMessage(
+                QString("Note: this palette is shared by %1 sprites across all collections")
+                .arg(totalRefs));
+        }
+
+        QColor current = ui->theEditorPalette->palette()[index];
+        GenesisColorDialog dlg(current, index, this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+
+        ui->theEditorPalette->setColorAt(index, dlg.selectedColor());
+        ui->theSpritePixelEditor->updateGroupPalette(
+            theEditorActivePaletteLine, ui->theEditorPalette->palette());
+
+        statusBar()->showMessage(
+            QString("Color %1 changed to CRAM 0x%2")
+            .arg(index)
+            .arg(dlg.selectedCramWord(), 4, 16, QChar('0')).toUpper());
+        return;
+    }
+
+    // Single sprite mode
     int palLine = qBound(0, col.sprites[theEditSpriteIndex].paletteLine, 3);
     bool canSavePalette = false;
     if (palLine < col.palettes.size())
@@ -2283,12 +2357,7 @@ void MainWindow::onEditorPaletteEditRequested(int index)
         return;
 
     ui->theEditorPalette->setColorAt(index, dlg.selectedColor());
-
-    if (ui->theSpritePixelEditor->isGroupMode())
-        ui->theSpritePixelEditor->updateGroupPalette(
-            theEditorActivePaletteLine, ui->theEditorPalette->palette());
-    else
-        ui->theSpritePixelEditor->updatePalette(ui->theEditorPalette->palette());
+    ui->theSpritePixelEditor->updatePalette(ui->theEditorPalette->palette());
 
     statusBar()->showMessage(
         QString("Color %1 changed to CRAM 0x%2")
@@ -2422,6 +2491,41 @@ void MainWindow::onEditorSavePalette()
         return;
 
     int colIndex = theEditCollectionIndex;
+
+    // Group mode: save palette via pool romOffset
+    if (ui->theSpritePixelEditor->isGroupMode())
+    {
+        QString palId = theEditPalLineToId.value(theEditorActivePaletteLine);
+        if (palId.isEmpty())
+        {
+            statusBar()->showMessage("No palette assigned to active line");
+            return;
+        }
+
+        const auto & palPool = theDef.palettePool();
+        if (!palPool.contains(palId) || palPool[palId].romOffset == 0)
+        {
+            QMessageBox::warning(this, "Cannot Save Palette",
+                "No ROM offset known for palette: " + palId);
+            return;
+        }
+
+        uint32_t offset = palPool[palId].romOffset;
+        QByteArray palData = TileDecoder::encodePalette(ui->theEditorPalette->palette());
+        if (!theRom.writeBytes(offset, palData))
+        {
+            QMessageBox::critical(this, "Error",
+                QString("Failed to write palette at ROM offset 0x%1")
+                .arg(offset, 6, 16, QChar('0')).toUpper());
+            return;
+        }
+
+        updateWindowTitle();
+        statusBar()->showMessage(
+            QString("Saved palette to ROM at 0x%1. Use File > Save ROM to persist.")
+            .arg(offset, 6, 16, QChar('0')).toUpper());
+        return;
+    }
 
     // Get the active collection
     SpriteCollection col;

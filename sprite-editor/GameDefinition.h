@@ -224,6 +224,9 @@ public:
     bool hasPatternId(const QString & id) const;
     bool hasCollectionId(const QString & id) const;
 
+    /** Count how many sprites across all collections reference this palette ID. */
+    int countPaletteReferences(const QString & paletteId) const;
+
     // Serialization
     bool saveToFile(const QString & path);
     QString definitionPath() const;
