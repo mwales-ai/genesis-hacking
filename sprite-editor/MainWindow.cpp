@@ -12,6 +12,8 @@
 #include <QRegularExpression>
 #include <QScrollArea>
 #include <QCloseEvent>
+#include <QPainter>
+#include <QStandardItemModel>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -21,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     , theCurrentGroupIndex(-1)
     , theCurrentSpriteIndex(-1)
     , theCurrentFrameIndex(0)
+    , thePatternCount(0)
     , theRawSelectedTileIndex(-1)
     , theRawSelectedRomOffset(0)
     , theCollectionCount(0)
@@ -397,11 +400,34 @@ void MainWindow::populatePatterns()
             .arg(pat.name).arg(pat.widthTiles).arg(pat.heightTiles).arg(pat.frameCount);
         ui->theGroupCombo->addItem(label);
     }
+    thePatternCount = patterns.size();
 
-    ui->theGroupCombo->setEnabled(!patterns.isEmpty());
+    // Add normalized collections after patterns
+    const auto & normCols = theDef.normalizedCollections();
+    if (!normCols.isEmpty())
+    {
+        // Disabled separator item
+        ui->theGroupCombo->addItem("--- Collections ---");
+        QStandardItemModel *model = qobject_cast<QStandardItemModel *>(ui->theGroupCombo->model());
+        if (model)
+        {
+            QStandardItem *sep = model->item(ui->theGroupCombo->count() - 1);
+            sep->setFlags(sep->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled));
+        }
+
+        for (const auto & col : normCols)
+        {
+            QString label = QString("%1 (%2 sprites)")
+                .arg(col.name).arg(col.sprites.size());
+            ui->theGroupCombo->addItem(label);
+        }
+    }
+
+    bool hasEntries = (thePatternCount + normCols.size()) > 0;
+    ui->theGroupCombo->setEnabled(hasEntries);
     ui->theGroupCombo->blockSignals(false);
 
-    if (!patterns.isEmpty())
+    if (hasEntries)
     {
         ui->theGroupCombo->setCurrentIndex(0);
         onSpriteGroupChanged(0);
@@ -415,7 +441,21 @@ void MainWindow::onSpriteGroupChanged(int index)
 
     if (theDef.isNormalized())
     {
-        displayPattern(index);
+        if (index < thePatternCount)
+        {
+            displayPattern(index);
+        }
+        else if (index == thePatternCount)
+        {
+            // Separator item - ignore, re-select previous
+            return;
+        }
+        else
+        {
+            // Collection entry: skip separator
+            int colIndex = index - thePatternCount - 1;
+            displayCollectionInViewer(colIndex);
+        }
         return;
     }
 
@@ -506,6 +546,99 @@ void MainWindow::displayPattern(int patternIndex)
     {
         ui->thePaletteDisplay->setPalette(pal);
     }
+}
+
+void MainWindow::displayCollectionInViewer(int collectionIndex)
+{
+    const auto & normCols = theDef.normalizedCollections();
+    if (collectionIndex < 0 || collectionIndex >= normCols.size())
+        return;
+
+    const NormalizedCollection & norm = normCols[collectionIndex];
+    SpriteCollection col = buildFromNormalized(norm);
+
+    // Composite all sprites into a single image
+    int imgW = col.boundingBox.width();
+    int imgH = col.boundingBox.height();
+    if (imgW <= 0 || imgH <= 0)
+        return;
+
+    int originX = col.boundingBox.x();
+    int originY = col.boundingBox.y();
+
+    QImage composite(imgW, imgH, QImage::Format_ARGB32);
+    composite.fill(Qt::transparent);
+
+    // Render sprites in reverse order (last = back, first = front)
+    for (int i = col.sprites.size() - 1; i >= 0; --i)
+    {
+        const CollectionSprite & cs = col.sprites[i];
+        int palLine = qBound(0, cs.paletteLine, 3);
+
+        GenesisPalette pal = TileDecoder::greyPalette();
+        if (palLine < col.palettes.size() && !col.palettes[palLine].cramValues.isEmpty())
+            pal = TileDecoder::decodePaletteFromCram(col.palettes[palLine].cramValues);
+
+        // Get tile data
+        QByteArray tileData;
+        if (!cs.romOffset.isEmpty() && theRom.isOpen())
+        {
+            bool ok = false;
+            QString offsetStr = cs.romOffset;
+            if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+                offsetStr = offsetStr.mid(2);
+            uint32_t offset = offsetStr.toUInt(&ok, 16);
+            if (ok)
+            {
+                int totalBytes = cs.widthTiles * cs.heightTiles * 32;
+                tileData = theRom.readBytes(offset, totalBytes);
+            }
+        }
+        else if (!cs.tileData.isEmpty())
+        {
+            tileData = cs.tileData;
+        }
+
+        if (tileData.isEmpty())
+            continue;
+
+        QImage sprImg = TileDecoder::decodeSprite(
+            tileData, cs.widthTiles, cs.heightTiles, pal);
+        if (cs.hFlip || cs.vFlip)
+            sprImg = sprImg.mirrored(cs.hFlip, cs.vFlip);
+
+        // Paint onto composite at the correct position
+        int destX = cs.x - originX;
+        int destY = cs.y - originY;
+        QPainter painter(&composite);
+        painter.drawImage(destX, destY, sprImg);
+    }
+
+    // Create a single thumb with the composite
+    QVector<SpriteThumb> thumbs;
+    SpriteThumb thumb;
+    thumb.image = composite;
+    thumb.groupIndex = 0;
+    thumb.spriteIndex = 0;
+    thumb.frameIndex = 0;
+    thumb.name = norm.name;
+    thumbs.append(thumb);
+
+    ui->theSpriteSheet->setSprites(thumbs);
+    ui->theSpriteDetail->clearSprite();
+    ui->theSpriteName->setText(QString("%1 (%2 sprites, %3x%4)")
+        .arg(norm.name).arg(norm.sprites.size())
+        .arg(imgW).arg(imgH));
+    ui->theOffsetLabel->clear();
+    ui->theReplaceButton->setEnabled(false);
+    ui->theExportButton->setEnabled(false);
+    ui->theExportAllButton->setEnabled(true);
+    ui->actionReplaceSprite->setEnabled(false);
+
+    // Show first palette line
+    if (!col.palettes.isEmpty() && !col.palettes[0].cramValues.isEmpty())
+        ui->thePaletteDisplay->setPalette(
+            TileDecoder::decodePaletteFromCram(col.palettes[0].cramValues));
 }
 
 void MainWindow::displaySpriteGroup(int groupIndex)

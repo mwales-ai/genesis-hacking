@@ -103,6 +103,7 @@ private:
 
     void displaySpriteGroup(int groupIndex);
     void displayPattern(int patternIndex);
+    void displayCollectionInViewer(int collectionIndex);
     void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
     void refreshRawBrowser();
     void populateScreenCaptures();
@@ -129,6 +130,9 @@ private:
     int                   theCurrentGroupIndex;
     int                   theCurrentSpriteIndex;
     int                   theCurrentFrameIndex;
+
+    // Sprite Viewer: split point between patterns and collections in combo
+    int                   thePatternCount;
 
     // Raw tile browser selection state
     int                   theRawSelectedTileIndex;
