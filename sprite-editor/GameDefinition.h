@@ -210,6 +210,12 @@ public:
     // Whether the definition uses the new normalized format
     bool isNormalized() const;
 
+    // Promote to normalized format (enables capture workflow)
+    void ensureNormalized();
+
+    // Initialize an empty definition (for capture without a pre-existing file)
+    void initEmpty(const QString & gameName, const QString & gameId);
+
     // Mutable accessors for capture workflow
     void addPoolPalette(const PoolPalette & pal);
     void addPoolPattern(const PoolPattern & pat);

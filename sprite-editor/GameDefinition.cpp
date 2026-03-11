@@ -825,3 +825,28 @@ bool GameDefinition::saveToFile(const QString & path)
     theDefinitionPath = savePath;
     return true;
 }
+
+void GameDefinition::ensureNormalized()
+{
+    theNormalized = true;
+    if (!theLoaded)
+        theLoaded = true;
+}
+
+void GameDefinition::initEmpty(const QString & gameName, const QString & gameId)
+{
+    theGameName = gameName;
+    theGameId   = gameId;
+    theNormalized = true;
+    theLoaded     = true;
+
+    thePalettePool.clear();
+    thePatternPool.clear();
+    theNormalizedCollections.clear();
+    theSpriteGroups.clear();
+    theTileRanges.clear();
+    theScreenCaptures.clear();
+    theSpriteCollections.clear();
+    theDefinitionPath.clear();
+    theLastError.clear();
+}

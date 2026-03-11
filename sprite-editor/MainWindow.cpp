@@ -2365,8 +2365,7 @@ void MainWindow::onCollectionSelectionChanged(const QSet<int> & selectedIndices)
             .arg(count).arg(count == 1 ? "" : "s"));
 
     bool hasSelection = count > 0;
-    bool canCapture = hasSelection && theDef.isLoaded();
-    ui->theCaptureGroupButton->setEnabled(canCapture);
+    ui->theCaptureGroupButton->setEnabled(hasSelection);
     ui->theHideSpritesButton->setEnabled(hasSelection);
     ui->theUnhideSpritesButton->setEnabled(!theHiddenSpriteIndices.isEmpty());
 }
@@ -2374,7 +2373,7 @@ void MainWindow::onCollectionSelectionChanged(const QSet<int> & selectedIndices)
 void MainWindow::onCaptureSpriteGroup()
 {
     const QSet<int> & selectedIndices = ui->theSpriteColWidget->selectedSpriteIndices();
-    if (selectedIndices.isEmpty() || !theDef.isLoaded())
+    if (selectedIndices.isEmpty())
         return;
 
     // Get the current collection (we need the sprites and palettes)
@@ -2434,13 +2433,14 @@ void MainWindow::onCaptureSpriteGroup()
         return;
     }
 
-    // Make sure definition is normalized format before adding
+    // Auto-promote to normalized format if needed
+    if (!theDef.isLoaded())
+    {
+        theDef.initEmpty("Captured Sprites", "captured");
+    }
     if (!theDef.isNormalized())
     {
-        QMessageBox::warning(this, "Format Not Supported",
-            "Capture requires a normalized format game definition.\n"
-            "Convert your game definition to use palettes/patterns objects.");
-        return;
+        theDef.ensureNormalized();
     }
 
     // Calculate min X/Y for normalization
@@ -2551,7 +2551,15 @@ void MainWindow::onCaptureSpriteGroup()
     theDef.addNormalizedCollection(normCol);
 
     // Save the game definition
-    if (!theDef.saveToFile(theDef.definitionPath()))
+    QString savePath = theDef.definitionPath();
+    if (savePath.isEmpty())
+    {
+        savePath = QFileDialog::getSaveFileName(this, "Save Game Definition",
+            QString(), "JSON Files (*.json)");
+        if (savePath.isEmpty())
+            return;
+    }
+    if (!theDef.saveToFile(savePath))
     {
         QMessageBox::critical(this, "Save Failed",
             "Failed to save game definition:\n" + theDef.lastError());
