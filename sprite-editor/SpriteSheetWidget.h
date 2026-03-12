@@ -31,10 +31,12 @@ public:
 
 signals:
     void spriteSelected(int groupIndex, int spriteIndex, int frameIndex);
+    void spriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 

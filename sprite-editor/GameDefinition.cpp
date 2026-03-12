@@ -640,6 +640,12 @@ bool GameDefinition::hasCollectionId(const QString & id) const
     return false;
 }
 
+void GameDefinition::renameCollection(int index, const QString & newName)
+{
+    if (index >= 0 && index < theNormalizedCollections.size())
+        theNormalizedCollections[index].name = newName;
+}
+
 int GameDefinition::countPaletteReferences(const QString & paletteId) const
 {
     int count = 0;

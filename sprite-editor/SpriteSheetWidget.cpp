@@ -146,6 +146,16 @@ void SpriteSheetWidget::mousePressEvent(QMouseEvent *event)
         selectItem(idx);
 }
 
+void SpriteSheetWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    int idx = itemIndexAt(event->pos());
+    if (idx >= 0 && idx < theSprites.size())
+    {
+        const SpriteThumb & t = theSprites[idx];
+        emit spriteDoubleClicked(t.groupIndex, t.spriteIndex, t.frameIndex);
+    }
+}
+
 void SpriteSheetWidget::keyPressEvent(QKeyEvent *event)
 {
     if (theSprites.isEmpty())

@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     , theEditCollectionIndex(-1)
     , theEditSpriteIndex(-1)
     , theEditorActivePaletteLine(0)
+    , theCaptureCounter(0)
 {
     ui->setupUi(this);
     setupMenus();
@@ -209,6 +210,14 @@ void MainWindow::setupConnections()
             this,                       &MainWindow::onHideSelectedSprites);
     connect(ui->theUnhideSpritesButton, &QPushButton::clicked,
             this,                       &MainWindow::onUnhideSelectedSprites);
+
+    // Sprite Viewer: rename, edit, double-click
+    connect(ui->theRenameButton,        &QPushButton::clicked,
+            this,                       &MainWindow::onRenameCollection);
+    connect(ui->theEditFromViewerButton, &QPushButton::clicked,
+            this,                       &MainWindow::onEditFromViewer);
+    connect(ui->theSpriteSheet,         &SpriteSheetWidget::spriteDoubleClicked,
+            this,                       &MainWindow::onViewerSpriteDoubleClicked);
 
     // Sprite Editor tab
     connect(ui->theSpritePixelEditor,      &SpritePixelEditor::groupPaletteLineChanged,
@@ -460,6 +469,10 @@ void MainWindow::onSpriteGroupChanged(int index)
             int colIndex = index - thePatternCount - 1;
             displayCollectionInViewer(colIndex);
         }
+
+        bool isCollection = (index > thePatternCount);
+        ui->theRenameButton->setEnabled(isCollection);
+        ui->theEditFromViewerButton->setEnabled(index >= 0);
         return;
     }
 
@@ -2699,24 +2712,15 @@ void MainWindow::onCaptureSpriteGroup()
             return;
     }
 
-    // Ask for a group name
-    bool ok = false;
-    QString name = QInputDialog::getText(this, "Capture Sprite Group",
-        "Enter a name for this sprite group:", QLineEdit::Normal,
-        "New Sprite Group", &ok);
-    if (!ok || name.isEmpty())
-        return;
-
-    // Generate an ID from the name (lowercase, underscores)
-    QString id = name.toLower();
-    id.replace(QRegularExpression("[^a-z0-9]+"), "_");
-    id.replace(QRegularExpression("^_|_$"), "");
-
-    if (theDef.hasCollectionId(id))
+    // Auto-generate a unique name and ID
+    ++theCaptureCounter;
+    QString name = QString("Capture %1").arg(theCaptureCounter);
+    QString id = QString("capture_%1").arg(theCaptureCounter);
+    while (theDef.hasCollectionId(id))
     {
-        QMessageBox::warning(this, "Duplicate ID",
-            QString("A sprite collection with ID '%1' already exists.").arg(id));
-        return;
+        ++theCaptureCounter;
+        name = QString("Capture %1").arg(theCaptureCounter);
+        id = QString("capture_%1").arg(theCaptureCounter);
     }
 
     // Auto-promote to normalized format if needed
@@ -2852,11 +2856,14 @@ void MainWindow::onCaptureSpriteGroup()
         return;
     }
 
-    // Refresh the collections combo
+    // Refresh the collections combo and the Sprite Viewer combo
     populateSpriteCollections();
+    if (theRom.isOpen())
+        populatePatterns();
+
     statusBar()->showMessage(
-        QString("Captured sprite group '%1' with %2 sprites")
-        .arg(name).arg(normCol.sprites.size()));
+        QString("Captured %1 sprites as '%2'")
+        .arg(normCol.sprites.size()).arg(name));
 }
 
 void MainWindow::onHideSelectedSprites()
@@ -2909,4 +2916,206 @@ void MainWindow::onSaveGameDefinition()
     }
 
     statusBar()->showMessage("Game definition saved: " + path);
+}
+
+// ---------------------------------------------------------------------------
+// Sprite Viewer: Rename, Edit, Double-click
+// ---------------------------------------------------------------------------
+
+void MainWindow::onRenameCollection()
+{
+    int index = ui->theGroupCombo->currentIndex();
+    if (!theDef.isNormalized() || index <= thePatternCount)
+        return;
+
+    int colIndex = index - thePatternCount - 1;
+    const auto & normCols = theDef.normalizedCollections();
+    if (colIndex < 0 || colIndex >= normCols.size())
+        return;
+
+    bool ok = false;
+    QString newName = QInputDialog::getText(this, "Rename Collection",
+        "New name:", QLineEdit::Normal, normCols[colIndex].name, &ok);
+    if (!ok || newName.isEmpty())
+        return;
+
+    theDef.renameCollection(colIndex, newName);
+    theDef.saveToFile(QString());
+
+    // Re-populate and restore combo position
+    int savedIndex = index;
+    populatePatterns();
+    if (savedIndex < ui->theGroupCombo->count())
+        ui->theGroupCombo->setCurrentIndex(savedIndex);
+
+    statusBar()->showMessage(QString("Renamed to '%1'").arg(newName));
+}
+
+void MainWindow::onEditFromViewer()
+{
+    int index = ui->theGroupCombo->currentIndex();
+    if (!theDef.isLoaded() || !theRom.isOpen() || index < 0)
+        return;
+
+    if (theDef.isNormalized())
+    {
+        if (index > thePatternCount)
+        {
+            // Collection entry: open as group in the editor
+            int colIndex = index - thePatternCount - 1;
+            const auto & normCols = theDef.normalizedCollections();
+            if (colIndex < 0 || colIndex >= normCols.size())
+                return;
+
+            SpriteCollection col = buildFromNormalized(normCols[colIndex]);
+
+            // Reuse onCollectionSpriteClicked to set up editor
+            // Set theEditCollectionIndex so it matches a normalized collection
+            // We need to find the matching combo index in the Collections tab
+            // For now, use the sprite editor group path directly
+            theEditCollectionIndex = colIndex;
+            theEditSpriteIndex = 0;
+
+            // Use the same group-mode logic as onCollectionSpriteClicked
+            // Build EditorSprite list
+            QVector<EditorSprite> edSprites;
+            for (int i = 0; i < col.sprites.size(); ++i)
+            {
+                const CollectionSprite & cs = col.sprites[i];
+                EditorSprite es;
+                es.widthTiles = cs.widthTiles;
+                es.heightTiles = cs.heightTiles;
+                es.x = cs.x;
+                es.y = cs.y;
+                es.hFlip = cs.hFlip;
+                es.vFlip = cs.vFlip;
+                es.paletteLine = cs.paletteLine;
+                es.romOffset = cs.romOffset;
+
+                if (cs.source == "embedded" && !cs.tileData.isEmpty())
+                    es.tileData = cs.tileData;
+                else if (!cs.romOffset.isEmpty() && theRom.isOpen())
+                {
+                    bool ok = false;
+                    QString offsetStr = cs.romOffset;
+                    if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+                        offsetStr = offsetStr.mid(2);
+                    uint32_t offset = offsetStr.toUInt(&ok, 16);
+                    if (ok)
+                        es.tileData = theRom.readBytes(offset,
+                            cs.widthTiles * cs.heightTiles * 32);
+                }
+                if (es.tileData.isEmpty())
+                    es.tileData = QByteArray(cs.widthTiles * cs.heightTiles * 32, '\0');
+
+                edSprites.append(es);
+            }
+
+            GenesisPalette pals[4];
+            for (int i = 0; i < 4; ++i)
+            {
+                if (i < col.palettes.size() && !col.palettes[i].cramValues.isEmpty())
+                    pals[i] = TileDecoder::decodePaletteFromCram(col.palettes[i].cramValues);
+                else
+                    pals[i] = TileDecoder::greyPalette();
+            }
+
+            ui->theSpritePixelEditor->loadSpriteGroup(edSprites, pals);
+            ui->theSpritePixelEditor->setZoom(ui->theEditorZoomSpin->value());
+            ui->theSpritePixelEditor->setShowGrid(ui->theEditorGridCheck->isChecked());
+
+            theEditorActivePaletteLine = 0;
+            theEditPalLineToId.clear();
+            const NormalizedCollection & norm = normCols[colIndex];
+            QMap<QString, int> palLineMap;
+            for (const auto & ns : norm.sprites)
+            {
+                if (!palLineMap.contains(ns.paletteId) && palLineMap.size() < 4)
+                    palLineMap.insert(ns.paletteId, palLineMap.size());
+            }
+            for (auto it = palLineMap.begin(); it != palLineMap.end(); ++it)
+                theEditPalLineToId[it.value()] = it.key();
+
+            ui->theEditorPalette->setPalette(pals[0]);
+
+            bool canSave = false;
+            for (const EditorSprite & es : edSprites)
+                if (!es.romOffset.isEmpty()) { canSave = true; break; }
+            ui->theEditorSaveButton->setEnabled(canSave && theRom.isOpen());
+
+            bool canSavePal = false;
+            QString firstPalId = theEditPalLineToId.value(0);
+            if (!firstPalId.isEmpty() && theDef.palettePool().contains(firstPalId))
+                canSavePal = theDef.palettePool()[firstPalId].romOffset != 0;
+            ui->theEditorSavePaletteButton->setEnabled(canSavePal && theRom.isOpen());
+
+            ui->theEditorInfoLabel->setText(
+                QString("Group: %1 | %2 sprites | Click to edit")
+                .arg(col.name).arg(col.sprites.size()));
+
+            ui->theTabWidget->setCurrentWidget(ui->tabSpriteEditor);
+            statusBar()->showMessage(
+                QString("Editing sprite group \"%1\" (%2 sprites)")
+                .arg(col.name).arg(col.sprites.size()));
+        }
+        else if (index < thePatternCount)
+        {
+            // Pattern entry: open single pattern in editor
+            const auto & patterns = theDef.patternPool();
+            QList<QString> keys = patterns.keys();
+            if (index < 0 || index >= keys.size())
+                return;
+
+            const PoolPattern & pat = patterns[keys[index]];
+            GenesisPalette pal = TileDecoder::greyPalette();
+            if (!theDef.palettePool().isEmpty())
+                pal = paletteFromPool(theDef.palettePool().begin().key());
+
+            int bytesPerFrame = pat.widthTiles * pat.heightTiles * 32;
+            QByteArray tileData;
+
+            if (pat.romOffset != 0 && theRom.isOpen())
+            {
+                if (pat.compression != "none")
+                    tileData = fetchPatternTileData(pat);
+                else
+                    tileData = theRom.readBytes(pat.romOffset, bytesPerFrame);
+            }
+            else if (!pat.tileData.isEmpty())
+            {
+                tileData = pat.tileData.left(bytesPerFrame);
+            }
+
+            if (tileData.isEmpty())
+                tileData = QByteArray(bytesPerFrame, '\0');
+
+            ui->theSpritePixelEditor->loadSprite(tileData, pat.widthTiles, pat.heightTiles,
+                                                  pal, false, false);
+            ui->theSpritePixelEditor->setZoom(ui->theEditorZoomSpin->value());
+            ui->theSpritePixelEditor->setShowGrid(ui->theEditorGridCheck->isChecked());
+            ui->theEditorPalette->setPalette(pal);
+
+            bool canSave = (pat.romOffset != 0) && theRom.isOpen();
+            ui->theEditorSaveButton->setEnabled(canSave);
+            ui->theEditorSavePaletteButton->setEnabled(false);
+
+            ui->theEditorInfoLabel->setText(
+                QString("Pattern: %1 | %2x%3 tiles | ROM: 0x%4 | %5")
+                .arg(pat.name).arg(pat.widthTiles).arg(pat.heightTiles)
+                .arg(pat.romOffset, 0, 16)
+                .arg(canSave ? "Editable" : "Read-only"));
+
+            ui->theTabWidget->setCurrentWidget(ui->tabSpriteEditor);
+            statusBar()->showMessage(
+                QString("Editing pattern \"%1\"").arg(pat.name));
+        }
+    }
+}
+
+void MainWindow::onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex)
+{
+    (void)groupIndex;
+    (void)spriteIndex;
+    (void)frameIndex;
+    onEditFromViewer();
 }

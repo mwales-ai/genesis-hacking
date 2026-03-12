@@ -74,6 +74,32 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QPushButton" name="theRenameButton">
+               <property name="text">
+                <string>Rename</string>
+               </property>
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="toolTip">
+                <string>Rename the selected sprite collection</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="theEditFromViewerButton">
+               <property name="text">
+                <string>Edit</string>
+               </property>
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="toolTip">
+                <string>Open the selected sprite/collection in the Sprite Editor</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <!-- SpriteSheetWidget inside a scroll area -->

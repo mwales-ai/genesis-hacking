@@ -86,6 +86,11 @@ private slots:
     void onCollectionSelectionChanged(const QSet<int> & selectedIndices);
     void onSaveGameDefinition();
 
+    // Sprite Viewer: rename, edit, double-click
+    void onRenameCollection();
+    void onEditFromViewer();
+    void onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex);
+
     // Help
     void showAbout();
 
@@ -159,6 +164,9 @@ private:
 
     // Hidden sprites by ROM offset (persists across frames)
     QSet<QString>         theHiddenRomOffsets;
+
+    // Auto-incrementing counter for captured sprite groups
+    int                   theCaptureCounter;
 };
 
 #endif // MAINWINDOW_H
