@@ -676,6 +676,19 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="theUnhideSelectedButton">
+            <property name="text">
+             <string>Unhide Selected</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Unhide only the selected hidden sprites</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="theUnhideSpritesButton">
             <property name="text">
              <string>Unhide All</string>

@@ -86,6 +86,9 @@ private slots:
     void onCollectionSelectionChanged(const QSet<int> & selectedIndices);
     void onSaveGameDefinition();
 
+    // Unhide only selected hidden sprites
+    void onUnhideSelectedOnly();
+
     // Sprite Viewer: rename, edit, double-click
     void onRenameCollection();
     void onEditFromViewer();

@@ -210,6 +210,8 @@ void MainWindow::setupConnections()
             this,                       &MainWindow::onHideSelectedSprites);
     connect(ui->theUnhideSpritesButton, &QPushButton::clicked,
             this,                       &MainWindow::onUnhideSelectedSprites);
+    connect(ui->theUnhideSelectedButton, &QPushButton::clicked,
+            this,                       &MainWindow::onUnhideSelectedOnly);
 
     // Sprite Viewer: rename, edit, double-click
     connect(ui->theRenameButton,        &QPushButton::clicked,
@@ -1700,6 +1702,7 @@ void MainWindow::onSpriteCollectionSelected(int index)
     ui->theCaptureGroupButton->setEnabled(false);
     ui->theHideSpritesButton->setEnabled(false);
     ui->theUnhideSpritesButton->setEnabled(false);
+    ui->theUnhideSelectedButton->setEnabled(false);
 
     theActiveAnimIndex = -1;
     theActiveRecIndex  = -1;
@@ -1795,6 +1798,7 @@ void MainWindow::onAnimationFrameChanged(int frameIndex)
     ui->theColSelectionLabel->setText("No sprites selected");
     ui->theCaptureGroupButton->setEnabled(false);
     ui->theHideSpritesButton->setEnabled(false);
+    ui->theUnhideSelectedButton->setEnabled(false);
 
     if (theActiveRecIndex >= 0)
     {
@@ -2667,6 +2671,23 @@ void MainWindow::onCollectionSelectionChanged(const QSet<int> & selectedIndices)
     ui->theCaptureGroupButton->setEnabled(hasSelection);
     ui->theHideSpritesButton->setEnabled(hasSelection);
     ui->theUnhideSpritesButton->setEnabled(!theHiddenRomOffsets.isEmpty());
+
+    // Check if any selected sprites are currently hidden
+    bool hasHiddenSelected = false;
+    const SpriteCollection & col = ui->theSpriteColWidget->collection();
+    for (int idx : selectedIndices)
+    {
+        if (idx >= 0 && idx < col.sprites.size())
+        {
+            const QString & rom = col.sprites[idx].romOffset;
+            if (!rom.isEmpty() && theHiddenRomOffsets.contains(rom))
+            {
+                hasHiddenSelected = true;
+                break;
+            }
+        }
+    }
+    ui->theUnhideSelectedButton->setEnabled(hasHiddenSelected);
 }
 
 void MainWindow::onCaptureSpriteGroup()
@@ -2889,6 +2910,26 @@ void MainWindow::onUnhideSelectedSprites()
     theHiddenRomOffsets.clear();
     applyPersistentHidden();
     statusBar()->showMessage("All sprites unhidden");
+}
+
+void MainWindow::onUnhideSelectedOnly()
+{
+    const QSet<int> & sel = ui->theSpriteColWidget->selectedSpriteIndices();
+    const SpriteCollection & col = ui->theSpriteColWidget->collection();
+    int count = 0;
+    for (int idx : sel)
+    {
+        if (idx >= 0 && idx < col.sprites.size())
+        {
+            const QString & rom = col.sprites[idx].romOffset;
+            if (!rom.isEmpty() && theHiddenRomOffsets.remove(rom))
+                ++count;
+        }
+    }
+    applyPersistentHidden();
+    statusBar()->showMessage(
+        QString("Unhid %1 sprite(s), %2 still hidden")
+        .arg(count).arg(theHiddenRomOffsets.size()));
 }
 
 void MainWindow::onSaveGameDefinition()
