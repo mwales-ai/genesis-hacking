@@ -2877,10 +2877,10 @@ void MainWindow::onCaptureSpriteGroup()
         return;
     }
 
-    // Refresh the collections combo and the Sprite Viewer combo
-    populateSpriteCollections();
-    if (theRom.isOpen())
-        populatePatterns();
+    // Don't refresh combos — the new collection is saved to the definition
+    // file and will appear when the user next loads or switches tabs.
+    // Refreshing here would reset the Sprite Collections tab (losing the
+    // current recording, frame, selection, and hidden state).
 
     statusBar()->showMessage(
         QString("Captured %1 sprites as '%2'")
