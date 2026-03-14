@@ -443,6 +443,8 @@ void MainWindow::setupConnections()
     // Sprite Viewer: edit, double-click
     connect(ui->theEditFromViewerButton, &QPushButton::clicked,
             this,                       &MainWindow::onEditFromViewer);
+    connect(ui->theDeleteCollectionButton, &QPushButton::clicked,
+            this,                          &MainWindow::onDeleteCollection);
     connect(ui->theSpriteSheet,         &SpriteSheetWidget::spriteDoubleClicked,
             this,                       &MainWindow::onViewerSpriteDoubleClicked);
     connect(ui->theSpriteDetail,        &TileCanvasWidget::doubleClicked,
@@ -635,6 +637,7 @@ void MainWindow::populateCollectionGrid()
         ui->theViewerNameEdit->clear();
         ui->theViewerInfoLabel->setText("No collections available");
         ui->theEditFromViewerButton->setEnabled(false);
+        ui->theDeleteCollectionButton->setEnabled(false);
         return;
     }
 
@@ -667,6 +670,7 @@ void MainWindow::populateCollectionGrid()
     ui->theViewerInfoLabel->setText(
         QString("%1 collections loaded").arg(normCols.size()));
     ui->theEditFromViewerButton->setEnabled(false);
+    ui->theDeleteCollectionButton->setEnabled(false);
 }
 
 QImage MainWindow::renderCollectionComposite(const NormalizedCollection & norm, bool showBorders)
@@ -829,6 +833,7 @@ void MainWindow::updateCollectionDetail(int collectionIndex)
 
     ui->theViewerInfoLabel->setText(info);
     ui->theEditFromViewerButton->setEnabled(true);
+    ui->theDeleteCollectionButton->setEnabled(true);
 }
 
 void MainWindow::displaySpriteGroup(int groupIndex)
@@ -2994,10 +2999,8 @@ void MainWindow::onCaptureSpriteGroup()
         return;
     }
 
-    // Don't refresh combos — the new collection is saved to the definition
-    // file and will appear when the user next loads or switches tabs.
-    // Refreshing here would reset the Sprite Collections tab (losing the
-    // current recording, frame, selection, and hidden state).
+    // Refresh the Sprite Viewer grid to show the new collection immediately
+    populateCollectionGrid();
 
     statusBar()->showMessage(
         QString("Captured %1 sprites as '%2'")
@@ -3107,6 +3110,31 @@ void MainWindow::onViewerBordersToggled(bool checked)
     theShowSpriteBorders = checked;
     if (theSelectedCollectionIndex >= 0)
         updateCollectionDetail(theSelectedCollectionIndex);
+}
+
+void MainWindow::onDeleteCollection()
+{
+    if (theSelectedCollectionIndex < 0 || !theDef.isNormalized())
+        return;
+
+    const auto & normCols = theDef.normalizedCollections();
+    if (theSelectedCollectionIndex >= normCols.size())
+        return;
+
+    QString name = normCols[theSelectedCollectionIndex].name;
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Delete Sprite Group",
+        QString("Are you sure you want to delete '%1' from the game definition?").arg(name),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes)
+        return;
+
+    theDef.removeNormalizedCollection(theSelectedCollectionIndex);
+    theDef.saveToFile(QString());
+    theSelectedCollectionIndex = -1;
+    populateCollectionGrid();
+    statusBar()->showMessage(QString("Deleted sprite group '%1'").arg(name));
 }
 
 void MainWindow::onEditFromViewer()
@@ -3287,13 +3315,9 @@ void MainWindow::onDetailDoubleClicked(int spriteX, int spriteY)
         }
     }
 
-    // Set W and H spinners
-    ui->theRawSpriteWSpin->blockSignals(true);
-    ui->theRawSpriteHSpin->blockSignals(true);
+    // Set W and H spinners — don't block signals so the browser refreshes
     ui->theRawSpriteWSpin->setValue(cs.widthTiles);
     ui->theRawSpriteHSpin->setValue(cs.heightTiles);
-    ui->theRawSpriteWSpin->blockSignals(false);
-    ui->theRawSpriteHSpin->blockSignals(false);
 
     // Set palette combo
     if (palComboIndex > 0 && palComboIndex < ui->theRawPaletteCombo->count())

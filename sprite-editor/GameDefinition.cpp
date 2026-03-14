@@ -752,6 +752,12 @@ void GameDefinition::moveNormalizedCollection(int fromIndex, int toIndex)
     theNormalizedCollections.insert(toIndex, col);
 }
 
+void GameDefinition::removeNormalizedCollection(int index)
+{
+    if (index >= 0 && index < theNormalizedCollections.size())
+        theNormalizedCollections.removeAt(index);
+}
+
 int GameDefinition::countPaletteReferences(const QString & paletteId) const
 {
     int count = 0;

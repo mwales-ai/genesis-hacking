@@ -12,9 +12,9 @@ Tasks for Claude:
     * [X] Add painting tools to screen capture when you press the edit button
 * [ ] Sprite Viewer Improvments
     * [ ] The right pane canvas isn't big enough to view multiple sprites. When a sprite group is clicked, the whole group should be visible
-    * [ ] When sprites are captures from an animation, they don't show up in the viewer until I save the JSON and reopen the tool
-    * [ ] Add a delete button so we can delete a sprite group from JSON file
-    * [ ] When you double click the sprite in the right panel and you got to the raw tile browser, the W and H fields are changed, but need
+    * [X] When sprites are captures from an animation, they don't show up in the viewer until I save the JSON and reopen the tool
+    * [X] Add a delete button so we can delete a sprite group from JSON file
+    * [X] When you double click the sprite in the right panel and you got to the raw tile browser, the W and H fields are changed, but need
           the actual W and H setting to change in the viewer (it was still displaying sprites as 1x1
 
 ## BN-Genesis Plugin (Future — do not work on yet)

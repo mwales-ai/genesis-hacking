@@ -186,6 +186,19 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QPushButton" name="theDeleteCollectionButton">
+                <property name="text">
+                 <string>Delete</string>
+                </property>
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="toolTip">
+                 <string>Delete the selected sprite group from the game definition</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
             <!-- Info label -->
