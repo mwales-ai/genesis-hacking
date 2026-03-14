@@ -11,7 +11,7 @@ Tasks for Claude:
     * [X] Need a save changes to ROM button, and a revert to original ROM button to discard painting done so far
     * [X] Add painting tools to screen capture when you press the edit button
 * [ ] Sprite Viewer Improvments
-    * [ ] The right pane canvas isn't big enough to view multiple sprites. When a sprite group is clicked, the whole group should be visible
+    * [X] The right pane canvas isn't big enough to view multiple sprites. When a sprite group is clicked, the whole group should be visible
     * [X] When sprites are captures from an animation, they don't show up in the viewer until I save the JSON and reopen the tool
     * [X] Add a delete button so we can delete a sprite group from JSON file
     * [X] When you double click the sprite in the right panel and you got to the raw tile browser, the W and H fields are changed, but need

@@ -15,6 +15,7 @@ TileCanvasWidget::TileCanvasWidget(QWidget *parent)
 void TileCanvasWidget::setSprite(const QImage & image)
 {
     theSprite = image;
+    resize(sizeHint());
     updateGeometry();
     update();
 }
@@ -22,6 +23,7 @@ void TileCanvasWidget::setSprite(const QImage & image)
 void TileCanvasWidget::clearSprite()
 {
     theSprite = QImage();
+    resize(sizeHint());
     updateGeometry();
     update();
 }
@@ -31,6 +33,7 @@ void TileCanvasWidget::setZoom(int factor)
     if (factor < 1) factor = 1;
     if (factor > 8) factor = 8;
     theZoom = factor;
+    resize(sizeHint());
     updateGeometry();
     update();
 }
