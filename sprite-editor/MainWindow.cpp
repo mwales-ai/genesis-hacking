@@ -106,6 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setupEditorToolPanel();
+    setupCapToolPanel();
     setupMenus();
     setupConnections();
     loadSettings();
@@ -182,6 +183,71 @@ void MainWindow::setupEditorToolPanel()
     toolLayout->addWidget(thePaletteGrid);
 
     // Stretch at bottom
+    toolLayout->addStretch(1);
+}
+
+void MainWindow::setupCapToolPanel()
+{
+    QVBoxLayout *toolLayout = new QVBoxLayout(ui->theCapToolPanel);
+    toolLayout->setContentsMargins(4, 4, 4, 4);
+    toolLayout->setSpacing(4);
+
+    QGridLayout *toolGrid = new QGridLayout();
+    toolGrid->setSpacing(2);
+
+    int btnSize = 36;
+    int iconSize = 28;
+
+    theCapToolPencilButton = new QPushButton();
+    theCapToolPencilButton->setIcon(makeToolIcon("pencil", iconSize));
+    theCapToolPencilButton->setIconSize(QSize(iconSize, iconSize));
+    theCapToolPencilButton->setFixedSize(btnSize, btnSize);
+    theCapToolPencilButton->setCheckable(true);
+    theCapToolPencilButton->setChecked(true);
+    theCapToolPencilButton->setToolTip("Pencil");
+    toolGrid->addWidget(theCapToolPencilButton, 0, 0);
+
+    theCapToolBucketButton = new QPushButton();
+    theCapToolBucketButton->setIcon(makeToolIcon("fill", iconSize));
+    theCapToolBucketButton->setIconSize(QSize(iconSize, iconSize));
+    theCapToolBucketButton->setFixedSize(btnSize, btnSize);
+    theCapToolBucketButton->setCheckable(true);
+    theCapToolBucketButton->setToolTip("Fill");
+    toolGrid->addWidget(theCapToolBucketButton, 0, 1);
+
+    theCapToolEyedropperButton = new QPushButton();
+    theCapToolEyedropperButton->setIcon(makeToolIcon("eyedropper", iconSize));
+    theCapToolEyedropperButton->setIconSize(QSize(iconSize, iconSize));
+    theCapToolEyedropperButton->setFixedSize(btnSize, btnSize);
+    theCapToolEyedropperButton->setCheckable(true);
+    theCapToolEyedropperButton->setToolTip("Eyedropper");
+    toolGrid->addWidget(theCapToolEyedropperButton, 1, 0);
+
+    theCapToolBrushButton = new QPushButton();
+    theCapToolBrushButton->setIcon(makeToolIcon("brush", iconSize));
+    theCapToolBrushButton->setIconSize(QSize(iconSize, iconSize));
+    theCapToolBrushButton->setFixedSize(btnSize, btnSize);
+    theCapToolBrushButton->setCheckable(true);
+    theCapToolBrushButton->setToolTip("Brush");
+    toolGrid->addWidget(theCapToolBrushButton, 1, 1);
+
+    toolLayout->addLayout(toolGrid);
+
+    QHBoxLayout *brushRow = new QHBoxLayout();
+    theCapBrushSizeLabel = new QLabel("Size:");
+    theCapBrushSizeSpin = new QSpinBox();
+    theCapBrushSizeSpin->setMinimum(1);
+    theCapBrushSizeSpin->setMaximum(16);
+    theCapBrushSizeSpin->setValue(3);
+    brushRow->addWidget(theCapBrushSizeLabel);
+    brushRow->addWidget(theCapBrushSizeSpin);
+    toolLayout->addLayout(brushRow);
+    theCapBrushSizeLabel->setVisible(false);
+    theCapBrushSizeSpin->setVisible(false);
+
+    theCapPaletteGrid = new PaletteGridWidget();
+    toolLayout->addWidget(theCapPaletteGrid);
+
     toolLayout->addStretch(1);
 }
 
@@ -329,6 +395,24 @@ void MainWindow::setupConnections()
             this,                     &MainWindow::onCapEditToggled);
     connect(ui->theTileMapWidget,     &TileMapWidget::colorPicked,
             this,                     &MainWindow::onCapColorPicked);
+    connect(ui->theCapSaveRomButton,  &QPushButton::clicked,
+            this,                     &MainWindow::onCapSaveToRom);
+    connect(ui->theCapRevertButton,   &QPushButton::clicked,
+            this,                     &MainWindow::onCapRevert);
+
+    // Screen capture tool panel connections
+    theCapToolButtonGroup = new QButtonGroup(this);
+    theCapToolButtonGroup->setExclusive(true);
+    theCapToolButtonGroup->addButton(theCapToolPencilButton, TOOL_PENCIL);
+    theCapToolButtonGroup->addButton(theCapToolBucketButton, TOOL_BUCKET);
+    theCapToolButtonGroup->addButton(theCapToolEyedropperButton, TOOL_EYEDROPPER);
+    theCapToolButtonGroup->addButton(theCapToolBrushButton, TOOL_BRUSH);
+    connect(theCapToolButtonGroup, SIGNAL(idClicked(int)),
+            this,                  SLOT(onCapToolChanged(int)));
+    connect(theCapBrushSizeSpin, SIGNAL(valueChanged(int)),
+            this,                SLOT(onCapBrushSizeChanged(int)));
+    connect(theCapPaletteGrid, &PaletteGridWidget::colorSelected,
+            this,              &MainWindow::onCapPaletteSelected);
 
     // Sprite Collections tab
     connect(ui->theSpriteColCombo,    SIGNAL(currentIndexChanged(int)),
@@ -1545,13 +1629,23 @@ void MainWindow::onRemoveScreenCapture()
 void MainWindow::onCapEditToggled(bool checked)
 {
     ui->theTileMapWidget->setEditMode(checked);
+    ui->theCapToolPanel->setVisible(checked);
+    ui->theCapSaveRomButton->setVisible(checked);
+    ui->theCapRevertButton->setVisible(checked);
+
     if (checked)
     {
-        // Sync the current tool settings to the tile map widget
-        EditorTool tool = ui->theSpritePixelEditor->currentTool();
-        ui->theTileMapWidget->setTool(tool);
-        ui->theTileMapWidget->setPenIndex(ui->theSpritePixelEditor->penIndex());
-        ui->theTileMapWidget->setBrushSize(theBrushSizeSpin->value());
+        // Set palette on the cap tool grid from the current capture
+        int palLine = 0;  // default to line 0
+        ui->theTileMapWidget->setActivePaletteLine(palLine);
+        theCapPaletteGrid->setPalette(ui->theTileMapWidget->palette(palLine));
+
+        // Sync tool settings
+        ui->theTileMapWidget->setTool(TOOL_PENCIL);
+        theCapToolPencilButton->setChecked(true);
+
+        ui->theCapSaveRomButton->setEnabled(theRom.isOpen());
+        ui->theCapRevertButton->setEnabled(true);
         statusBar()->showMessage("Screen capture edit mode ON — paint tiles directly");
     }
     else
@@ -1563,6 +1657,57 @@ void MainWindow::onCapEditToggled(bool checked)
 void MainWindow::onCapColorPicked(int paletteIndex)
 {
     ui->theTileMapWidget->setPenIndex(paletteIndex);
+    theCapPaletteGrid->setSelectedIndex(paletteIndex);
+}
+
+void MainWindow::onCapSaveToRom()
+{
+    if (!theRom.isOpen())
+    {
+        statusBar()->showMessage("No ROM open — cannot save");
+        return;
+    }
+
+    if (!theRom.saveRom())
+    {
+        QMessageBox::critical(this, "Error", "Failed to save ROM.");
+        return;
+    }
+
+    statusBar()->showMessage("Tile changes saved to ROM");
+}
+
+void MainWindow::onCapRevert()
+{
+    // Reload the current screen capture to discard edits
+    int index = ui->theScreenCapCombo->currentIndex();
+    if (index >= 0)
+    {
+        // Re-read ROM data by re-setting the capture
+        onScreenCaptureSelected(index);
+        statusBar()->showMessage("Reverted screen capture to original ROM data");
+    }
+}
+
+void MainWindow::onCapToolChanged(int toolId)
+{
+    EditorTool tool = static_cast<EditorTool>(toolId);
+    ui->theTileMapWidget->setTool(tool);
+
+    bool isBrush = (tool == TOOL_BRUSH);
+    theCapBrushSizeLabel->setVisible(isBrush);
+    theCapBrushSizeSpin->setVisible(isBrush);
+}
+
+void MainWindow::onCapBrushSizeChanged(int size)
+{
+    ui->theTileMapWidget->setBrushSize(size);
+}
+
+void MainWindow::onCapPaletteSelected(int index)
+{
+    ui->theTileMapWidget->setPenIndex(index);
+    theCapPaletteGrid->setSelectedIndex(index);
 }
 
 // ---------------------------------------------------------------------------

@@ -69,6 +69,11 @@ private slots:
     void onRemoveScreenCapture();
     void onCapEditToggled(bool checked);
     void onCapColorPicked(int paletteIndex);
+    void onCapSaveToRom();
+    void onCapRevert();
+    void onCapToolChanged(int toolId);
+    void onCapBrushSizeChanged(int size);
+    void onCapPaletteSelected(int index);
 
     // Sprite Collections tab
     void onSpriteCollectionSelected(int index);
@@ -200,6 +205,17 @@ private:
     PaletteGridWidget     *thePaletteGrid;
 
     void setupEditorToolPanel();
+    void setupCapToolPanel();
+
+    // Screen capture tool panel (built programmatically)
+    QButtonGroup          *theCapToolButtonGroup;
+    QPushButton           *theCapToolPencilButton;
+    QPushButton           *theCapToolBucketButton;
+    QPushButton           *theCapToolEyedropperButton;
+    QPushButton           *theCapToolBrushButton;
+    QLabel                *theCapBrushSizeLabel;
+    QSpinBox              *theCapBrushSizeSpin;
+    PaletteGridWidget     *theCapPaletteGrid;
 };
 
 #endif // MAINWINDOW_H
