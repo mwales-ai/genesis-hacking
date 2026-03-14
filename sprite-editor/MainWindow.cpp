@@ -141,6 +141,8 @@ void MainWindow::setupConnections()
             this,               &MainWindow::onCollectionGridSelected);
     connect(ui->theZoomSpin,    SIGNAL(valueChanged(int)),
             this,               SLOT(onZoomChanged(int)));
+    connect(ui->theThumbZoomSpin, SIGNAL(valueChanged(int)),
+            this,                 SLOT(onThumbZoomChanged(int)));
     connect(ui->theViewerNameEdit, &QLineEdit::editingFinished,
             this,               &MainWindow::onViewerNameEditFinished);
     connect(ui->theViewerBordersCheck, &QCheckBox::toggled,
@@ -665,6 +667,11 @@ void MainWindow::displaySpriteDetail(int groupIdx, int spriteIdx, int frameIdx)
 void MainWindow::onZoomChanged(int value)
 {
     ui->theSpriteDetail->setZoom(value);
+}
+
+void MainWindow::onThumbZoomChanged(int value)
+{
+    ui->theSpriteSheet->setThumbZoom(value);
 }
 
 

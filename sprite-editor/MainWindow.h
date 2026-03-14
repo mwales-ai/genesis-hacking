@@ -40,6 +40,7 @@ private slots:
     // Sprite Viewer tab (collection grid)
     void onCollectionGridSelected(int groupIndex, int spriteIndex, int frameIndex);
     void onZoomChanged(int value);
+    void onThumbZoomChanged(int value);
     void onViewerNameEditFinished();
     void onViewerBordersToggled(bool checked);
 

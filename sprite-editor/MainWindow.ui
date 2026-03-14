@@ -47,18 +47,64 @@
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-          <!-- LEFT: collection grid -->
-          <widget class="QScrollArea" name="theSpriteScrollArea">
+          <!-- LEFT: collection grid + thumb zoom -->
+          <widget class="QWidget" name="viewerLeftPanel">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>1</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
-           </property>
-           <widget class="SpriteSheetWidget" name="theSpriteSheet"/>
+           <layout class="QVBoxLayout" name="viewerLeftLayout">
+            <property name="margin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QScrollArea" name="theSpriteScrollArea">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="SpriteSheetWidget" name="theSpriteSheet"/>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="thumbZoomLayout">
+              <item>
+               <widget class="QLabel" name="thumbZoomLabel">
+                <property name="text">
+                 <string>Thumb Zoom:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="theThumbZoomSpin">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>8</number>
+                </property>
+                <property name="value">
+                 <number>2</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="thumbZoomSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
           <!-- RIGHT: detail panel -->
           <widget class="QWidget" name="viewerDetailPanel">
