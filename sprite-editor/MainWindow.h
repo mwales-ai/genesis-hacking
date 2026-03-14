@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QMap>
 #include <QSet>
+#include <QButtonGroup>
 #include <iostream>
 
 #include "RomFile.h"
@@ -75,6 +76,9 @@ private slots:
     void onEditorClose();
     void onEditorZoomChanged(int value);
     void onEditorGridToggled(bool checked);
+    void onEditorToolChanged(int toolId);
+    void onBrushSizeChanged(int size);
+    void onColorPicked(int paletteIndex);
 
     // Capture workflow
     void onCaptureSpriteGroup();
@@ -170,6 +174,9 @@ private:
 
     // Auto-incrementing counter for captured sprite groups
     int                   theCaptureCounter;
+
+    // Editor tool selection
+    QButtonGroup          *theToolButtonGroup;
 };
 
 #endif // MAINWINDOW_H

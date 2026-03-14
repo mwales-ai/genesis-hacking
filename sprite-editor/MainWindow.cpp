@@ -228,6 +228,20 @@ void MainWindow::setupConnections()
             this,                   SLOT(onEditorZoomChanged(int)));
     connect(ui->theEditorGridCheck, &QCheckBox::toggled,
             this,                   &MainWindow::onEditorGridToggled);
+
+    // Editor tool buttons
+    theToolButtonGroup = new QButtonGroup(this);
+    theToolButtonGroup->setExclusive(true);
+    theToolButtonGroup->addButton(ui->theToolPencilButton, TOOL_PENCIL);
+    theToolButtonGroup->addButton(ui->theToolBucketButton, TOOL_BUCKET);
+    theToolButtonGroup->addButton(ui->theToolEyedropperButton, TOOL_EYEDROPPER);
+    theToolButtonGroup->addButton(ui->theToolBrushButton, TOOL_BRUSH);
+    connect(theToolButtonGroup, SIGNAL(idClicked(int)),
+            this,               SLOT(onEditorToolChanged(int)));
+    connect(ui->theBrushSizeSpin, SIGNAL(valueChanged(int)),
+            this,                 SLOT(onBrushSizeChanged(int)));
+    connect(ui->theSpritePixelEditor, &SpritePixelEditor::colorPicked,
+            this,                     &MainWindow::onColorPicked);
 }
 
 // ---------------------------------------------------------------------------
@@ -2275,6 +2289,22 @@ void MainWindow::onEditorZoomChanged(int value)
 void MainWindow::onEditorGridToggled(bool checked)
 {
     ui->theSpritePixelEditor->setShowGrid(checked);
+}
+
+void MainWindow::onEditorToolChanged(int toolId)
+{
+    ui->theSpritePixelEditor->setTool(static_cast<EditorTool>(toolId));
+}
+
+void MainWindow::onBrushSizeChanged(int size)
+{
+    ui->theSpritePixelEditor->setBrushSize(size);
+}
+
+void MainWindow::onColorPicked(int paletteIndex)
+{
+    ui->theSpritePixelEditor->setPenIndex(paletteIndex);
+    ui->theEditorPalette->setSelectedIndex(paletteIndex);
 }
 
 // ---------------------------------------------------------------------------

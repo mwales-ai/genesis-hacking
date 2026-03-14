@@ -30,6 +30,15 @@ int PaletteWidget::selectedIndex() const
     return theSelectedIndex;
 }
 
+void PaletteWidget::setSelectedIndex(int index)
+{
+    if (index >= 0 && index < 16)
+    {
+        theSelectedIndex = index;
+        update();
+    }
+}
+
 QColor PaletteWidget::selectedColor() const
 {
     if (theSelectedIndex >= 0 && theSelectedIndex < thePalette.size())

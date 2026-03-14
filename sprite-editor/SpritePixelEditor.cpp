@@ -21,6 +21,8 @@ SpritePixelEditor::SpritePixelEditor(QWidget *parent)
     , theHasSprite(false)
     , theCompW(0)
     , theCompH(0)
+    , theTool(TOOL_PENCIL)
+    , theBrushSize(3)
 {
     setMouseTracking(true);
     setCursor(Qt::CrossCursor);
@@ -552,15 +554,216 @@ bool SpritePixelEditor::paintPixelAt(const QPoint & widgetPos)
     return true;
 }
 
+void SpritePixelEditor::setTool(EditorTool tool)
+{
+    theTool = tool;
+    switch (theTool)
+    {
+    case TOOL_PENCIL:   setCursor(Qt::CrossCursor);      break;
+    case TOOL_BUCKET:   setCursor(Qt::PointingHandCursor); break;
+    case TOOL_EYEDROPPER: setCursor(Qt::CrossCursor);    break;
+    case TOOL_BRUSH:    setCursor(Qt::CrossCursor);      break;
+    }
+}
+
+void SpritePixelEditor::setBrushSize(int size)
+{
+    theBrushSize = qBound(1, size, 16);
+}
+
+int SpritePixelEditor::getPixelIndex(int px, int py) const
+{
+    if (theGroupMode)
+    {
+        int si = findSpriteAtPixel(px, py);
+        if (si < 0)
+            return -1;
+
+        const EditorSprite & es = theGroupSprites[si];
+        int localX = px - es.x;
+        int localY = py - es.y;
+        int totalW = es.widthTiles * 8;
+        int totalH = es.heightTiles * 8;
+
+        int rawX = es.hFlip ? (totalW - 1 - localX) : localX;
+        int rawY = es.vFlip ? (totalH - 1 - localY) : localY;
+
+        if (rawX < 0 || rawX >= totalW || rawY < 0 || rawY >= totalH)
+            return -1;
+
+        int tileCol = rawX / 8;
+        int tileRow = rawY / 8;
+        int tileIdx = tileCol * es.heightTiles + tileRow;
+        int lx = rawX % 8;
+        int ly = rawY % 8;
+        int byteOffset = tileIdx * 32 + ly * 4 + lx / 2;
+
+        if (byteOffset < 0 || byteOffset >= es.tileData.size())
+            return -1;
+
+        uint8_t byte = (uint8_t)es.tileData[byteOffset];
+        if (lx % 2 == 0)
+            return (byte >> 4) & 0x0F;
+        else
+            return byte & 0x0F;
+    }
+    else
+    {
+        return getNibbleAt(px, py);
+    }
+}
+
+void SpritePixelEditor::bucketFill(int startX, int startY, int targetIndex, int fillIndex)
+{
+    if (targetIndex == fillIndex)
+        return;
+
+    int maxW, maxH;
+    if (theGroupMode)
+    {
+        maxW = theCompW;
+        maxH = theCompH;
+    }
+    else
+    {
+        maxW = theWidthTiles * 8;
+        maxH = theHeightTiles * 8;
+    }
+
+    // Simple flood fill using a stack
+    QVector<QPoint> stack;
+    stack.append(QPoint(startX, startY));
+
+    // Track visited pixels to avoid infinite loops
+    QVector<bool> visited(maxW * maxH, false);
+    visited[startY * maxW + startX] = true;
+
+    while (!stack.isEmpty())
+    {
+        QPoint pt = stack.takeLast();
+        int px = pt.x();
+        int py = pt.y();
+
+        int idx = getPixelIndex(px, py);
+        if (idx != targetIndex)
+            continue;
+
+        // Paint this pixel
+        if (theGroupMode)
+            setGroupNibbleAt(px, py, fillIndex);
+        else
+            setNibbleAt(px, py, fillIndex);
+
+        // Check 4 neighbors
+        static const int dx[] = {-1, 1, 0, 0};
+        static const int dy[] = {0, 0, -1, 1};
+        for (int d = 0; d < 4; ++d)
+        {
+            int nx = px + dx[d];
+            int ny = py + dy[d];
+            if (nx < 0 || nx >= maxW || ny < 0 || ny >= maxH)
+                continue;
+            int vidx = ny * maxW + nx;
+            if (visited[vidx])
+                continue;
+            visited[vidx] = true;
+            if (getPixelIndex(nx, ny) == targetIndex)
+                stack.append(QPoint(nx, ny));
+        }
+    }
+}
+
+void SpritePixelEditor::brushPaint(int px, int py)
+{
+    int maxW, maxH;
+    if (theGroupMode)
+    {
+        maxW = theCompW;
+        maxH = theCompH;
+    }
+    else
+    {
+        maxW = theWidthTiles * 8;
+        maxH = theHeightTiles * 8;
+    }
+
+    int radius = theBrushSize / 2;
+    for (int dy = -radius; dy <= radius; ++dy)
+    {
+        for (int dx = -radius; dx <= radius; ++dx)
+        {
+            // Square brush
+            int nx = px + dx;
+            int ny = py + dy;
+            if (nx < 0 || nx >= maxW || ny < 0 || ny >= maxH)
+                continue;
+
+            if (theGroupMode)
+                setGroupNibbleAt(nx, ny, thePenIndex);
+            else
+                setNibbleAt(nx, ny, thePenIndex);
+        }
+    }
+}
+
+void SpritePixelEditor::eyeDropper(int px, int py)
+{
+    int idx = getPixelIndex(px, py);
+    if (idx >= 0)
+    {
+        thePenIndex = idx;
+        emit colorPicked(idx);
+    }
+}
+
 void SpritePixelEditor::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton && theHasSprite)
     {
-        thePainting = true;
-        if (theGroupMode)
-            paintGroupPixelAt(event->pos());
-        else
-            paintPixelAt(event->pos());
+        int px = event->pos().x() / theZoom;
+        int py = event->pos().y() / theZoom;
+
+        switch (theTool)
+        {
+        case TOOL_PENCIL:
+            thePainting = true;
+            if (theGroupMode)
+                paintGroupPixelAt(event->pos());
+            else
+                paintPixelAt(event->pos());
+            break;
+
+        case TOOL_BUCKET:
+        {
+            int targetIdx = getPixelIndex(px, py);
+            if (targetIdx >= 0 && targetIdx != thePenIndex)
+            {
+                bucketFill(px, py, targetIdx, thePenIndex);
+                theModified = true;
+                if (theGroupMode)
+                    rebuildGroupDisplayImage();
+                else
+                    rebuildDisplayImage();
+                update();
+            }
+            break;
+        }
+
+        case TOOL_EYEDROPPER:
+            eyeDropper(px, py);
+            break;
+
+        case TOOL_BRUSH:
+            thePainting = true;
+            brushPaint(px, py);
+            theModified = true;
+            if (theGroupMode)
+                rebuildGroupDisplayImage();
+            else
+                rebuildDisplayImage();
+            update();
+            break;
+        }
     }
     else if (event->button() == Qt::MiddleButton && theHasSprite && theGroupMode)
     {
@@ -579,16 +782,38 @@ void SpritePixelEditor::mousePressEvent(QMouseEvent *event)
             }
         }
     }
+    else if (event->button() == Qt::RightButton && theHasSprite)
+    {
+        // Right-click always does eyedropper regardless of tool
+        int px = event->pos().x() / theZoom;
+        int py = event->pos().y() / theZoom;
+        eyeDropper(px, py);
+    }
 }
 
 void SpritePixelEditor::mouseMoveEvent(QMouseEvent *event)
 {
     if (thePainting && (event->buttons() & Qt::LeftButton))
     {
-        if (theGroupMode)
-            paintGroupPixelAt(event->pos());
-        else
-            paintPixelAt(event->pos());
+        if (theTool == TOOL_PENCIL)
+        {
+            if (theGroupMode)
+                paintGroupPixelAt(event->pos());
+            else
+                paintPixelAt(event->pos());
+        }
+        else if (theTool == TOOL_BRUSH)
+        {
+            int px = event->pos().x() / theZoom;
+            int py = event->pos().y() / theZoom;
+            brushPaint(px, py);
+            theModified = true;
+            if (theGroupMode)
+                rebuildGroupDisplayImage();
+            else
+                rebuildDisplayImage();
+            update();
+        }
     }
 }
 

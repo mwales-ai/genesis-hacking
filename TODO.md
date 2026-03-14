@@ -19,11 +19,11 @@ Tasks for Claude:
 * [X] Combo box should switch between loaded sprite recording files
 
 ### Sprite Editor Tools
-* [ ] Add a tool selection set of buttons
-    * [ ] Current tool: pencil (touches one pixel at a time)
-    * [ ] Bucket fill tool
-    * [ ] Eye dropper tool (changes current color to color of pixel clicked on)
-    * [ ] Brush tool with adjustable size
+* [X] Add a tool selection set of buttons
+    * [X] Current tool: pencil (touches one pixel at a time)
+    * [X] Bucket fill tool
+    * [X] Eye dropper tool (changes current color to color of pixel clicked on)
+    * [X] Brush tool with adjustable size
 
 ### Screen Captures
 * [ ] Button to load a screen capture from file

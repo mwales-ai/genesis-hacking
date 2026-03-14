@@ -8,6 +8,17 @@
 #include "TileDecoder.h"
 
 /**
+ * Editor tool types for the sprite pixel editor.
+ */
+enum EditorTool
+{
+    TOOL_PENCIL = 0,
+    TOOL_BUCKET,
+    TOOL_EYEDROPPER,
+    TOOL_BRUSH
+};
+
+/**
  * Describes a single sprite in a multi-sprite composite group.
  */
 struct EditorSprite
@@ -72,6 +83,13 @@ public:
     void setShowGrid(bool show);
     bool showGrid() const { return theShowGrid; }
 
+    /** Tool selection */
+    void setTool(EditorTool tool);
+    EditorTool currentTool() const { return theTool; }
+
+    void setBrushSize(int size);
+    int brushSize() const { return theBrushSize; }
+
     /** Clear the editor (no sprite loaded). */
     void clearSprite();
 
@@ -81,6 +99,7 @@ public:
 signals:
     void pixelPainted(int x, int y, int paletteIndex);
     void groupPaletteLineChanged(int paletteLine);
+    void colorPicked(int paletteIndex);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -107,6 +126,12 @@ private:
     void setGroupNibbleAt(int px, int py, int paletteIndex);
     bool paintGroupPixelAt(const QPoint & widgetPos);
 
+    // Tool-specific helpers
+    int getPixelIndex(int px, int py) const;
+    void bucketFill(int px, int py, int targetIndex, int fillIndex);
+    void brushPaint(int px, int py);
+    void eyeDropper(int px, int py);
+
     // Single-sprite state
     QByteArray       theTileData;
     GenesisPalette   thePalette;
@@ -131,6 +156,10 @@ private:
     bool             theHasSprite;
     int              theCompW;        // composite pixel dimensions (group mode)
     int              theCompH;
+
+    // Tool state
+    EditorTool       theTool;
+    int              theBrushSize;
 };
 
 #endif // SPRITEPIXELEDITOR_H

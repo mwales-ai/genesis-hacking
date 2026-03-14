@@ -697,6 +697,103 @@
           </property>
          </widget>
         </item>
+        <!-- Tool selection bar -->
+        <item>
+         <layout class="QHBoxLayout" name="editorToolLayout">
+          <item>
+           <widget class="QLabel" name="editorToolLabel">
+            <property name="text">
+             <string>Tool:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theToolPencilButton">
+            <property name="text">
+             <string>Pencil</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Draw one pixel at a time (P)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theToolBucketButton">
+            <property name="text">
+             <string>Fill</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Flood fill connected pixels of the same color (F)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theToolEyedropperButton">
+            <property name="text">
+             <string>Eyedropper</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Pick a color from the sprite (E). Also: right-click anytime</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theToolBrushButton">
+            <property name="text">
+             <string>Brush</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Paint with an adjustable brush (B)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="editorBrushSizeLabel">
+            <property name="text">
+             <string>Size:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="theBrushSizeSpin">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>16</number>
+            </property>
+            <property name="value">
+             <number>3</number>
+            </property>
+            <property name="toolTip">
+             <string>Brush size in pixels</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="editorToolSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
         <!-- SpritePixelEditor (promoted) inside scroll area -->
         <item>
          <widget class="QScrollArea" name="theEditorScrollArea">

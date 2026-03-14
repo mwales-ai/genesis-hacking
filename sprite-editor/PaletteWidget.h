@@ -14,6 +14,7 @@ public:
     const GenesisPalette & palette() const;
 
     int selectedIndex() const;
+    void setSelectedIndex(int index);
     QColor selectedColor() const;
     uint16_t selectedCramWord() const;
 
