@@ -2,6 +2,21 @@ Tasks for Claude:
 
 # Incomplete Tasks
 
+## Sprite Editor
+
+* [ ] Painting tools
+    * [ ] Make a palette tool that is 4x4 square of the colors
+    * [ ] The pencil, full, eyedropper, and brush tools should be buttons with icons on them, not words.  Make icon buttons 2 x 2 buttons.  Size for brush should appear under the tool buttons and hide depending on brush icon active.
+* [ ] Screen Capture
+    * [ ] Need a save changes to ROM button
+    * [ ] Add painting tools to screen capture when you press the edit button
+* [ ] Sprite Viewer Improvments
+    * [ ] The right pane canvas isn't big enough to view multiple sprites. When a sprite group is clicked, the whole group should be visible
+    * [ ] When sprites are captures from an animation, they don't show up in the viewer until I save the JSON and reopen the tool
+    * [ ] Add a delete button so we can delete a sprite group from JSON file
+    * [ ] When you double click the sprite in the right panel and you got to the raw tile browser, the W and H fields are changed, but need
+          the actual W and H setting to change in the viewer (it was still displaying sprites as 1x1
+
 ## BN-Genesis Plugin (Future — do not work on yet)
 
 * [ ] Load a game definition file when a ROM is loaded and label all sprites at their ROM addresses
@@ -11,32 +26,3 @@ Tasks for Claude:
 
 # Completed Tasks
 
-## Sprite Viewer
-* [X] Left panel needs an independent zoom control that controls how big the sprites are on the left side
-* [X] Drag-to-reorder sprites in left panel
-    * [X] Left-click and drag a sprite to a spot between other sprites to change display/storage order
-    * [X] While moving a sprite group, show a cursor (vertical line) between the 2 sprite groups indicating drop position
-* [X] Right panel canvas should grow to fit the entire sprite (or show scroll bars if zoom is too high)
-* [X] Double-click sprite in right panel jumps to Raw Tile Browser tab with matching palette, W, H, and address
-
-## Sprite Collections
-* [X] Change tab name to "Sprite Animations"
-* [X] Add a button to add a sprite recording to the Collection combo
-* [X] Don't show stored sprite groups (from Sprite Viewer) in the combo box
-* [X] Combo box should switch between loaded sprite recording files
-
-## Sprite Editor Tools
-* [X] Add a tool selection set of buttons
-    * [X] Current tool: pencil (touches one pixel at a time)
-    * [X] Bucket fill tool
-    * [X] Eye dropper tool (changes current color to color of pixel clicked on)
-    * [X] Brush tool with adjustable size
-
-## Screen Captures
-* [X] Button to load a screen capture from file
-* [X] Button to add displayed screen capture to the game definition file
-* [X] Button to remove a screen capture from the game definition file (with confirmation dialog)
-* [X] Button to allow editing screen capture pattern tiles
-* [X] All the same sprite editor tools available on this screen
-* [X] In Edit mode, hovering over a pattern tile highlights all tiles sharing that tile in memory
-* [X] Drawing to a shared tile updates all instances of that shared tile
