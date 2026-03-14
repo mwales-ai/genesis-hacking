@@ -6,10 +6,10 @@ Tasks for Claude:
 
 ### Sprite Viewer
 * [X] Left panel needs an independent zoom control that controls how big the sprites are on the left side
-* [ ] Drag-to-reorder sprites in left panel
-    * [ ] Left-click and drag a sprite to a spot between other sprites to change display/storage order
-    * [ ] While moving a sprite group, show a cursor (vertical line) between the 2 sprite groups indicating drop position
-* [ ] Right panel canvas should grow to fit the entire sprite (or show scroll bars if zoom is too high)
+* [X] Drag-to-reorder sprites in left panel
+    * [X] Left-click and drag a sprite to a spot between other sprites to change display/storage order
+    * [X] While moving a sprite group, show a cursor (vertical line) between the 2 sprite groups indicating drop position
+* [X] Right panel canvas should grow to fit the entire sprite (or show scroll bars if zoom is too high)
 * [ ] Double-click sprite in right panel jumps to Raw Tile Browser tab with matching palette, W, H, and address
 
 ### Sprite Collections

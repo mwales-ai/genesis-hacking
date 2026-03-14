@@ -1,6 +1,7 @@
 #include "TileCanvasWidget.h"
 #include <QPainter>
 #include <QPen>
+#include <QMouseEvent>
 
 TileCanvasWidget::TileCanvasWidget(QWidget *parent)
     : QWidget(parent)
@@ -97,5 +98,24 @@ void TileCanvasWidget::paintEvent(QPaintEvent *)
             p.drawLine(x, 0, x, scaled.height());
         for (int y = gridStep; y < scaled.height(); y += gridStep)
             p.drawLine(0, y, scaled.width(), y);
+    }
+}
+
+void TileCanvasWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if (theSprite.isNull() || theZoom <= 0)
+    {
+        QWidget::mouseDoubleClickEvent(event);
+        return;
+    }
+
+    // Convert widget coords to sprite coords
+    int spriteX = event->pos().x() / theZoom;
+    int spriteY = event->pos().y() / theZoom;
+
+    if (spriteX >= 0 && spriteX < theSprite.width() &&
+        spriteY >= 0 && spriteY < theSprite.height())
+    {
+        emit doubleClicked(spriteX, spriteY);
     }
 }

@@ -24,8 +24,12 @@ public:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
+signals:
+    void doubleClicked(int spriteX, int spriteY);
+
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
     QImage theSprite;

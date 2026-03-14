@@ -204,6 +204,8 @@ void MainWindow::setupConnections()
             this,                       &MainWindow::onEditFromViewer);
     connect(ui->theSpriteSheet,         &SpriteSheetWidget::spriteDoubleClicked,
             this,                       &MainWindow::onViewerSpriteDoubleClicked);
+    connect(ui->theSpriteDetail,        &TileCanvasWidget::doubleClicked,
+            this,                       &MainWindow::onDetailDoubleClicked);
 
     // Sprite Editor tab
     connect(ui->theSpritePixelEditor,      &SpritePixelEditor::groupPaletteLineChanged,
@@ -2704,4 +2706,101 @@ void MainWindow::onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, in
     (void)frameIndex;
     theSelectedCollectionIndex = groupIndex;
     onEditFromViewer();
+}
+
+void MainWindow::onDetailDoubleClicked(int spriteX, int spriteY)
+{
+    if (theSelectedCollectionIndex < 0 || !theDef.isNormalized())
+        return;
+
+    const auto & normCols = theDef.normalizedCollections();
+    if (theSelectedCollectionIndex >= normCols.size())
+        return;
+
+    const NormalizedCollection & norm = normCols[theSelectedCollectionIndex];
+    SpriteCollection col = buildFromNormalized(norm);
+
+    // Convert composite pixel coords to world coords (add bounding box origin)
+    int worldX = spriteX + col.boundingBox.x();
+    int worldY = spriteY + col.boundingBox.y();
+
+    // Find which sprite contains this point (front-to-back, first = front)
+    int hitIndex = -1;
+    for (int i = 0; i < col.sprites.size(); ++i)
+    {
+        const CollectionSprite & cs = col.sprites[i];
+        int sprW = cs.widthTiles * 8;
+        int sprH = cs.heightTiles * 8;
+        QRect sprRect(cs.x, cs.y, sprW, sprH);
+        if (sprRect.contains(worldX, worldY))
+        {
+            hitIndex = i;
+            break;
+        }
+    }
+
+    if (hitIndex < 0)
+        return;
+
+    const CollectionSprite & cs = col.sprites[hitIndex];
+    if (cs.romOffset.isEmpty())
+    {
+        statusBar()->showMessage("Sprite has no ROM offset — cannot jump to raw browser");
+        return;
+    }
+
+    // Parse the ROM offset
+    bool ok = false;
+    QString offsetStr = cs.romOffset;
+    if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
+        offsetStr = offsetStr.mid(2);
+    uint32_t romOffset = offsetStr.toUInt(&ok, 16);
+    if (!ok)
+        return;
+
+    // Find the palette for this sprite and its combo index
+    int palComboIndex = 0;  // Default greyscale
+    if (hitIndex < norm.sprites.size())
+    {
+        QString palId = norm.sprites[hitIndex].paletteId;
+        if (!palId.isEmpty() && theDef.isNormalized())
+        {
+            const auto & pool = theDef.palettePool();
+            int idx = 1;  // Index 0 is "Greyscale (default)"
+            for (auto it = pool.begin(); it != pool.end(); ++it, ++idx)
+            {
+                if (it.key() == palId)
+                {
+                    palComboIndex = idx;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Set W and H spinners
+    ui->theRawSpriteWSpin->blockSignals(true);
+    ui->theRawSpriteHSpin->blockSignals(true);
+    ui->theRawSpriteWSpin->setValue(cs.widthTiles);
+    ui->theRawSpriteHSpin->setValue(cs.heightTiles);
+    ui->theRawSpriteWSpin->blockSignals(false);
+    ui->theRawSpriteHSpin->blockSignals(false);
+
+    // Set palette combo
+    if (palComboIndex > 0 && palComboIndex < ui->theRawPaletteCombo->count())
+        ui->theRawPaletteCombo->setCurrentIndex(palComboIndex);
+
+    // Set jump offset and jump
+    ui->theJumpOffsetEdit->setText(QString("0x%1").arg(romOffset, 6, 16, QChar('0')).toUpper());
+
+    // Switch to Raw Tile Browser tab
+    ui->theTabWidget->setCurrentWidget(ui->tabRawBrowser);
+
+    // Trigger the jump
+    onJumpToOffset();
+
+    statusBar()->showMessage(
+        QString("Jumped to sprite at 0x%1 (%2x%3 tiles)")
+        .arg(romOffset, 6, 16, QChar('0')).toUpper()
+        .arg(cs.widthTiles).arg(cs.heightTiles));
 }

@@ -88,6 +88,7 @@ private slots:
     // Sprite Viewer: edit, double-click
     void onEditFromViewer();
     void onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex);
+    void onDetailDoubleClicked(int spriteX, int spriteY);
 
     // Help
     void showAbout();
