@@ -7,12 +7,17 @@
 #include <QMap>
 #include <QSet>
 #include <QButtonGroup>
+#include <QLabel>
+#include <QPushButton>
+#include <QSpinBox>
 #include <iostream>
 
 #include "RomFile.h"
 #include "GameDefinition.h"
 #include "TileDecoder.h"
 #include "CompressionHandler.h"
+#include "PaletteGridWidget.h"
+#include "SpritePixelEditor.h"
 
 #define AppDebug if(0) std::cout
 
@@ -184,8 +189,17 @@ private:
     QVector<ScreenCapture> theLoadedCaptures;
     int                    theDefCaptureCount;  // how many captures are from the game def
 
-    // Editor tool selection
+    // Editor tool selection (built programmatically)
     QButtonGroup          *theToolButtonGroup;
+    QPushButton           *theToolPencilButton;
+    QPushButton           *theToolBucketButton;
+    QPushButton           *theToolEyedropperButton;
+    QPushButton           *theToolBrushButton;
+    QLabel                *theBrushSizeLabel;
+    QSpinBox              *theBrushSizeSpin;
+    PaletteGridWidget     *thePaletteGrid;
+
+    void setupEditorToolPanel();
 };
 
 #endif // MAINWINDOW_H

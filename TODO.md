@@ -4,9 +4,9 @@ Tasks for Claude:
 
 ## Sprite Editor
 
-* [ ] Painting tools
-    * [ ] Make a palette tool that is 4x4 square of the colors
-    * [ ] The pencil, full, eyedropper, and brush tools should be buttons with icons on them, not words.  Make icon buttons 2 x 2 buttons.  Size for brush should appear under the tool buttons and hide depending on brush icon active.
+* [X] Painting tools
+    * [X] Make a palette tool that is 4x4 square of the colors
+    * [X] The pencil, full, eyedropper, and brush tools should be buttons with icons on them, not words.  Make icon buttons 2 x 2 buttons.  Size for brush should appear under the tool buttons and hide depending on brush icon active.
 * [ ] Screen Capture
     * [ ] Need a save changes to ROM button, and a revert to original ROM button to discard painting done so far
     * [ ] Add painting tools to screen capture when you press the edit button

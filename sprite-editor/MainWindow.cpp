@@ -2,9 +2,11 @@
 #include "ui_MainWindow.h"
 #include "SpritePixelEditor.h"
 #include "GenesisColorDialog.h"
+#include "PaletteGridWidget.h"
 
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGridLayout>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -14,6 +16,72 @@
 #include <QCloseEvent>
 #include <QPainter>
 #include <iostream>
+
+static QIcon makeToolIcon(const QString & type, int size = 28)
+{
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing, true);
+
+    if (type == "pencil")
+    {
+        // Diagonal pencil line with tip dot
+        p.setPen(QPen(QColor(60, 60, 60), 2));
+        p.drawLine(6, size - 6, size - 6, 6);
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(60, 60, 60));
+        p.drawEllipse(QPoint(6, size - 6), 3, 3);
+        // Pencil body
+        p.setPen(QPen(QColor(220, 180, 50), 3));
+        p.drawLine(10, size - 10, size - 6, 6);
+    }
+    else if (type == "fill")
+    {
+        // Paint bucket shape
+        p.setPen(QPen(QColor(60, 60, 60), 2));
+        // Bucket body
+        QRect bucket(4, 8, 16, 14);
+        p.setBrush(QColor(100, 150, 255));
+        p.drawRect(bucket);
+        // Handle
+        p.setBrush(Qt::NoBrush);
+        p.drawArc(10, 2, 14, 12, 30 * 16, 120 * 16);
+        // Pour drip
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(100, 150, 255));
+        p.drawEllipse(QPoint(size - 6, size - 6), 3, 4);
+    }
+    else if (type == "eyedropper")
+    {
+        // Eyedropper shape
+        p.setPen(QPen(QColor(60, 60, 60), 2));
+        // Dropper body (diagonal line)
+        p.drawLine(8, size - 8, size - 8, 8);
+        // Bulb at top
+        p.setBrush(QColor(200, 200, 200));
+        p.drawEllipse(QPoint(size - 8, 8), 5, 5);
+        // Tip at bottom
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(60, 60, 60));
+        QPointF tip[3] = {QPointF(4, size - 4), QPointF(8, size - 10), QPointF(12, size - 6)};
+        p.drawPolygon(tip, 3);
+    }
+    else if (type == "brush")
+    {
+        // Brush with round head
+        p.setPen(QPen(QColor(120, 80, 40), 3));
+        // Handle
+        p.drawLine(size - 6, 6, size / 2, size / 2);
+        // Brush head (filled circle)
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(80, 80, 80));
+        p.drawEllipse(QPoint(size / 2 - 2, size / 2 + 2), 7, 7);
+    }
+
+    p.end();
+    return QIcon(pix);
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -37,10 +105,84 @@ MainWindow::MainWindow(QWidget *parent)
     , theCaptureCounter(0)
 {
     ui->setupUi(this);
+    setupEditorToolPanel();
     setupMenus();
     setupConnections();
     loadSettings();
     updateWindowTitle();
+}
+
+void MainWindow::setupEditorToolPanel()
+{
+    // Build the right-side tool panel inside theEditorToolPanel placeholder
+    QVBoxLayout *toolLayout = new QVBoxLayout(ui->theEditorToolPanel);
+    toolLayout->setContentsMargins(4, 4, 4, 4);
+    toolLayout->setSpacing(4);
+
+    // 2x2 grid of icon tool buttons
+    QGridLayout *toolGrid = new QGridLayout();
+    toolGrid->setSpacing(2);
+
+    int btnSize = 36;
+    int iconSize = 28;
+
+    theToolPencilButton = new QPushButton();
+    theToolPencilButton->setIcon(makeToolIcon("pencil", iconSize));
+    theToolPencilButton->setIconSize(QSize(iconSize, iconSize));
+    theToolPencilButton->setFixedSize(btnSize, btnSize);
+    theToolPencilButton->setCheckable(true);
+    theToolPencilButton->setChecked(true);
+    theToolPencilButton->setToolTip("Pencil — draw one pixel (P)");
+    toolGrid->addWidget(theToolPencilButton, 0, 0);
+
+    theToolBucketButton = new QPushButton();
+    theToolBucketButton->setIcon(makeToolIcon("fill", iconSize));
+    theToolBucketButton->setIconSize(QSize(iconSize, iconSize));
+    theToolBucketButton->setFixedSize(btnSize, btnSize);
+    theToolBucketButton->setCheckable(true);
+    theToolBucketButton->setToolTip("Fill — flood fill same color (F)");
+    toolGrid->addWidget(theToolBucketButton, 0, 1);
+
+    theToolEyedropperButton = new QPushButton();
+    theToolEyedropperButton->setIcon(makeToolIcon("eyedropper", iconSize));
+    theToolEyedropperButton->setIconSize(QSize(iconSize, iconSize));
+    theToolEyedropperButton->setFixedSize(btnSize, btnSize);
+    theToolEyedropperButton->setCheckable(true);
+    theToolEyedropperButton->setToolTip("Eyedropper — pick color (E)");
+    toolGrid->addWidget(theToolEyedropperButton, 1, 0);
+
+    theToolBrushButton = new QPushButton();
+    theToolBrushButton->setIcon(makeToolIcon("brush", iconSize));
+    theToolBrushButton->setIconSize(QSize(iconSize, iconSize));
+    theToolBrushButton->setFixedSize(btnSize, btnSize);
+    theToolBrushButton->setCheckable(true);
+    theToolBrushButton->setToolTip("Brush — adjustable size (B)");
+    toolGrid->addWidget(theToolBrushButton, 1, 1);
+
+    toolLayout->addLayout(toolGrid);
+
+    // Brush size (shown/hidden based on active tool)
+    QHBoxLayout *brushRow = new QHBoxLayout();
+    theBrushSizeLabel = new QLabel("Size:");
+    theBrushSizeSpin = new QSpinBox();
+    theBrushSizeSpin->setMinimum(1);
+    theBrushSizeSpin->setMaximum(16);
+    theBrushSizeSpin->setValue(3);
+    theBrushSizeSpin->setToolTip("Brush size in pixels");
+    brushRow->addWidget(theBrushSizeLabel);
+    brushRow->addWidget(theBrushSizeSpin);
+    toolLayout->addLayout(brushRow);
+
+    // Hide brush size by default (pencil is active)
+    theBrushSizeLabel->setVisible(false);
+    theBrushSizeSpin->setVisible(false);
+
+    // 4x4 palette grid
+    thePaletteGrid = new PaletteGridWidget();
+    toolLayout->addWidget(thePaletteGrid);
+
+    // Stretch at bottom
+    toolLayout->addStretch(1);
 }
 
 MainWindow::~MainWindow()
@@ -240,19 +382,23 @@ void MainWindow::setupConnections()
     connect(ui->theEditorGridCheck, &QCheckBox::toggled,
             this,                   &MainWindow::onEditorGridToggled);
 
-    // Editor tool buttons
+    // Editor tool buttons (programmatic — created in setupEditorToolPanel)
     theToolButtonGroup = new QButtonGroup(this);
     theToolButtonGroup->setExclusive(true);
-    theToolButtonGroup->addButton(ui->theToolPencilButton, TOOL_PENCIL);
-    theToolButtonGroup->addButton(ui->theToolBucketButton, TOOL_BUCKET);
-    theToolButtonGroup->addButton(ui->theToolEyedropperButton, TOOL_EYEDROPPER);
-    theToolButtonGroup->addButton(ui->theToolBrushButton, TOOL_BRUSH);
+    theToolButtonGroup->addButton(theToolPencilButton, TOOL_PENCIL);
+    theToolButtonGroup->addButton(theToolBucketButton, TOOL_BUCKET);
+    theToolButtonGroup->addButton(theToolEyedropperButton, TOOL_EYEDROPPER);
+    theToolButtonGroup->addButton(theToolBrushButton, TOOL_BRUSH);
     connect(theToolButtonGroup, SIGNAL(idClicked(int)),
             this,               SLOT(onEditorToolChanged(int)));
-    connect(ui->theBrushSizeSpin, SIGNAL(valueChanged(int)),
-            this,                 SLOT(onBrushSizeChanged(int)));
+    connect(theBrushSizeSpin, SIGNAL(valueChanged(int)),
+            this,              SLOT(onBrushSizeChanged(int)));
     connect(ui->theSpritePixelEditor, &SpritePixelEditor::colorPicked,
             this,                     &MainWindow::onColorPicked);
+
+    // 4x4 palette grid
+    connect(thePaletteGrid, &PaletteGridWidget::colorSelected,
+            this,           &MainWindow::onEditorPaletteSelected);
 }
 
 // ---------------------------------------------------------------------------
@@ -1405,7 +1551,7 @@ void MainWindow::onCapEditToggled(bool checked)
         EditorTool tool = ui->theSpritePixelEditor->currentTool();
         ui->theTileMapWidget->setTool(tool);
         ui->theTileMapWidget->setPenIndex(ui->theSpritePixelEditor->penIndex());
-        ui->theTileMapWidget->setBrushSize(ui->theBrushSizeSpin->value());
+        ui->theTileMapWidget->setBrushSize(theBrushSizeSpin->value());
         statusBar()->showMessage("Screen capture edit mode ON — paint tiles directly");
     }
     else
@@ -1915,6 +2061,7 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
         }
 
         // Set editor palette to line 0 (middle-click sprite to switch)
+        thePaletteGrid->setPalette(pals[0]);
         ui->theEditorPalette->setPalette(pals[0]);
 
         // Enable save if any sprite has a ROM offset
@@ -1992,6 +2139,7 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
     ui->theSpritePixelEditor->setShowGrid(ui->theEditorGridCheck->isChecked());
 
     // Set palette display
+    thePaletteGrid->setPalette(pal);
     ui->theEditorPalette->setPalette(pal);
 
     // Update info label
@@ -2025,6 +2173,8 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
 void MainWindow::onEditorGroupPaletteLineChanged(int paletteLine)
 {
     theEditorActivePaletteLine = paletteLine;
+    thePaletteGrid->setPalette(
+        ui->theSpritePixelEditor->groupPalette(paletteLine));
     ui->theEditorPalette->setPalette(
         ui->theSpritePixelEditor->groupPalette(paletteLine));
 
@@ -2043,6 +2193,8 @@ void MainWindow::onEditorGroupPaletteLineChanged(int paletteLine)
 void MainWindow::onEditorPaletteSelected(int index)
 {
     ui->theSpritePixelEditor->setPenIndex(index);
+    ui->theEditorPalette->setSelectedIndex(index);
+    thePaletteGrid->setSelectedIndex(index);
     statusBar()->showMessage(
         QString("Pen color: index %1  CRAM: 0x%2")
         .arg(index)
@@ -2454,6 +2606,11 @@ void MainWindow::onEditorToolChanged(int toolId)
     EditorTool tool = static_cast<EditorTool>(toolId);
     ui->theSpritePixelEditor->setTool(tool);
     ui->theTileMapWidget->setTool(tool);
+
+    // Show brush size controls only when brush tool is active
+    bool isBrush = (tool == TOOL_BRUSH);
+    theBrushSizeLabel->setVisible(isBrush);
+    theBrushSizeSpin->setVisible(isBrush);
 }
 
 void MainWindow::onBrushSizeChanged(int size)
@@ -2466,6 +2623,7 @@ void MainWindow::onColorPicked(int paletteIndex)
 {
     ui->theSpritePixelEditor->setPenIndex(paletteIndex);
     ui->theEditorPalette->setSelectedIndex(paletteIndex);
+    thePaletteGrid->setSelectedIndex(paletteIndex);
 }
 
 // ---------------------------------------------------------------------------
@@ -2882,6 +3040,7 @@ void MainWindow::onEditFromViewer()
     for (auto it = palLineMap.begin(); it != palLineMap.end(); ++it)
         theEditPalLineToId[it.value()] = it.key();
 
+    thePaletteGrid->setPalette(pals[0]);
     ui->theEditorPalette->setPalette(pals[0]);
 
     bool canSave = false;

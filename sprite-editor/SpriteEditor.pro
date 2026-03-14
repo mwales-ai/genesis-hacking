@@ -25,7 +25,8 @@ SOURCES += \
     TileMapWidget.cpp \
     GenesisColorDialog.cpp \
     SpriteCollectionWidget.cpp \
-    SpritePixelEditor.cpp
+    SpritePixelEditor.cpp \
+    PaletteGridWidget.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -44,7 +45,8 @@ HEADERS += \
     TileMapWidget.h \
     GenesisColorDialog.h \
     SpriteCollectionWidget.h \
-    SpritePixelEditor.h
+    SpritePixelEditor.h \
+    PaletteGridWidget.h
 
 FORMS += \
     MainWindow.ui \
