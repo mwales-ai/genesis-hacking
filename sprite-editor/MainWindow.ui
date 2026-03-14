@@ -518,6 +518,22 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="theCapEditButton">
+            <property name="text">
+             <string>Edit</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Toggle tile editing mode for this screen capture</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="capActionSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>

@@ -29,10 +29,10 @@ Tasks for Claude:
 * [X] Button to load a screen capture from file
 * [X] Button to add displayed screen capture to the game definition file
 * [X] Button to remove a screen capture from the game definition file (with confirmation dialog)
-* [ ] Button to allow editing screen capture pattern tiles
-* [ ] All the same sprite editor tools available on this screen
-* [ ] In Edit mode, hovering over a pattern tile highlights all tiles sharing that tile in memory
-* [ ] Drawing to a shared tile updates all instances of that shared tile
+* [X] Button to allow editing screen capture pattern tiles
+* [X] All the same sprite editor tools available on this screen
+* [X] In Edit mode, hovering over a pattern tile highlights all tiles sharing that tile in memory
+* [X] Drawing to a shared tile updates all instances of that shared tile
 
 ## BN-Genesis Plugin (Future — do not work on yet)
 

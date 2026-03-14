@@ -183,6 +183,10 @@ void MainWindow::setupConnections()
             this,                     &MainWindow::onAddScreenCaptureToDef);
     connect(ui->theRemoveCapButton,   &QPushButton::clicked,
             this,                     &MainWindow::onRemoveScreenCapture);
+    connect(ui->theCapEditButton,     &QPushButton::toggled,
+            this,                     &MainWindow::onCapEditToggled);
+    connect(ui->theTileMapWidget,     &TileMapWidget::colorPicked,
+            this,                     &MainWindow::onCapColorPicked);
 
     // Sprite Collections tab
     connect(ui->theSpriteColCombo,    SIGNAL(currentIndexChanged(int)),
@@ -1294,6 +1298,7 @@ void MainWindow::onScreenCaptureSelected(int index)
     // Enable add-to-def only for external captures, remove only for def captures
     ui->theAddCapToDefButton->setEnabled(!isFromDef && theDef.isLoaded());
     ui->theRemoveCapButton->setEnabled(isFromDef);
+    ui->theCapEditButton->setEnabled(true);
 
     statusBar()->showMessage(
         QString("Screen capture: %1 (%2x%3 tiles)")
@@ -1389,6 +1394,29 @@ void MainWindow::onRemoveScreenCapture()
     theDef.saveToFile(QString());
     populateScreenCaptures();
     statusBar()->showMessage(QString("Removed screen capture '%1'").arg(name));
+}
+
+void MainWindow::onCapEditToggled(bool checked)
+{
+    ui->theTileMapWidget->setEditMode(checked);
+    if (checked)
+    {
+        // Sync the current tool settings to the tile map widget
+        EditorTool tool = ui->theSpritePixelEditor->currentTool();
+        ui->theTileMapWidget->setTool(tool);
+        ui->theTileMapWidget->setPenIndex(ui->theSpritePixelEditor->penIndex());
+        ui->theTileMapWidget->setBrushSize(ui->theBrushSizeSpin->value());
+        statusBar()->showMessage("Screen capture edit mode ON — paint tiles directly");
+    }
+    else
+    {
+        statusBar()->showMessage("Screen capture edit mode OFF");
+    }
+}
+
+void MainWindow::onCapColorPicked(int paletteIndex)
+{
+    ui->theTileMapWidget->setPenIndex(paletteIndex);
 }
 
 // ---------------------------------------------------------------------------
@@ -2423,12 +2451,15 @@ void MainWindow::onEditorGridToggled(bool checked)
 
 void MainWindow::onEditorToolChanged(int toolId)
 {
-    ui->theSpritePixelEditor->setTool(static_cast<EditorTool>(toolId));
+    EditorTool tool = static_cast<EditorTool>(toolId);
+    ui->theSpritePixelEditor->setTool(tool);
+    ui->theTileMapWidget->setTool(tool);
 }
 
 void MainWindow::onBrushSizeChanged(int size)
 {
     ui->theSpritePixelEditor->setBrushSize(size);
+    ui->theTileMapWidget->setBrushSize(size);
 }
 
 void MainWindow::onColorPicked(int paletteIndex)

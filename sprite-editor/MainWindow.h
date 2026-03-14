@@ -62,6 +62,8 @@ private slots:
     void onLoadScreenCapture();
     void onAddScreenCaptureToDef();
     void onRemoveScreenCapture();
+    void onCapEditToggled(bool checked);
+    void onCapColorPicked(int paletteIndex);
 
     // Sprite Collections tab
     void onSpriteCollectionSelected(int index);
