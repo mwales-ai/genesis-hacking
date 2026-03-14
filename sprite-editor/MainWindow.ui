@@ -41,219 +41,123 @@
        <attribute name="title">
         <string>Sprite Viewer</string>
        </attribute>
-       <layout class="QHBoxLayout" name="spriteViewerLayout">
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <!-- LEFT PANEL: group selector + sprite sheet grid + palette -->
+       <layout class="QVBoxLayout" name="spriteViewerLayout">
         <item>
-         <widget class="QWidget" name="leftPanel">
-          <property name="minimumWidth">
-           <number>320</number>
+         <widget class="QSplitter" name="theViewerSplitter">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
-          <layout class="QVBoxLayout" name="leftLayout">
-           <item>
-            <layout class="QHBoxLayout" name="groupLayout">
-             <item>
-              <widget class="QLabel" name="groupLabel">
-               <property name="text">
-                <string>Sprite Group:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="theGroupCombo">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                 <horstretch>1</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="theRenameButton">
-               <property name="text">
-                <string>Rename</string>
-               </property>
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="toolTip">
-                <string>Rename the selected sprite collection</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="theEditFromViewerButton">
-               <property name="text">
-                <string>Edit</string>
-               </property>
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="toolTip">
-                <string>Open the selected sprite/collection in the Sprite Editor</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <!-- SpriteSheetWidget inside a scroll area -->
-           <item>
-            <widget class="QScrollArea" name="theSpriteScrollArea">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="SpriteSheetWidget" name="theSpriteSheet"/>
-            </widget>
-           </item>
-           <!-- PaletteWidget (promoted) -->
-           <item>
-            <widget class="PaletteWidget" name="thePaletteDisplay"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <!-- RIGHT PANEL: detail view, zoom controls, replace button -->
-        <item>
-         <widget class="QWidget" name="rightPanel">
-          <property name="minimumWidth">
-           <number>200</number>
-          </property>
-          <property name="maximumWidth">
-           <number>400</number>
-          </property>
-          <layout class="QVBoxLayout" name="rightLayout">
-           <item>
-            <widget class="QLabel" name="theSpriteName">
-             <property name="text">
-              <string>(no sprite selected)</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <!-- TileCanvasWidget (promoted) inside a scroll area for large sprites -->
-           <item>
-            <widget class="QScrollArea" name="theDetailScrollArea">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="widgetResizable">
-              <bool>false</bool>
-             </property>
-             <widget class="TileCanvasWidget" name="theSpriteDetail"/>
-            </widget>
-           </item>
-           <!-- Zoom + grid controls -->
-           <item>
-            <layout class="QHBoxLayout" name="zoomLayout">
-             <item>
-              <widget class="QLabel" name="zoomLabel">
-               <property name="text">
-                <string>Zoom:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="theZoomSpin">
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>8</number>
-               </property>
-               <property name="value">
-                <number>4</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="theGridCheck">
-               <property name="text">
-                <string>Show Grid</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <!-- Offset info label -->
-           <item>
-            <widget class="QLabel" name="theOffsetLabel">
-             <property name="text">
-              <string></string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <!-- Action buttons -->
-           <item>
-            <layout class="QHBoxLayout" name="actionLayout">
-             <item>
-              <widget class="QPushButton" name="theReplaceButton">
-               <property name="text">
-                <string>Replace Sprite</string>
-               </property>
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="theExportButton">
-               <property name="text">
-                <string>Export PNG</string>
-               </property>
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="theExportAllButton">
-               <property name="text">
-                <string>Export All</string>
-               </property>
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="toolTip">
-                <string>Export all sprites in the current group as individual PNG files</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer>
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+          <!-- LEFT: collection grid -->
+          <widget class="QScrollArea" name="theSpriteScrollArea">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="SpriteSheetWidget" name="theSpriteSheet"/>
+          </widget>
+          <!-- RIGHT: detail panel -->
+          <widget class="QWidget" name="viewerDetailPanel">
+           <layout class="QVBoxLayout" name="viewerDetailLayout">
+            <!-- Name editor -->
+            <item>
+             <layout class="QHBoxLayout" name="viewerNameLayout">
+              <item>
+               <widget class="QLabel" name="viewerNameLabel">
+                <property name="text">
+                 <string>Name:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="theViewerNameEdit">
+                <property name="placeholderText">
+                 <string>Select a collection</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <!-- Detail view -->
+            <item>
+             <widget class="QScrollArea" name="theDetailScrollArea">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="widgetResizable">
+               <bool>false</bool>
+              </property>
+              <widget class="TileCanvasWidget" name="theSpriteDetail"/>
+             </widget>
+            </item>
+            <!-- Zoom + borders + edit -->
+            <item>
+             <layout class="QHBoxLayout" name="viewerControlsLayout">
+              <item>
+               <widget class="QLabel" name="zoomLabel">
+                <property name="text">
+                 <string>Zoom:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="theZoomSpin">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>8</number>
+                </property>
+                <property name="value">
+                 <number>4</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="theViewerBordersCheck">
+                <property name="text">
+                 <string>Show Borders</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="theEditFromViewerButton">
+                <property name="text">
+                 <string>Edit</string>
+                </property>
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="toolTip">
+                 <string>Open the selected collection in the Sprite Editor</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <!-- Info label -->
+            <item>
+             <widget class="QLabel" name="theViewerInfoLabel">
+              <property name="text">
+               <string>No collection selected</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -858,7 +762,6 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionReplaceSprite"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -913,11 +816,6 @@
   <action name="actionSaveGameDef">
    <property name="text">
     <string>Save Game Definition</string>
-   </property>
-  </action>
-  <action name="actionReplaceSprite">
-   <property name="text">
-    <string>Replace Sprite...</string>
    </property>
   </action>
   <action name="actionAbout">

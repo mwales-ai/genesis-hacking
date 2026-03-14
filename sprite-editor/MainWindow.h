@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSettings>
+#include <QImage>
 #include <QMap>
 #include <QSet>
 #include <iostream>
@@ -36,14 +37,11 @@ private slots:
     void saveRom();
     void saveRomAs();
 
-    // Sprite Viewer tab (Pattern Browser in normalized mode)
-    void onSpriteGroupChanged(int index);
-    void onSpriteSelected(int groupIdx, int spriteIdx, int frameIdx);
+    // Sprite Viewer tab (collection grid)
+    void onCollectionGridSelected(int groupIndex, int spriteIndex, int frameIndex);
     void onZoomChanged(int value);
-    void onGridToggled(bool checked);
-    void replaceSprite();
-    void exportSprite();
-    void exportAllSprites();
+    void onViewerNameEditFinished();
+    void onViewerBordersToggled(bool checked);
 
     // Raw Tile Browser tab
     void onRawRangeChanged(int index);
@@ -75,10 +73,6 @@ private slots:
     void onEditorZoomChanged(int value);
     void onEditorGridToggled(bool checked);
 
-    // Palette editing
-    void onPaletteColorSelected(int index);
-    void onPaletteColorEditRequested(int index);
-
     // Capture workflow
     void onCaptureSpriteGroup();
     void onHideSelectedSprites();
@@ -89,8 +83,7 @@ private slots:
     // Unhide only selected hidden sprites
     void onUnhideSelectedOnly();
 
-    // Sprite Viewer: rename, edit, double-click
-    void onRenameCollection();
+    // Sprite Viewer: edit, double-click
     void onEditFromViewer();
     void onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex);
 
@@ -105,16 +98,18 @@ private:
     void updateWindowTitle();
     void updateStatusLabel();
 
-    // Sprite Viewer / Pattern Browser
+    // Sprite Viewer (collection grid)
+    void populateCollectionGrid();
+    void updateCollectionDetail(int collectionIndex);
+    QImage renderCollectionComposite(const NormalizedCollection & norm, bool showBorders);
+
+    // Legacy display helpers (still used by editor paths)
     void populateSpriteGroups();
-    void populatePatterns();
+    void displaySpriteGroup(int groupIndex);
+    void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
+
     void populateRawRanges();
     void populateRawPalettes();
-
-    void displaySpriteGroup(int groupIndex);
-    void displayPattern(int patternIndex);
-    void displayCollectionInViewer(int collectionIndex);
-    void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
     void refreshRawBrowser();
     void populateScreenCaptures();
     void populateSpriteCollections();
@@ -141,8 +136,9 @@ private:
     int                   theCurrentSpriteIndex;
     int                   theCurrentFrameIndex;
 
-    // Sprite Viewer: split point between patterns and collections in combo
-    int                   thePatternCount;
+    // Sprite Viewer: selected collection in grid
+    int                   theSelectedCollectionIndex;
+    bool                  theShowSpriteBorders;
 
     // Raw tile browser selection state
     int                   theRawSelectedTileIndex;
