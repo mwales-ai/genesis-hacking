@@ -59,6 +59,9 @@ private slots:
     // Screen Captures tab
     void onScreenCaptureSelected(int index);
     void onScreenCapZoomChanged(int value);
+    void onLoadScreenCapture();
+    void onAddScreenCaptureToDef();
+    void onRemoveScreenCapture();
 
     // Sprite Collections tab
     void onSpriteCollectionSelected(int index);
@@ -174,6 +177,10 @@ private:
 
     // Auto-incrementing counter for captured sprite groups
     int                   theCaptureCounter;
+
+    // Standalone screen captures loaded from external JSON files
+    QVector<ScreenCapture> theLoadedCaptures;
+    int                    theDefCaptureCount;  // how many captures are from the game def
 
     // Editor tool selection
     QButtonGroup          *theToolButtonGroup;

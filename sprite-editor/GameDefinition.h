@@ -205,6 +205,8 @@ public:
     const QVector<SpriteGroup>   & spriteGroups() const;
     const QVector<TileRange>     & tileRanges() const;
     const QVector<ScreenCapture>     & screenCaptures() const;
+    void addScreenCapture(const ScreenCapture & cap);
+    void removeScreenCapture(int index);
     const QVector<SpriteCollection> & spriteCollections() const;
 
     // Whether the definition uses the new normalized format
@@ -233,6 +235,7 @@ public:
     bool saveToFile(const QString & path);
     QString definitionPath() const;
 
+    static bool loadScreenCaptureFromFile(const QString & path, QVector<ScreenCapture> & out);
     static uint32_t parseOffset(const QString & hexStr, bool *ok);
     static QVector<ScreenCapturePalette> parsePalettes(const QJsonArray & arr);
     static QVector<CollectionSprite> parseSprites(const QJsonArray & arr);

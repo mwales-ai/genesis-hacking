@@ -26,9 +26,9 @@ Tasks for Claude:
     * [X] Brush tool with adjustable size
 
 ### Screen Captures
-* [ ] Button to load a screen capture from file
-* [ ] Button to add displayed screen capture to the game definition file
-* [ ] Button to remove a screen capture from the game definition file (with confirmation dialog)
+* [X] Button to load a screen capture from file
+* [X] Button to add displayed screen capture to the game definition file
+* [X] Button to remove a screen capture from the game definition file (with confirmation dialog)
 * [ ] Button to allow editing screen capture pattern tiles
 * [ ] All the same sprite editor tools available on this screen
 * [ ] In Edit mode, hovering over a pattern tile highlights all tiles sharing that tile in memory

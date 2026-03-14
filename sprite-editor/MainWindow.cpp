@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     , theEditCollectionIndex(-1)
     , theEditSpriteIndex(-1)
     , theEditorActivePaletteLine(0)
+    , theDefCaptureCount(0)
     , theCaptureCounter(0)
 {
     ui->setupUi(this);
@@ -176,6 +177,12 @@ void MainWindow::setupConnections()
             this,                     SLOT(onScreenCaptureSelected(int)));
     connect(ui->theScreenCapZoomSpin, SIGNAL(valueChanged(int)),
             this,                     SLOT(onScreenCapZoomChanged(int)));
+    connect(ui->theLoadCapButton,     &QPushButton::clicked,
+            this,                     &MainWindow::onLoadScreenCapture);
+    connect(ui->theAddCapToDefButton, &QPushButton::clicked,
+            this,                     &MainWindow::onAddScreenCaptureToDef);
+    connect(ui->theRemoveCapButton,   &QPushButton::clicked,
+            this,                     &MainWindow::onRemoveScreenCapture);
 
     // Sprite Collections tab
     connect(ui->theSpriteColCombo,    SIGNAL(currentIndexChanged(int)),
@@ -1224,14 +1231,21 @@ void MainWindow::populateScreenCaptures()
     ui->theScreenCapCombo->blockSignals(true);
     ui->theScreenCapCombo->clear();
 
-    const auto & captures = theDef.screenCaptures();
-    for (const auto & cap : captures)
+    const auto & defCaptures = theDef.screenCaptures();
+    theDefCaptureCount = defCaptures.size();
+
+    for (const auto & cap : defCaptures)
         ui->theScreenCapCombo->addItem(cap.name);
 
-    ui->theScreenCapCombo->setEnabled(!captures.isEmpty());
+    // Add externally loaded captures (not yet in game def)
+    for (const auto & cap : theLoadedCaptures)
+        ui->theScreenCapCombo->addItem(QString("[ext] %1").arg(cap.name));
+
+    bool hasEntries = (theDefCaptureCount + theLoadedCaptures.size()) > 0;
+    ui->theScreenCapCombo->setEnabled(hasEntries);
     ui->theScreenCapCombo->blockSignals(false);
 
-    if (!captures.isEmpty())
+    if (hasEntries)
         onScreenCaptureSelected(0);
     else
         ui->theTileMapWidget->clearCapture();
@@ -1239,26 +1253,142 @@ void MainWindow::populateScreenCaptures()
 
 void MainWindow::onScreenCaptureSelected(int index)
 {
-    const auto & captures = theDef.screenCaptures();
-    if (index < 0 || index >= captures.size())
+    if (index < 0)
     {
         ui->theTileMapWidget->clearCapture();
+        ui->theAddCapToDefButton->setEnabled(false);
+        ui->theRemoveCapButton->setEnabled(false);
+        return;
+    }
+
+    const ScreenCapture *cap = nullptr;
+    bool isFromDef = false;
+
+    if (index < theDefCaptureCount)
+    {
+        const auto & captures = theDef.screenCaptures();
+        if (index < captures.size())
+        {
+            cap = &captures[index];
+            isFromDef = true;
+        }
+    }
+    else
+    {
+        int extIdx = index - theDefCaptureCount;
+        if (extIdx >= 0 && extIdx < theLoadedCaptures.size())
+            cap = &theLoadedCaptures[extIdx];
+    }
+
+    if (!cap)
+    {
+        ui->theTileMapWidget->clearCapture();
+        ui->theAddCapToDefButton->setEnabled(false);
+        ui->theRemoveCapButton->setEnabled(false);
         return;
     }
 
     RomFile *rom = theRom.isOpen() ? &theRom : nullptr;
-    ui->theTileMapWidget->setScreenCapture(captures[index], rom);
+    ui->theTileMapWidget->setScreenCapture(*cap, rom);
+
+    // Enable add-to-def only for external captures, remove only for def captures
+    ui->theAddCapToDefButton->setEnabled(!isFromDef && theDef.isLoaded());
+    ui->theRemoveCapButton->setEnabled(isFromDef);
 
     statusBar()->showMessage(
         QString("Screen capture: %1 (%2x%3 tiles)")
-            .arg(captures[index].name)
-            .arg(captures[index].widthTiles)
-            .arg(captures[index].heightTiles));
+            .arg(cap->name)
+            .arg(cap->widthTiles)
+            .arg(cap->heightTiles));
 }
 
 void MainWindow::onScreenCapZoomChanged(int value)
 {
     ui->theTileMapWidget->setZoom(value);
+}
+
+void MainWindow::onLoadScreenCapture()
+{
+    QString lastPath = theSettings.value("lastDefPath", "").toString();
+    QString path = QFileDialog::getOpenFileName(
+        this, "Load Screen Capture", lastPath,
+        "Screen Capture JSON (*.json);;All Files (*)");
+
+    if (path.isEmpty())
+        return;
+
+    QVector<ScreenCapture> caps;
+    if (!GameDefinition::loadScreenCaptureFromFile(path, caps))
+    {
+        QMessageBox::critical(this, "Error",
+            "Failed to load screen capture from:\n" + path);
+        return;
+    }
+
+    theLoadedCaptures.append(caps);
+    populateScreenCaptures();
+
+    // Select the first newly loaded capture
+    int firstNew = theDefCaptureCount + theLoadedCaptures.size() - caps.size();
+    ui->theScreenCapCombo->setCurrentIndex(firstNew);
+
+    statusBar()->showMessage(
+        QString("Loaded %1 screen capture(s) from %2")
+        .arg(caps.size()).arg(QFileInfo(path).fileName()));
+}
+
+void MainWindow::onAddScreenCaptureToDef()
+{
+    int index = ui->theScreenCapCombo->currentIndex();
+    if (index < theDefCaptureCount)
+        return;  // Already in def
+
+    int extIdx = index - theDefCaptureCount;
+    if (extIdx < 0 || extIdx >= theLoadedCaptures.size())
+        return;
+
+    if (!theDef.isLoaded())
+    {
+        QMessageBox::warning(this, "No Game Definition",
+            "Load or create a game definition first.");
+        return;
+    }
+
+    ScreenCapture cap = theLoadedCaptures.takeAt(extIdx);
+    theDef.addScreenCapture(cap);
+    theDef.saveToFile(QString());
+    populateScreenCaptures();
+
+    // Select the newly added def capture (it's the last def capture)
+    ui->theScreenCapCombo->setCurrentIndex(theDefCaptureCount - 1);
+    statusBar()->showMessage(
+        QString("Added screen capture '%1' to game definition").arg(cap.name));
+}
+
+void MainWindow::onRemoveScreenCapture()
+{
+    int index = ui->theScreenCapCombo->currentIndex();
+    if (index < 0 || index >= theDefCaptureCount)
+        return;
+
+    const auto & captures = theDef.screenCaptures();
+    if (index >= captures.size())
+        return;
+
+    QString name = captures[index].name;
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Remove Screen Capture",
+        QString("Are you sure you want to remove screen capture '%1' from the game definition?")
+            .arg(name),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes)
+        return;
+
+    theDef.removeScreenCapture(index);
+    theDef.saveToFile(QString());
+    populateScreenCaptures();
+    statusBar()->showMessage(QString("Removed screen capture '%1'").arg(name));
 }
 
 // ---------------------------------------------------------------------------

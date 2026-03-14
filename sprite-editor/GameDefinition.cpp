@@ -227,6 +227,17 @@ const QVector<ScreenCapture> & GameDefinition::screenCaptures() const
     return theScreenCaptures;
 }
 
+void GameDefinition::addScreenCapture(const ScreenCapture & cap)
+{
+    theScreenCaptures.append(cap);
+}
+
+void GameDefinition::removeScreenCapture(int index)
+{
+    if (index >= 0 && index < theScreenCaptures.size())
+        theScreenCaptures.removeAt(index);
+}
+
 const QVector<SpriteCollection> & GameDefinition::spriteCollections() const
 {
     return theSpriteCollections;
@@ -235,6 +246,85 @@ const QVector<SpriteCollection> & GameDefinition::spriteCollections() const
 bool GameDefinition::isNormalized() const
 {
     return theNormalized;
+}
+
+bool GameDefinition::loadScreenCaptureFromFile(const QString & path, QVector<ScreenCapture> & out)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    QByteArray data = file.readAll();
+    QJsonParseError parseErr;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseErr);
+    if (doc.isNull())
+        return false;
+
+    QJsonObject root = doc.object();
+    QJsonArray captures = root["screen_captures"].toArray();
+    if (captures.isEmpty())
+        return false;
+
+    for (const QJsonValue & cv : captures)
+    {
+        QJsonObject co = cv.toObject();
+        ScreenCapture cap;
+        cap.name        = co["name"].toString("Unnamed Capture");
+        cap.widthTiles  = co["width_tiles"].toInt(40);
+        cap.heightTiles = co["height_tiles"].toInt(28);
+
+        QJsonArray pals = co["palettes"].toArray();
+        for (const QJsonValue & pv : pals)
+        {
+            QJsonObject po = pv.toObject();
+            ScreenCapturePalette pal;
+            pal.line = po["line"].toInt(0);
+            QJsonArray cramArr = po["cram_values"].toArray();
+            for (const QJsonValue & cval : cramArr)
+            {
+                bool ok = false;
+                uint16_t word = cval.toString("0").toUInt(&ok, 16);
+                pal.cramValues.append(word);
+            }
+            pal.dmaSource = po["dma_source"].isNull() ? QString() : po["dma_source"].toString();
+            cap.palettes.append(pal);
+        }
+
+        QJsonArray tileArr = co["tile_map"].toArray();
+        for (const QJsonValue & tv : tileArr)
+        {
+            QJsonObject to_ = tv.toObject();
+            TileMapEntry entry;
+            entry.row         = to_["row"].toInt(0);
+            entry.col         = to_["col"].toInt(0);
+            entry.pattern     = to_["pattern"].toInt(0);
+            entry.paletteLine = to_["palette_line"].toInt(0);
+            entry.hFlip       = to_["h_flip"].toBool(false);
+            entry.vFlip       = to_["v_flip"].toBool(false);
+            entry.priority    = to_["priority"].toBool(false);
+            entry.romOffset   = to_["rom_offset"].isNull() ? QString() : to_["rom_offset"].toString();
+            entry.source      = to_["source"].toString("blank");
+            cap.tileMap.append(entry);
+        }
+
+        QJsonObject embedObj = co["embedded_tiles"].toObject();
+        for (auto it = embedObj.begin(); it != embedObj.end(); ++it)
+        {
+            QString hexData = it.value().toString();
+            QByteArray tileBytes;
+            for (int i = 0; i + 1 < hexData.length(); i += 2)
+            {
+                bool ok = false;
+                uint8_t byte = hexData.mid(i, 2).toUInt(&ok, 16);
+                tileBytes.append(static_cast<char>(byte));
+            }
+            cap.embeddedTiles.insert(it.key(), tileBytes);
+        }
+
+        out.append(cap);
+    }
+
+    return !out.isEmpty();
 }
 
 uint32_t GameDefinition::parseOffset(const QString & hexStr, bool *ok)

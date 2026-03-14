@@ -478,6 +478,54 @@
           </item>
          </layout>
         </item>
+        <!-- Screen capture action buttons -->
+        <item>
+         <layout class="QHBoxLayout" name="capActionLayout">
+          <item>
+           <widget class="QPushButton" name="theLoadCapButton">
+            <property name="text">
+             <string>Load Capture...</string>
+            </property>
+            <property name="toolTip">
+             <string>Load a screen capture JSON file from blastem</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theAddCapToDefButton">
+            <property name="text">
+             <string>Add to Definition</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Save the displayed screen capture into the game definition file</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theRemoveCapButton">
+            <property name="text">
+             <string>Remove</string>
+            </property>
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Remove this screen capture from the game definition</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="capActionSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
         <!-- TileMapWidget (promoted) inside scroll area -->
         <item>
          <widget class="QScrollArea" name="theCapScrollArea">
