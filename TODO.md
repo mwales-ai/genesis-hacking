@@ -8,7 +8,7 @@ Tasks for Claude:
     * [ ] Make a palette tool that is 4x4 square of the colors
     * [ ] The pencil, full, eyedropper, and brush tools should be buttons with icons on them, not words.  Make icon buttons 2 x 2 buttons.  Size for brush should appear under the tool buttons and hide depending on brush icon active.
 * [ ] Screen Capture
-    * [ ] Need a save changes to ROM button
+    * [ ] Need a save changes to ROM button, and a revert to original ROM button to discard painting done so far
     * [ ] Add painting tools to screen capture when you press the edit button
 * [ ] Sprite Viewer Improvments
     * [ ] The right pane canvas isn't big enough to view multiple sprites. When a sprite group is clicked, the whole group should be visible
