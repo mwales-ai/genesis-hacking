@@ -498,7 +498,7 @@
       <!-- ===================== TAB 3: Sprite Collections ===================== -->
       <widget class="QWidget" name="tabSpriteCollections">
        <attribute name="title">
-        <string>Sprite Collections</string>
+        <string>Sprite Animations</string>
        </attribute>
        <layout class="QVBoxLayout" name="spriteColLayout">
         <!-- Top bar: collection selector + frame selector + zoom -->
@@ -557,6 +557,16 @@
             </property>
             <property name="visible">
              <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="theLoadRecordingButton">
+            <property name="text">
+             <string>Load Recording...</string>
+            </property>
+            <property name="toolTip">
+             <string>Load a .sprec sprite recording file</string>
             </property>
            </widget>
           </item>

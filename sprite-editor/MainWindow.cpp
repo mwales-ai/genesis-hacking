@@ -189,6 +189,10 @@ void MainWindow::setupConnections()
     connect(ui->theColFrameSpin,      SIGNAL(valueChanged(int)),
             this,                     SLOT(onAnimationFrameChanged(int)));
 
+    // Load recording button on Sprite Animations tab
+    connect(ui->theLoadRecordingButton, &QPushButton::clicked,
+            this,                       &MainWindow::onLoadRecording);
+
     // Capture workflow buttons
     connect(ui->theCaptureGroupButton,  &QPushButton::clicked,
             this,                       &MainWindow::onCaptureSpriteGroup);
@@ -1255,27 +1259,9 @@ void MainWindow::populateSpriteCollections()
     theCollectionCount = 0;
     theAnimationCount  = 0;
 
-    if (theDef.isLoaded())
-    {
-        if (theDef.isNormalized())
-        {
-            // Add normalized collections
-            const auto & normCols = theDef.normalizedCollections();
-            for (const auto & col : normCols)
-                ui->theSpriteColCombo->addItem(col.name);
-            theCollectionCount = normCols.size();
-        }
-        else
-        {
-            // Legacy: add sprite collections
-            const auto & collections = theDef.spriteCollections();
-            for (const auto & col : collections)
-                ui->theSpriteColCombo->addItem(col.name);
-            theCollectionCount = collections.size();
-        }
-    }
+    // Sprite groups are now in the Sprite Viewer tab, so only show recordings here
 
-    // Add .sprec recordings after collections
+    // Add .sprec recordings
     for (int i = 0; i < theSpriteRecordings.size(); ++i)
     {
         const SpriteRecording & rec = theSpriteRecordings[i];
@@ -1398,6 +1384,34 @@ void MainWindow::onSpriteCollectionSelected(int index)
 void MainWindow::onSpriteCollectionZoomChanged(int value)
 {
     ui->theSpriteColWidget->setZoom(value);
+}
+
+void MainWindow::onLoadRecording()
+{
+    QString lastPath = theSettings.value("lastDefPath", "").toString();
+    QString path = QFileDialog::getOpenFileName(
+        this, "Load Sprite Recording", lastPath,
+        "Sprite Recording (*.sprec);;All Files (*)");
+
+    if (path.isEmpty())
+        return;
+
+    SpriteRecording rec;
+    if (!rec.loadFromFile(path))
+    {
+        QMessageBox::critical(this, "Error",
+            "Failed to load sprite recording:\n" + rec.lastError());
+        return;
+    }
+
+    theSpriteRecordings.append(rec);
+    populateSpriteCollections();
+    statusBar()->showMessage("Sprite recording loaded: " + rec.gameName());
+
+    // Select the newly added recording in the combo
+    int lastIdx = ui->theSpriteColCombo->count() - 1;
+    if (lastIdx >= 0)
+        ui->theSpriteColCombo->setCurrentIndex(lastIdx);
 }
 
 void MainWindow::onAnimationFrameChanged(int frameIndex)

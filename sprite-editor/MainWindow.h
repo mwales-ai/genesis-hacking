@@ -63,6 +63,7 @@ private slots:
     void onSpriteCollectionSelected(int index);
     void onSpriteCollectionZoomChanged(int value);
     void onAnimationFrameChanged(int frameIndex);
+    void onLoadRecording();
 
     // Sprite Editor tab
     void onCollectionSpriteClicked(int spriteIndex);

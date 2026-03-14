@@ -10,13 +10,13 @@ Tasks for Claude:
     * [X] Left-click and drag a sprite to a spot between other sprites to change display/storage order
     * [X] While moving a sprite group, show a cursor (vertical line) between the 2 sprite groups indicating drop position
 * [X] Right panel canvas should grow to fit the entire sprite (or show scroll bars if zoom is too high)
-* [ ] Double-click sprite in right panel jumps to Raw Tile Browser tab with matching palette, W, H, and address
+* [X] Double-click sprite in right panel jumps to Raw Tile Browser tab with matching palette, W, H, and address
 
 ### Sprite Collections
-* [ ] Change tab name to "Sprite Animations"
-* [ ] Add a button to add a sprite recording to the Collection combo
-* [ ] Don't show stored sprite groups (from Sprite Viewer) in the combo box
-* [ ] Combo box should switch between loaded sprite recording files
+* [X] Change tab name to "Sprite Animations"
+* [X] Add a button to add a sprite recording to the Collection combo
+* [X] Don't show stored sprite groups (from Sprite Viewer) in the combo box
+* [X] Combo box should switch between loaded sprite recording files
 
 ### Sprite Editor Tools
 * [ ] Add a tool selection set of buttons
