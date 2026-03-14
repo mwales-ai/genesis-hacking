@@ -143,6 +143,8 @@ void MainWindow::setupConnections()
             this,               SLOT(onZoomChanged(int)));
     connect(ui->theThumbZoomSpin, SIGNAL(valueChanged(int)),
             this,                 SLOT(onThumbZoomChanged(int)));
+    connect(ui->theSpriteSheet, &SpriteSheetWidget::spriteReordered,
+            this,               &MainWindow::onViewerSpriteReordered);
     connect(ui->theViewerNameEdit, &QLineEdit::editingFinished,
             this,               &MainWindow::onViewerNameEditFinished);
     connect(ui->theViewerBordersCheck, &QCheckBox::toggled,
@@ -672,6 +674,15 @@ void MainWindow::onZoomChanged(int value)
 void MainWindow::onThumbZoomChanged(int value)
 {
     ui->theSpriteSheet->setThumbZoom(value);
+}
+
+void MainWindow::onViewerSpriteReordered(int fromIndex, int toIndex)
+{
+    AppDebug << "Reorder collection: " << fromIndex << " -> " << toIndex << std::endl;
+    theDef.moveNormalizedCollection(fromIndex, toIndex);
+    theDef.saveToFile(QString());
+    populateCollectionGrid();
+    statusBar()->showMessage(QString("Moved collection from position %1 to %2").arg(fromIndex).arg(toIndex));
 }
 
 

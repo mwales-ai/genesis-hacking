@@ -5,7 +5,7 @@ Tasks for Claude:
 ## Sprite Editor
 
 ### Sprite Viewer
-* [ ] Left panel needs an independent zoom control that controls how big the sprites are on the left side
+* [X] Left panel needs an independent zoom control that controls how big the sprites are on the left side
 * [ ] Drag-to-reorder sprites in left panel
     * [ ] Left-click and drag a sprite to a spot between other sprites to change display/storage order
     * [ ] While moving a sprite group, show a cursor (vertical line) between the 2 sprite groups indicating drop position

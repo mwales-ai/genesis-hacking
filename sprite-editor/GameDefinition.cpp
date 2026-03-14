@@ -646,6 +646,22 @@ void GameDefinition::renameCollection(int index, const QString & newName)
         theNormalizedCollections[index].name = newName;
 }
 
+void GameDefinition::moveNormalizedCollection(int fromIndex, int toIndex)
+{
+    if (fromIndex < 0 || fromIndex >= theNormalizedCollections.size())
+        return;
+    if (toIndex < 0 || toIndex > theNormalizedCollections.size())
+        return;
+    if (fromIndex == toIndex || fromIndex == toIndex - 1)
+        return;
+
+    NormalizedCollection col = theNormalizedCollections.takeAt(fromIndex);
+    // After removal, adjust toIndex if it was after fromIndex
+    if (toIndex > fromIndex)
+        toIndex--;
+    theNormalizedCollections.insert(toIndex, col);
+}
+
 int GameDefinition::countPaletteReferences(const QString & paletteId) const
 {
     int count = 0;

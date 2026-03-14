@@ -224,6 +224,7 @@ public:
     bool hasPatternId(const QString & id) const;
     bool hasCollectionId(const QString & id) const;
     void renameCollection(int index, const QString & newName);
+    void moveNormalizedCollection(int fromIndex, int toIndex);
 
     /** Count how many sprites across all collections reference this palette ID. */
     int countPaletteReferences(const QString & paletteId) const;

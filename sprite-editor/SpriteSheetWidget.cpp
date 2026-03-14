@@ -9,15 +9,22 @@ SpriteSheetWidget::SpriteSheetWidget(QWidget *parent)
     , theSelectedIndex(-1)
     , theCellWidth(80)
     , theCellHeight(80)
+    , theDragging(false)
+    , theDragSourceIndex(-1)
+    , theDropInsertIndex(-1)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     setFocusPolicy(Qt::ClickFocus);
+    setMouseTracking(false);
 }
 
 void SpriteSheetWidget::setSprites(const QVector<SpriteThumb> & sprites)
 {
     theSprites = sprites;
     theSelectedIndex = -1;
+    theDragging = false;
+    theDragSourceIndex = -1;
+    theDropInsertIndex = -1;
     recalcLayout();
     updateGeometry();
     update();
@@ -28,6 +35,9 @@ void SpriteSheetWidget::clearSprites()
     theSprites.clear();
     theSelectedIndex = -1;
     theItemPositions.clear();
+    theDragging = false;
+    theDragSourceIndex = -1;
+    theDropInsertIndex = -1;
     updateGeometry();
     update();
 }
@@ -108,6 +118,12 @@ void SpriteSheetWidget::paintEvent(QPaintEvent *)
         QPoint topLeft = theItemPositions[i];
         QRect cellRect(topLeft, QSize(theCellWidth, theCellHeight));
 
+        // Dim the dragged item
+        if (theDragging && i == theDragSourceIndex)
+        {
+            p.setOpacity(0.3);
+        }
+
         // Selection highlight
         if (i == theSelectedIndex)
         {
@@ -136,14 +152,109 @@ void SpriteSheetWidget::paintEvent(QPaintEvent *)
         name = fm.elidedText(name, Qt::ElideRight, theCellWidth - 4);
         p.setPen(i == theSelectedIndex ? Qt::white : Qt::lightGray);
         p.drawText(topLeft.x() + 2, topLeft.y() + theCellHeight - 4, name);
+
+        if (theDragging && i == theDragSourceIndex)
+        {
+            p.setOpacity(1.0);
+        }
+    }
+
+    // Draw drop indicator (vertical line between cells)
+    if (theDragging && theDropInsertIndex >= 0)
+    {
+        int insertIdx = theDropInsertIndex;
+        int lineX = 0;
+        int lineY = 0;
+        int lineH = theCellHeight;
+
+        if (insertIdx < theItemPositions.size())
+        {
+            lineX = theItemPositions[insertIdx].x() - 2;
+            lineY = theItemPositions[insertIdx].y();
+        }
+        else if (!theItemPositions.isEmpty())
+        {
+            // Inserting at end: draw after the last item
+            QPoint lastPos = theItemPositions.last();
+            lineX = lastPos.x() + theCellWidth + 2;
+            lineY = lastPos.y();
+
+            // If the line goes past the widget width, wrap to next row
+            if (lineX > width())
+            {
+                lineX = 0;
+                lineY = lastPos.y() + theCellHeight;
+            }
+        }
+
+        QPen dropPen(QColor(255, 200, 0), 3);
+        p.setPen(dropPen);
+        p.drawLine(lineX, lineY + 2, lineX, lineY + lineH - 2);
     }
 }
 
 void SpriteSheetWidget::mousePressEvent(QMouseEvent *event)
 {
-    int idx = itemIndexAt(event->pos());
-    if (idx >= 0 && idx < theSprites.size())
-        selectItem(idx);
+    if (event->button() == Qt::LeftButton)
+    {
+        int idx = itemIndexAt(event->pos());
+        if (idx >= 0 && idx < theSprites.size())
+        {
+            selectItem(idx);
+            theDragStartPos = event->pos();
+            theDragSourceIndex = idx;
+        }
+    }
+}
+
+void SpriteSheetWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    if (!(event->buttons() & Qt::LeftButton) || theDragSourceIndex < 0)
+        return;
+
+    if (!theDragging)
+    {
+        // Check if we've moved past the drag threshold
+        int dist = (event->pos() - theDragStartPos).manhattanLength();
+        if (dist < DRAG_THRESHOLD)
+            return;
+        theDragging = true;
+        setCursor(Qt::DragMoveCursor);
+    }
+
+    // Update drop insertion index
+    int newDropIdx = insertIndexAt(event->pos());
+    if (newDropIdx != theDropInsertIndex)
+    {
+        theDropInsertIndex = newDropIdx;
+        update();
+    }
+}
+
+void SpriteSheetWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && theDragging)
+    {
+        setCursor(Qt::ArrowCursor);
+
+        if (theDropInsertIndex >= 0 && theDragSourceIndex >= 0 &&
+            theDropInsertIndex != theDragSourceIndex &&
+            theDropInsertIndex != theDragSourceIndex + 1)
+        {
+            emit spriteReordered(theDragSourceIndex, theDropInsertIndex);
+        }
+
+        theDragging = false;
+        theDragSourceIndex = -1;
+        theDropInsertIndex = -1;
+        update();
+    }
+    else
+    {
+        theDragging = false;
+        theDragSourceIndex = -1;
+        theDropInsertIndex = -1;
+    }
 }
 
 void SpriteSheetWidget::mouseDoubleClickEvent(QMouseEvent *event)
@@ -208,5 +319,36 @@ int SpriteSheetWidget::itemIndexAt(const QPoint & pos) const
         if (r.contains(pos))
             return i;
     }
+    return -1;
+}
+
+int SpriteSheetWidget::insertIndexAt(const QPoint & pos) const
+{
+    if (theItemPositions.isEmpty() || theCellWidth <= 0)
+        return -1;
+
+    // Find which cell the mouse is nearest to, and determine if cursor
+    // is on the left or right half to pick the insertion point
+    for (int i = 0; i < theItemPositions.size(); ++i)
+    {
+        QRect r(theItemPositions[i], QSize(theCellWidth, theCellHeight));
+        if (r.contains(pos))
+        {
+            int cellMidX = theItemPositions[i].x() + theCellWidth / 2;
+            if (pos.x() < cellMidX)
+                return i;       // Insert before this item
+            else
+                return i + 1;   // Insert after this item
+        }
+    }
+
+    // If below all items, insert at end
+    if (!theItemPositions.isEmpty())
+    {
+        QPoint lastPos = theItemPositions.last();
+        if (pos.y() >= lastPos.y())
+            return theSprites.size();
+    }
+
     return -1;
 }

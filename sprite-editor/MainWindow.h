@@ -41,6 +41,7 @@ private slots:
     void onCollectionGridSelected(int groupIndex, int spriteIndex, int frameIndex);
     void onZoomChanged(int value);
     void onThumbZoomChanged(int value);
+    void onViewerSpriteReordered(int fromIndex, int toIndex);
     void onViewerNameEditFinished();
     void onViewerBordersToggled(bool checked);
 
