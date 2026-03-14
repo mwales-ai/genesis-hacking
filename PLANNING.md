@@ -49,40 +49,11 @@ Binary: `sprite-editor/build/SpriteEditor`
 - ~~Multi-frame sprites~~ DONE — `frame_count` in JSON expands to N thumbnails
   in Sprite Viewer; per-frame offset for detail view, replace, and export.
 
-### Moonwalker ROM Analysis (`sprite-editor/examples/moonwalker.json`)
-Target ROM: `roms/Moonwalker.bin` (USA, JUE, checksum 0x38B2).
-Also tested with `Moonwalker.md` (checksum 0x096F, alternate revision).
-Sprite tile data is identical across revisions; palette offsets differ.
-
-**ROM layout:**
-- `0x200-0x15000`: Code + header
-- `0x01B000-0x02A400`: **PRIMARY SPRITE BANK** — ~1952 tiles, density 0.37-0.65
-- `0x02A800-0x052FFF`: Mixed compressed/other data
-- `0x053000-0x05F400`: **SECONDARY SPRITE/TILE BANK** — ~1568 tiles, density 0.28-0.65
-- `0x05F800+`: Audio samples / compressed (density 1.0)
-
-**Confirmed sprite groups (identical across ROM revisions):**
-- **0x0220E0**: 23 sprites of 2×4 tiles — MJ character animation set A ✓
-- **0x023800**: 43 sprites of 2×5 tiles — MJ character animation set B ✓
-- **0x0290A0**: 3 sprites of 3×5 tiles — large character sprites
-- **0x054000+**: Level tile data (diagonal stripes, checkerboard floors) ✓
-
-**Palettes (USA ROM, checksum 0x38B2):**
-- **0x0082CA** — MJ gray suit (grayscale gradient + skin tones, HIGH confidence)
-- **0x004416** — Stage 1 warm gradient (dark→light warm tones, MEDIUM)
-- **0x002D30** — Earth tones / level environment (MEDIUM)
-
-**Unresolved:**
-- 587-tile run at 0x01D760-0x0220C0 — not cleanly divisible by common sprite sizes.
-  Could be multiple sprite groups without zero-tile separators, or compressed data.
-
 ---
 
 ## Planned Work (Ordered by Priority)
 
 ### 1. ~~Implement Nemesis Decompressor~~ DONE
-
-### 2. ~~Verify Moonwalker Sprite Offsets Visually~~ CONFIRMED
 
 ### 3. ~~Sprite Editor UX: assembly mode, export PNG, keyboard nav~~ DONE
 
@@ -90,8 +61,6 @@ Sprite tile data is identical across revisions; palette offsets differ.
 - Added `frame_count` field to JSON definition and `SpriteEntry` struct
 - Sprite Viewer expands multi-frame entries into individual thumbnails ([1/N], [2/N], ...)
 - Detail view shows per-frame ROM offset; replacement writes to correct frame offset
-- Increased tile dimension bounds from 4→8 (Moonwalker uses 2×5 sprites)
-- Updated moonwalker.json with frame counts: 23, 43, 73, 13, 21, 3, 13 frames
 
 ### 3c. ~~BlastEm Enhancements: CRAM DMA Tracking & Debugger~~ DONE
 Forked BlastEm to add ROM hacking support features:
@@ -129,21 +98,6 @@ BlastEm `screencap` debugger command + sprite editor Screen Captures tab:
 - **JSON format**: Designed for forward compatibility with sprite collections and
   animations (future `sprite_collections` and `animations` arrays)
 
-### 4. Identify and Document MJ Sprites in moonwalker.json
-Using the sprite editor + BlastEm debugger, map out:
-- MJ walk animation frames (in 2×4 group at 0x0220E0)
-- MJ idle/standing pose
-- MJ moonwalk move
-- MJ hat throw attack
-- Enemies (gangsters, zombies) — likely in the 587-tile run or elsewhere in main bank
-- Level tiles for at least Stage 1
-
-### 5. Sprite Replacement Test
-Once sprites are identified:
-1. Create a test PNG matching MJ's sprite dimensions
-2. Import via "Replace Sprite" dialog
-3. Verify the modified ROM plays correctly in BlastEm
-
 ### 6. Implement Kosinski Decompressor (Lower Priority)
 **File:** `sprite-editor/KosinskiDecompressor.cpp`
 **Why:** Sonic games use Kosinski; less relevant for Moonwalker but needed for portability.
@@ -159,15 +113,6 @@ Add a Binary Ninja plugin command that:
 ### 8. Sprite Editor: Remaining UX
 - Add tile grid overlay toggle to PaletteWidget
 - Improve SpriteReplaceDialog preview and error handling
-
----
-
-## Known Issues / Blockers
-
-| Issue | Severity | Notes |
-|-------|----------|-------|
-| 587-tile run at 0x01D760 unidentified | Medium | Try various W×H in sprite assembly mode |
-| Kosinski decompressor is a stub | Low | Not needed for Moonwalker |
 
 ---
 
