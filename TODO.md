@@ -2,8 +2,8 @@ Tasks for Claude:
 
 # Incomplete Tasks
 
-* [ ] Sprite Viewer
-    * [ ] Right pane border.  Don't have the borders get thicker when zoomed in
+* [X] Sprite Viewer
+    * [X] Right pane border.  Don't have the borders get thicker when zoomed in
 * [ ] Screen Capture tool
     * [ ] Bottom of screen needs some status about capture.  Number of unique patterns store, number of the patterns that have ROM address recovered.  Number of palettes.  Are the pallete ROM addresses recovered?
     * [ ] When mousing over a pattern tile, dispaly the address information for the tile (memory address, palatte address

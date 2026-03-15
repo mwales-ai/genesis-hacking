@@ -3,6 +3,15 @@
 
 #include <QWidget>
 #include <QImage>
+#include <QVector>
+#include <QRect>
+#include <QColor>
+
+struct SpriteOverlayRect
+{
+    QRect  rect;   // in sprite-pixel coordinates
+    QColor color;
+};
 
 class TileCanvasWidget : public QWidget
 {
@@ -21,6 +30,10 @@ public:
     void setShowGrid(bool show);
     bool showGrid() const;
 
+    /** Set border overlay rectangles (drawn at 1px regardless of zoom). */
+    void setBorderOverlays(const QVector<SpriteOverlayRect> & overlays);
+    void clearBorderOverlays();
+
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
@@ -35,6 +48,7 @@ private:
     QImage theSprite;
     int    theZoom;
     bool   theShowGrid;
+    QVector<SpriteOverlayRect> theOverlays;
 };
 
 #endif // TILECANVASWIDGET_H

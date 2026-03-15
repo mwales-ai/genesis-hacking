@@ -54,6 +54,18 @@ bool TileCanvasWidget::showGrid() const
     return theShowGrid;
 }
 
+void TileCanvasWidget::setBorderOverlays(const QVector<SpriteOverlayRect> & overlays)
+{
+    theOverlays = overlays;
+    update();
+}
+
+void TileCanvasWidget::clearBorderOverlays()
+{
+    theOverlays.clear();
+    update();
+}
+
 QSize TileCanvasWidget::sizeHint() const
 {
     if (theSprite.isNull())
@@ -101,6 +113,21 @@ void TileCanvasWidget::paintEvent(QPaintEvent *)
             p.drawLine(x, 0, x, scaled.height());
         for (int y = gridStep; y < scaled.height(); y += gridStep)
             p.drawLine(0, y, scaled.width(), y);
+    }
+
+    // Border overlays — drawn at 1px width regardless of zoom
+    for (const SpriteOverlayRect & overlay : theOverlays)
+    {
+        QPen borderPen(overlay.color);
+        borderPen.setWidth(1);
+        p.setPen(borderPen);
+        p.setBrush(Qt::NoBrush);
+
+        int rx = overlay.rect.x() * theZoom;
+        int ry = overlay.rect.y() * theZoom;
+        int rw = overlay.rect.width() * theZoom;
+        int rh = overlay.rect.height() * theZoom;
+        p.drawRect(rx, ry, rw - 1, rh - 1);
     }
 }
 

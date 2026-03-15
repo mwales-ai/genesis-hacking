@@ -3,6 +3,7 @@
 #include "SpritePixelEditor.h"
 #include "GenesisColorDialog.h"
 #include "PaletteGridWidget.h"
+#include "TileCanvasWidget.h"
 
 #include <QFileDialog>
 #include <QFileInfo>
@@ -770,16 +771,44 @@ void MainWindow::updateCollectionDetail(int collectionIndex)
     // Update name field
     ui->theViewerNameEdit->setText(norm.name);
 
-    // Render composite with optional borders
-    QImage composite = renderCollectionComposite(norm, theShowSpriteBorders);
+    // Render composite without baked-in borders (borders are drawn as overlays)
+    QImage composite = renderCollectionComposite(norm, false);
     if (!composite.isNull())
     {
         ui->theSpriteDetail->setSprite(composite);
         ui->theSpriteDetail->setZoom(ui->theZoomSpin->value());
+
+        // Build border overlays if enabled
+        if (theShowSpriteBorders)
+        {
+            SpriteCollection col = buildFromNormalized(norm);
+            static const QColor borderColors[4] = {
+                QColor(255, 255, 0), QColor(0, 255, 255),
+                QColor(255, 0, 255), QColor(0, 255, 0)
+            };
+            int originX = col.boundingBox.x();
+            int originY = col.boundingBox.y();
+
+            QVector<SpriteOverlayRect> overlays;
+            for (const CollectionSprite & cs : col.sprites)
+            {
+                SpriteOverlayRect ovr;
+                ovr.rect = QRect(cs.x - originX, cs.y - originY,
+                                 cs.widthTiles * 8, cs.heightTiles * 8);
+                ovr.color = borderColors[qBound(0, cs.paletteLine, 3)];
+                overlays.append(ovr);
+            }
+            ui->theSpriteDetail->setBorderOverlays(overlays);
+        }
+        else
+        {
+            ui->theSpriteDetail->clearBorderOverlays();
+        }
     }
     else
     {
         ui->theSpriteDetail->clearSprite();
+        ui->theSpriteDetail->clearBorderOverlays();
     }
 
     // Build metadata info
