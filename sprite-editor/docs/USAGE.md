@@ -418,6 +418,8 @@ When clicking a multi-sprite normalized collection in the Sprite Animations tab
 or using the Edit button in the Sprite Viewer, the pixel editor opens in
 **group mode**:
 
+![Sprite Editor tab showing Aladdin with painting tools and 4x4 palette](screenshots/09_sprite_editor.png)
+
 - All sprites are composited at their correct positions
 - Painting works across sprite boundaries — the editor automatically
   determines which sprite owns each pixel

@@ -8,7 +8,7 @@ AI-assisted tools for Sega Genesis / Megadrive ROM hacking. The main deliverable
 
 A Qt6/C++ application for viewing, editing, and replacing sprite artwork in Genesis ROMs. Sprite locations are described by a JSON game definition file, making the tool usable with any game.
 
-![Sprite Editor Screenshot](docs/sprite_editor_screenshot.png)
+![Sprite Editor Screenshot](sprite-editor/docs/screenshots/01_sprite_viewer_overview.png)
 
 **Features:**
 - **Sprite Viewer** — browse sprite groups with drag-to-reorder, independent thumbnail zoom, palette-colored border overlays, double-click to jump to Raw Tile Browser
