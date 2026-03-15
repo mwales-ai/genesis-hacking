@@ -278,6 +278,7 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
     {
         if (theRom.openRom(romPath))
         {
+            theOriginalRomPath = romPath;
             theSettings.setValue("lastRomPath", romPath);
             updateWindowTitle();
             updateStatusLabel();
@@ -510,6 +511,8 @@ void MainWindow::openRom()
         return;
     }
 
+    theOriginalRomPath = path;
+
     if (!theRom.looksLikeGenesisRom())
     {
         QMessageBox::warning(this, "Warning",
@@ -580,9 +583,37 @@ void MainWindow::openGameDefinition()
     statusBar()->showMessage("Game definition loaded: " + theDef.gameName());
 }
 
+bool MainWindow::promptSaveAsIfOriginal()
+{
+    if (theRom.romPath() != theOriginalRomPath)
+        return false;  // Already saving to a different file
+
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Save to Original ROM?",
+        "You are about to overwrite the original ROM file:\n" +
+        theOriginalRomPath +
+        "\n\nWould you like to save to a different file instead?",
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+    if (reply == QMessageBox::Cancel)
+        return true;  // User cancelled — don't save at all
+
+    if (reply == QMessageBox::Yes)
+    {
+        // Redirect to Save As
+        saveRomAs();
+        return true;  // Handled via Save As
+    }
+
+    return false;  // User chose No — proceed with original file
+}
+
 void MainWindow::saveRom()
 {
     if (!theRom.isOpen())
+        return;
+
+    if (promptSaveAsIfOriginal())
         return;
 
     if (!theRom.saveRom())
@@ -1743,6 +1774,9 @@ void MainWindow::onCapSaveToRom()
         statusBar()->showMessage("No ROM changes to save (tiles may lack ROM addresses)");
         return;
     }
+
+    if (promptSaveAsIfOriginal())
+        return;
 
     if (!theRom.saveRom())
     {

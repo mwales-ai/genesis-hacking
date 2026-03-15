@@ -155,6 +155,7 @@ private:
     QSettings             theSettings;
 
     RomFile               theRom;
+    QString               theOriginalRomPath;  // path of the first-opened ROM
     GameDefinition        theDef;
     CompressionHandler    theCompressor;
 
@@ -209,6 +210,7 @@ private:
 
     void setupEditorToolPanel();
     void setupCapToolPanel();
+    bool promptSaveAsIfOriginal();
 
     // Screen capture tool panel (built programmatically)
     QButtonGroup          *theCapToolButtonGroup;
