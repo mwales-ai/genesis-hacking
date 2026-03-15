@@ -34,24 +34,26 @@ The Sprite Viewer displays all sprites defined in the JSON game definition, orga
 ### Browsing Sprites
 
 1. Load a ROM and game definition (via File menu or command line)
-2. Select a sprite group from the **Sprite Group** dropdown
-3. All sprites in the group appear as thumbnails in the scrollable grid
-4. The palette bar at the bottom shows the 16 colors used by the current group
-
-![Sprite viewer overview with all MJ animation frames](screenshots/01_sprite_viewer_overview.png)
+2. All sprite groups from the game definition appear as thumbnails in the left panel
+3. Use the **Thumb Zoom** spinbox to adjust thumbnail size independently
+4. Drag and drop thumbnails to reorder sprite groups (saved to the definition file)
 
 ### Viewing Sprite Details
 
 Click any thumbnail to select it. The right panel shows:
 
-- **Sprite name** and frame number (for multi-frame entries)
-- **Zoomed preview** of the sprite with optional tile grid overlay
-- **ROM offset**, tile dimensions, byte size, and compression type
-- **Palette** used for this sprite
+- **Name** field (editable — press Enter to rename the group)
+- **Zoomed composite preview** of all sprites in the group
+- **Borders** toggle — when enabled, shows 1px palette-colored outlines around
+  each hardware sprite (borders stay 1px regardless of zoom level)
+- **Info** showing sprite count, pixel dimensions, ROM offset coverage, and palette details
+- **Edit** button to open the group in the Sprite Editor tab
+- **Delete** button to remove the group from the game definition (with confirmation)
 
-Use the **Zoom** spinbox and **Show Grid** checkbox to adjust the detail view.
+Use the **Zoom** spinbox to adjust the detail view.
 
-![Sprite selected with detail view showing offset and zoomed preview](screenshots/02_sprite_detail.png)
+**Double-click** a sprite in the detail view to jump to the **Raw Tile Browser** tab
+with the correct palette, tile W/H, and ROM address pre-filled.
 
 ### Exporting Sprites
 
@@ -139,6 +141,34 @@ Each tile in the capture has a source indicating how its ROM location was found:
 | `search` | ROM offset found by brute-force search of tile data in ROM |
 | `embedded` | Tile not found in ROM; raw data is embedded in the JSON |
 | `blank` | Tile is all zeros (empty/transparent) |
+
+### Loading Screen Captures
+
+Screen captures can be loaded in two ways:
+- Via **File > Open Game Definition** (accepts both `.json` definitions and standalone screen capture files)
+- Via the **Load Capture...** button on the Screen Captures tab
+
+External captures appear with an `[ext]` prefix. Use **Add to Definition** to save them
+into the game definition, or **Remove** to delete captures from the definition.
+
+### Editing Screen Capture Tiles
+
+Click the **Edit** button to enable pixel-level tile painting:
+
+1. A tool panel appears on the right with pencil, fill, eyedropper, and brush tools
+   in a 2x2 icon grid, plus a 4x4 palette selector
+2. All tiles sharing the same ROM offset are highlighted in yellow when you hover
+3. The current tile under the cursor is outlined in green
+4. Painting on a tile with a ROM address writes directly to the ROM buffer
+5. Click **Save Changes to ROM** to write modifications to disk
+6. Click **Revert to Original** to discard all painting and reload from ROM
+
+The status bar at the bottom shows tile info (position, pattern, palette, ROM offset)
+and capture statistics (unique patterns, ROM address recovery, palette info).
+
+**Note:** Only tiles with recovered ROM addresses can be saved. Embedded tiles
+(captured VRAM data without a known ROM location) can be painted but cannot be
+persisted to the ROM file.
 
 ### Optionally Loading a ROM
 
@@ -320,24 +350,33 @@ BlastEm's debugger, allowing frame-by-frame analysis of game animations.
 ```
 
 Or use **File > Open Game Definition** and select a `.sprec` file.
-Recordings appear in the **Sprite Collections** tab with a "Recording:" prefix
-and a frame navigation spinbox.
+Recordings appear in the **Sprite Animations** tab. Use the **Load Recording...**
+button on that tab to load additional `.sprec` files at any time.
 
 ### Aladdin Example Walkthrough
 
 The `examples/` directory includes Aladdin sample files:
-- `aladdin_spriterecord.sprec` — multi-frame sprite recording
+- `aladdin_sprite_def.json` — game definition with sprite groups, palettes, and pattern pools
+- `ali_animations.sprec` — multi-frame sprite animation recording
+- `aladdin_spriterecord.sprec` — additional sprite recording
 - `aladdin_market_screencap.json` — market scene screen capture
 - `aladdin_title_screencap.json` — title screen capture
 
-To explore:
+To explore all features:
 ```bash
-./build/SpriteEditor aladdin.bin examples/aladdin_spriterecord.sprec
+./build/SpriteEditor roms/Aladdin_Beta.bin examples/aladdin_sprite_def.json examples/ali_animations.sprec
 ```
+
+This loads the ROM, game definition (sprite groups visible in Sprite Viewer), and
+animation recording (visible in Sprite Animations tab). You can then:
+1. Browse captured sprite groups in the **Sprite Viewer** tab
+2. Load screen captures via **Screen Captures > Load Capture...**
+3. Browse animation frames in the **Sprite Animations** tab
+4. Edit sprites in the **Sprite Editor** tab with painting tools
 
 ## Multi-Select and Capture Workflow
 
-The Sprite Collections tab supports multi-select for identifying and
+The Sprite Animations tab supports multi-select for identifying and
 capturing sprite groups from recordings.
 
 ### Multi-Select
@@ -368,21 +407,43 @@ clutter when analyzing subsequent frames:
 
 - **Hide Selected** — removes selected sprites from rendering (they still
   appear as dashed outlines when hovered or selected)
+- **Unhide Selected** — unhide only the selected hidden sprites
 - **Unhide All** — restores all hidden sprites
 
-Hidden state resets when changing frames or collections.
+Hidden sprites persist across frame changes via ROM offset tracking.
 
 ## Composite Sprite Editor
 
-When clicking a multi-sprite normalized collection in the Collections tab,
-the pixel editor opens in **group mode**:
+When clicking a multi-sprite normalized collection in the Sprite Animations tab
+or using the Edit button in the Sprite Viewer, the pixel editor opens in
+**group mode**:
 
 - All sprites are composited at their correct positions
 - Painting works across sprite boundaries — the editor automatically
   determines which sprite owns each pixel
 - Dashed yellow outlines show individual sprite boundaries
+- Middle-click a sprite to switch the active palette line
 - **Save Tiles to ROM** writes each sprite's modified tile data to its
   own ROM offset
+
+### Painting Tools
+
+The tool panel on the right side of the editor provides:
+
+- **2x2 icon buttons** — Pencil (single pixel), Fill (flood fill), Eyedropper
+  (pick color), and Brush (adjustable size square)
+- **Brush Size** spinner — appears below the tools only when the Brush is active
+- **4x4 palette grid** — quick color selection showing all 16 palette colors
+- **1x16 palette strip** — below the canvas, showing the full palette with
+  pen indicator and CRAM value
+
+**Right-click** anywhere to eyedrop (pick color) regardless of the active tool.
+
+### ROM Overwrite Protection
+
+When saving ROM changes, if the target file is the original ROM, you will be
+prompted to save to a different file instead. This prevents accidentally
+overwriting original ROM data.
 
 This is essential for editing characters that span multiple hardware sprites.
 

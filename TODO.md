@@ -9,8 +9,8 @@ Tasks for Claude:
     * [X] When mousing over a pattern tile, dispaly the address information for the tile (memory address, palatte address
     * [X] Saving changes to ROM didn't work when I tested it, but I don't know if that is because the pattern info had valid address information or not
 * [X] Whenever any save to the ROM occurs, if we are writing to the original ROM file, prompt them to change the name of their custom ROM so they don't overwrite the original ROM.
-* [ ] Use Aladdin_Beta.bin and aladdin_sprite_def.json, and ali_animations.sprec as examples to update the documentation for the sprite editor (Do this step last so the documentation gets all the other changes incorporated)
-* [ ] Add a screenshot of the spirte editor to the main project readme page so people can see how awesome this project is
+* [X] Use Aladdin_Beta.bin and aladdin_sprite_def.json, and ali_animations.sprec as examples to update the documentation for the sprite editor (Do this step last so the documentation gets all the other changes incorporated)
+* [ ] Add a screenshot of the sprite editor to the main project readme page (README.md has placeholder, needs manual screenshot: launch with Aladdin files, capture window, save to docs/sprite_editor_screenshot.png)
 
 
 ## Sprite Editor

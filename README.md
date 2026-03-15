@@ -6,17 +6,29 @@ AI-assisted tools for Sega Genesis / Megadrive ROM hacking. The main deliverable
 
 ### Sprite Editor (`sprite-editor/`)
 
-A Qt6/C++ application for viewing, exporting, and replacing sprite artwork in Genesis ROMs. Sprite locations are described by a JSON game definition file, making the tool usable with any game.
+A Qt6/C++ application for viewing, editing, and replacing sprite artwork in Genesis ROMs. Sprite locations are described by a JSON game definition file, making the tool usable with any game.
+
+![Sprite Editor Screenshot](docs/sprite_editor_screenshot.png)
 
 **Features:**
-- Sprite Viewer — browse sprites by group, zoom with tile grid overlay, export PNG, replace sprites
-- Raw Tile Browser — explore raw tile data anywhere in ROM, assemble tiles into sprites, jump to offset
-- Screen Captures — display full-screen tile maps captured from BlastEm, with hover info and zoom
-- Multi-frame sprites, Nemesis decompression, batch export
+- **Sprite Viewer** — browse sprite groups with drag-to-reorder, independent thumbnail zoom, palette-colored border overlays, double-click to jump to Raw Tile Browser
+- **Raw Tile Browser** — explore raw tile data anywhere in ROM, assemble tiles into sprites, jump to offset
+- **Screen Captures** — display full-screen tile maps captured from BlastEm, with hover tile info, status bar showing pattern/palette recovery stats, and pixel-level tile editing with shared tile highlighting
+- **Sprite Editor** — pixel-level painting with pencil, bucket fill, eyedropper, and adjustable brush tools in a 2x2 icon grid, with 4x4 palette selector and 1x16 palette strip
+- **Sprite Animations** — load and browse `.sprec` sprite recording files captured from BlastEm, capture sprite groups from animation frames
+- Multi-palette support, Nemesis/Kosinski decompression, PNG export, original ROM overwrite protection
 
 **Build:** Requires `qt6-base-dev`. Run `cd sprite-editor && bash build.sh`.
 
-**Usage:** `./build/SpriteEditor [rom.bin] [definition.json]`
+**Usage:**
+```
+./build/SpriteEditor [rom.bin] [definition.json] [recording.sprec ...]
+```
+
+**Example (Aladdin):**
+```
+./build/SpriteEditor roms/Aladdin_Beta.bin sprite-editor/examples/aladdin_sprite_def.json sprite-editor/examples/ali_animations.sprec
+```
 
 See [sprite-editor/docs/USAGE.md](sprite-editor/docs/USAGE.md) for the full user guide.
 
@@ -37,6 +49,14 @@ Enter the debugger during emulation by pressing backtick. Run `help` to see all 
 Binary Ninja plugin for Genesis ROM analysis. Parses ROM headers, maps memory segments, decodes VDP register writes, and provides M68K assembly patching.
 
 ## ROM Analysis
+
+### Aladdin (`sprite-editor/examples/aladdin_sprite_def.json`)
+
+Target ROM: Aladdin Beta (Aladdin_Beta.bin).
+
+- Game definition file with sprite groups, palettes, and pattern pools
+- Animation recording (`ali_animations.sprec`) — captured sprite animation frames from BlastEm
+- Screen captures of title screen and market level (`aladdin_title_screencap.json`, `aladdin_market_screencap.json`)
 
 ### Moonwalker (`sprite-editor/examples/moonwalker.json`)
 
