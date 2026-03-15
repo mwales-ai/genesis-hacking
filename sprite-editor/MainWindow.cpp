@@ -414,6 +414,8 @@ void MainWindow::setupConnections()
             this,                SLOT(onCapBrushSizeChanged(int)));
     connect(theCapPaletteGrid, &PaletteGridWidget::colorSelected,
             this,              &MainWindow::onCapPaletteSelected);
+    connect(ui->theTileMapWidget, &TileMapWidget::tileHovered,
+            this,                 &MainWindow::onCapTileHovered);
 
     // Sprite Collections tab
     connect(ui->theSpriteColCombo,    SIGNAL(currentIndexChanged(int)),
@@ -1526,6 +1528,7 @@ void MainWindow::onScreenCaptureSelected(int index)
         ui->theTileMapWidget->clearCapture();
         ui->theAddCapToDefButton->setEnabled(false);
         ui->theRemoveCapButton->setEnabled(false);
+        ui->theCapStatusLabel->setText("No capture loaded");
         return;
     }
 
@@ -1563,6 +1566,39 @@ void MainWindow::onScreenCaptureSelected(int index)
     ui->theAddCapToDefButton->setEnabled(!isFromDef && theDef.isLoaded());
     ui->theRemoveCapButton->setEnabled(isFromDef);
     ui->theCapEditButton->setEnabled(true);
+
+    // Build capture status info
+    int totalTiles = cap->tileMap.size();
+    QSet<QString> uniqueRomOffsets;
+    QSet<int> uniquePatterns;
+    int romAddressCount = 0;
+    for (const TileMapEntry & e : cap->tileMap)
+    {
+        uniquePatterns.insert(e.pattern);
+        if (!e.romOffset.isEmpty())
+        {
+            uniqueRomOffsets.insert(e.romOffset);
+            ++romAddressCount;
+        }
+    }
+
+    int palCount = cap->palettes.size();
+    int palWithRom = 0;
+    for (const ScreenCapturePalette & pal : cap->palettes)
+    {
+        if (!pal.dmaSource.isEmpty())
+            ++palWithRom;
+    }
+
+    QString status = QString("%1 tiles (%2 unique patterns) | ROM addresses: %3/%4\n"
+                             "Palettes: %5 (%6 with ROM address)")
+        .arg(totalTiles)
+        .arg(uniquePatterns.size())
+        .arg(uniqueRomOffsets.size())
+        .arg(totalTiles)
+        .arg(palCount)
+        .arg(palWithRom);
+    ui->theCapStatusLabel->setText(status);
 
     statusBar()->showMessage(
         QString("Screen capture: %1 (%2x%3 tiles)")
@@ -1702,6 +1738,12 @@ void MainWindow::onCapSaveToRom()
         return;
     }
 
+    if (!theRom.isModified())
+    {
+        statusBar()->showMessage("No ROM changes to save (tiles may lack ROM addresses)");
+        return;
+    }
+
     if (!theRom.saveRom())
     {
         QMessageBox::critical(this, "Error", "Failed to save ROM.");
@@ -1742,6 +1784,18 @@ void MainWindow::onCapPaletteSelected(int index)
 {
     ui->theTileMapWidget->setPenIndex(index);
     theCapPaletteGrid->setSelectedIndex(index);
+}
+
+void MainWindow::onCapTileHovered(int row, int col, const QString & romOffset,
+                                   int pattern, int paletteLine, const QString & source)
+{
+    QString info = QString("Tile (%1,%2) | Pattern: %3 | Palette: %4 | Source: %5 | ROM: %6")
+        .arg(col).arg(row)
+        .arg(pattern)
+        .arg(paletteLine)
+        .arg(source)
+        .arg(romOffset.isEmpty() ? "N/A" : romOffset);
+    ui->theCapStatusLabel->setText(info);
 }
 
 // ---------------------------------------------------------------------------

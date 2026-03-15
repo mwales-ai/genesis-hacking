@@ -74,6 +74,8 @@ private slots:
     void onCapToolChanged(int toolId);
     void onCapBrushSizeChanged(int size);
     void onCapPaletteSelected(int index);
+    void onCapTileHovered(int row, int col, const QString & romOffset,
+                          int pattern, int paletteLine, const QString & source);
 
     // Sprite Collections tab
     void onSpriteCollectionSelected(int index);

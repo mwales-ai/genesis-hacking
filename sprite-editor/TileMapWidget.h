@@ -52,6 +52,8 @@ public:
 
 signals:
     void colorPicked(int paletteIndex);
+    void tileHovered(int row, int col, const QString & romOffset,
+                     int pattern, int paletteLine, const QString & source);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

@@ -516,6 +516,21 @@ void TileMapWidget::mouseMoveEvent(QMouseEvent *event)
     int px = event->pos().x() / theZoom;
     int py = event->pos().y() / theZoom;
 
+    // Emit tile hover info for the status bar
+    int hoverTileCol = px / 8;
+    int hoverTileRow = py / 8;
+    if (hoverTileCol >= 0 && hoverTileCol < theCapture.widthTiles &&
+        hoverTileRow >= 0 && hoverTileRow < theCapture.heightTiles)
+    {
+        int hIdx = hoverTileRow * theCapture.widthTiles + hoverTileCol;
+        if (hIdx < theCapture.tileMap.size())
+        {
+            const TileMapEntry & he = theCapture.tileMap[hIdx];
+            emit tileHovered(he.row, he.col, he.romOffset,
+                             he.pattern, he.paletteLine, he.source);
+        }
+    }
+
     if (theEditMode)
     {
         // Update hover tile and shared tile highlighting
