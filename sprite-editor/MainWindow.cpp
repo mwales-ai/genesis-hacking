@@ -16,73 +16,9 @@
 #include <QScrollArea>
 #include <QCloseEvent>
 #include <QPainter>
+#include <QPixmap>
 #include <iostream>
 
-static QIcon makeToolIcon(const QString & type, int size = 28)
-{
-    QPixmap pix(size, size);
-    pix.fill(Qt::transparent);
-    QPainter p(&pix);
-    p.setRenderHint(QPainter::Antialiasing, true);
-
-    if (type == "pencil")
-    {
-        // Diagonal pencil line with tip dot
-        p.setPen(QPen(QColor(60, 60, 60), 2));
-        p.drawLine(6, size - 6, size - 6, 6);
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(60, 60, 60));
-        p.drawEllipse(QPoint(6, size - 6), 3, 3);
-        // Pencil body
-        p.setPen(QPen(QColor(220, 180, 50), 3));
-        p.drawLine(10, size - 10, size - 6, 6);
-    }
-    else if (type == "fill")
-    {
-        // Paint bucket shape
-        p.setPen(QPen(QColor(60, 60, 60), 2));
-        // Bucket body
-        QRect bucket(4, 8, 16, 14);
-        p.setBrush(QColor(100, 150, 255));
-        p.drawRect(bucket);
-        // Handle
-        p.setBrush(Qt::NoBrush);
-        p.drawArc(10, 2, 14, 12, 30 * 16, 120 * 16);
-        // Pour drip
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(100, 150, 255));
-        p.drawEllipse(QPoint(size - 6, size - 6), 3, 4);
-    }
-    else if (type == "eyedropper")
-    {
-        // Eyedropper shape
-        p.setPen(QPen(QColor(60, 60, 60), 2));
-        // Dropper body (diagonal line)
-        p.drawLine(8, size - 8, size - 8, 8);
-        // Bulb at top
-        p.setBrush(QColor(200, 200, 200));
-        p.drawEllipse(QPoint(size - 8, 8), 5, 5);
-        // Tip at bottom
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(60, 60, 60));
-        QPointF tip[3] = {QPointF(4, size - 4), QPointF(8, size - 10), QPointF(12, size - 6)};
-        p.drawPolygon(tip, 3);
-    }
-    else if (type == "brush")
-    {
-        // Brush with round head
-        p.setPen(QPen(QColor(120, 80, 40), 3));
-        // Handle
-        p.drawLine(size - 6, 6, size / 2, size / 2);
-        // Brush head (filled circle)
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(80, 80, 80));
-        p.drawEllipse(QPoint(size / 2 - 2, size / 2 + 2), 7, 7);
-    }
-
-    p.end();
-    return QIcon(pix);
-}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -129,7 +65,7 @@ void MainWindow::setupEditorToolPanel()
     int iconSize = 28;
 
     theToolPencilButton = new QPushButton();
-    theToolPencilButton->setIcon(makeToolIcon("pencil", iconSize));
+    theToolPencilButton->setIcon(QPixmap(":/painticons/icons/pencil.png"));
     theToolPencilButton->setIconSize(QSize(iconSize, iconSize));
     theToolPencilButton->setFixedSize(btnSize, btnSize);
     theToolPencilButton->setCheckable(true);
@@ -138,7 +74,7 @@ void MainWindow::setupEditorToolPanel()
     toolGrid->addWidget(theToolPencilButton, 0, 0);
 
     theToolBucketButton = new QPushButton();
-    theToolBucketButton->setIcon(makeToolIcon("fill", iconSize));
+    theToolBucketButton->setIcon(QPixmap(":/painticons/icons/fill.png"));
     theToolBucketButton->setIconSize(QSize(iconSize, iconSize));
     theToolBucketButton->setFixedSize(btnSize, btnSize);
     theToolBucketButton->setCheckable(true);
@@ -146,7 +82,7 @@ void MainWindow::setupEditorToolPanel()
     toolGrid->addWidget(theToolBucketButton, 0, 1);
 
     theToolEyedropperButton = new QPushButton();
-    theToolEyedropperButton->setIcon(makeToolIcon("eyedropper", iconSize));
+    theToolEyedropperButton->setIcon(QPixmap(":/painticons/icons/dropper.png"));
     theToolEyedropperButton->setIconSize(QSize(iconSize, iconSize));
     theToolEyedropperButton->setFixedSize(btnSize, btnSize);
     theToolEyedropperButton->setCheckable(true);
@@ -154,7 +90,7 @@ void MainWindow::setupEditorToolPanel()
     toolGrid->addWidget(theToolEyedropperButton, 1, 0);
 
     theToolBrushButton = new QPushButton();
-    theToolBrushButton->setIcon(makeToolIcon("brush", iconSize));
+    theToolBrushButton->setIcon(QPixmap(":/painticons/icons/brush.png"));
     theToolBrushButton->setIconSize(QSize(iconSize, iconSize));
     theToolBrushButton->setFixedSize(btnSize, btnSize);
     theToolBrushButton->setCheckable(true);
@@ -200,7 +136,7 @@ void MainWindow::setupCapToolPanel()
     int iconSize = 28;
 
     theCapToolPencilButton = new QPushButton();
-    theCapToolPencilButton->setIcon(makeToolIcon("pencil", iconSize));
+    theCapToolPencilButton->setIcon(QPixmap(":/painticons/icons/pencil.png"));
     theCapToolPencilButton->setIconSize(QSize(iconSize, iconSize));
     theCapToolPencilButton->setFixedSize(btnSize, btnSize);
     theCapToolPencilButton->setCheckable(true);
@@ -209,7 +145,7 @@ void MainWindow::setupCapToolPanel()
     toolGrid->addWidget(theCapToolPencilButton, 0, 0);
 
     theCapToolBucketButton = new QPushButton();
-    theCapToolBucketButton->setIcon(makeToolIcon("fill", iconSize));
+    theCapToolBucketButton->setIcon(QPixmap(":/painticons/icons/fill.png"));
     theCapToolBucketButton->setIconSize(QSize(iconSize, iconSize));
     theCapToolBucketButton->setFixedSize(btnSize, btnSize);
     theCapToolBucketButton->setCheckable(true);
@@ -217,7 +153,7 @@ void MainWindow::setupCapToolPanel()
     toolGrid->addWidget(theCapToolBucketButton, 0, 1);
 
     theCapToolEyedropperButton = new QPushButton();
-    theCapToolEyedropperButton->setIcon(makeToolIcon("eyedropper", iconSize));
+    theCapToolEyedropperButton->setIcon(QPixmap(":/painticons/icons/dropper.png"));
     theCapToolEyedropperButton->setIconSize(QSize(iconSize, iconSize));
     theCapToolEyedropperButton->setFixedSize(btnSize, btnSize);
     theCapToolEyedropperButton->setCheckable(true);
@@ -225,7 +161,7 @@ void MainWindow::setupCapToolPanel()
     toolGrid->addWidget(theCapToolEyedropperButton, 1, 0);
 
     theCapToolBrushButton = new QPushButton();
-    theCapToolBrushButton->setIcon(makeToolIcon("brush", iconSize));
+    theCapToolBrushButton->setIcon(QPixmap(":/painticons/icons/brush.png"));
     theCapToolBrushButton->setIconSize(QSize(iconSize, iconSize));
     theCapToolBrushButton->setFixedSize(btnSize, btnSize);
     theCapToolBrushButton->setCheckable(true);

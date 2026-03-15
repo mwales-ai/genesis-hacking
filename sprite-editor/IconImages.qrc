@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/painticons">
+        <file>icons/brush.png</file>
+        <file>icons/dropper.png</file>
+        <file>icons/fill.png</file>
+        <file>icons/pencil.png</file>
+    </qresource>
+</RCC>
