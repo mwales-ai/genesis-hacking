@@ -2091,11 +2091,30 @@ SpriteCollection MainWindow::buildFromNormalized(const NormalizedCollection & no
             cs.heightTiles = pat.heightTiles;
             cs.pattern = 0;
 
-            int bytesPerFrame = pat.widthTiles * pat.heightTiles * 32;
-            uint32_t frameRomOffset = pat.romOffset + uint32_t(ns.frame * bytesPerFrame);
-            cs.romOffset = QString("0x%1").arg(frameRomOffset, 0, 16).toUpper();
-            cs.source = "dma";
-            cs.vramAddr = "";
+            if (!pat.tileData.isEmpty())
+            {
+                // Embedded tile data (captured from VRAM, no known ROM address)
+                cs.tileData = pat.tileData;
+                cs.source = "embedded";
+                cs.romOffset = "";
+                cs.vramAddr = "";
+            }
+            else if (pat.romOffset != 0)
+            {
+                // ROM-sourced pattern — calculate frame offset
+                int bytesPerFrame = pat.widthTiles * pat.heightTiles * 32;
+                uint32_t frameRomOffset = pat.romOffset + uint32_t(ns.frame * bytesPerFrame);
+                cs.romOffset = QString("0x%1").arg(frameRomOffset, 0, 16).toUpper();
+                cs.source = "dma";
+                cs.vramAddr = "";
+            }
+            else
+            {
+                // Pattern exists but has no data source
+                cs.source = "embedded";
+                cs.romOffset = "";
+                cs.vramAddr = "";
+            }
         }
         else
         {
