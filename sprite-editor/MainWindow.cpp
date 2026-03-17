@@ -119,8 +119,20 @@ void MainWindow::setupEditorToolPanel()
     thePaletteGrid = new PaletteGridWidget();
     toolLayout->addWidget(thePaletteGrid);
 
+    // Hidden PaletteWidget for color data management (editing, CRAM encoding)
+    theEditorPaletteHidden = new PaletteWidget();
+    theEditorPaletteHidden->setVisible(false);
+
+    // Delete sprite from group button
+    theDeleteSpriteButton = new QPushButton("Delete Sprite");
+    theDeleteSpriteButton->setToolTip("Remove the middle-clicked sprite from this group");
+    theDeleteSpriteButton->setEnabled(false);
+    toolLayout->addWidget(theDeleteSpriteButton);
+
     // Stretch at bottom
     toolLayout->addStretch(1);
+
+    theSelectedGroupSpriteIndex = -1;
 }
 
 void MainWindow::setupCapToolPanel()
@@ -393,9 +405,9 @@ void MainWindow::setupConnections()
     // Sprite Editor tab
     connect(ui->theSpritePixelEditor,      &SpritePixelEditor::groupPaletteLineChanged,
             this,                          &MainWindow::onEditorGroupPaletteLineChanged);
-    connect(ui->theEditorPalette,          &PaletteWidget::colorSelected,
+    connect(theEditorPaletteHidden,          &PaletteWidget::colorSelected,
             this,                          &MainWindow::onEditorPaletteSelected);
-    connect(ui->theEditorPalette,          &PaletteWidget::colorEditRequested,
+    connect(theEditorPaletteHidden,          &PaletteWidget::colorEditRequested,
             this,                          &MainWindow::onEditorPaletteEditRequested);
     connect(ui->theEditorSaveButton,       &QPushButton::clicked,
             this,                          &MainWindow::onEditorSave);
@@ -421,6 +433,10 @@ void MainWindow::setupConnections()
             this,              SLOT(onBrushSizeChanged(int)));
     connect(ui->theSpritePixelEditor, &SpritePixelEditor::colorPicked,
             this,                     &MainWindow::onColorPicked);
+    connect(ui->theSpritePixelEditor, &SpritePixelEditor::groupSpriteSelected,
+            this,                     &MainWindow::onGroupSpriteSelected);
+    connect(theDeleteSpriteButton,    &QPushButton::clicked,
+            this,                     &MainWindow::onDeleteSpriteFromGroup);
 
     // 4x4 palette grid
     connect(thePaletteGrid, &PaletteGridWidget::colorSelected,
@@ -785,12 +801,28 @@ void MainWindow::updateCollectionDetail(int collectionIndex)
     int imgW = col.boundingBox.width();
     int imgH = col.boundingBox.height();
 
-    // Count ROM offsets
-    int knownOffsets = 0;
+    // Count ROM vs RAM offsets
+    int romOffsets = 0;
+    int ramOffsets = 0;
+    int embeddedCount = 0;
     for (const auto & cs : col.sprites)
     {
-        if (!cs.romOffset.isEmpty())
-            ++knownOffsets;
+        if (cs.source == "embedded" || cs.romOffset.isEmpty())
+        {
+            ++embeddedCount;
+        }
+        else
+        {
+            bool ok = false;
+            QString offStr = cs.romOffset;
+            if (offStr.startsWith("0x") || offStr.startsWith("0X"))
+                offStr = offStr.mid(2);
+            uint32_t addr = offStr.toUInt(&ok, 16);
+            if (ok && addr >= 0xFF0000)
+                ++ramOffsets;
+            else
+                ++romOffsets;
+        }
     }
 
     // Build palette info
@@ -810,21 +842,32 @@ void MainWindow::updateCollectionDetail(int collectionIndex)
         {
             const PoolPalette & pp = palPool[palId];
             if (pp.romOffset != 0)
-                palInfo.append(QString("  Line %1: %2 (ROM: 0x%3)")
-                    .arg(line).arg(pp.name)
+            {
+                QString addrType = (pp.romOffset >= 0xFF0000) ? "RAM" : "ROM";
+                palInfo.append(QString("  Line %1: %2 (%3: 0x%4)")
+                    .arg(line).arg(pp.name).arg(addrType)
                     .arg(pp.romOffset, 0, 16).toUpper());
+            }
             else
                 palInfo.append(QString("  Line %1: %2 (embedded)")
                     .arg(line).arg(pp.name));
         }
     }
 
+    QString addrInfo;
+    if (ramOffsets > 0)
+        addrInfo = QString("ROM: %1, RAM: %2, embedded: %3")
+            .arg(romOffsets).arg(ramOffsets).arg(embeddedCount);
+    else
+        addrInfo = QString("ROM: %1/%2 known")
+            .arg(romOffsets).arg(col.sprites.size());
+
     QString info = QString("%1 sprites | %2x%3 pixels\n"
-                           "ROM offsets: %4/%5 known\n"
-                           "Palettes: %6 used")
+                           "Addresses: %4\n"
+                           "Palettes: %5 used")
         .arg(norm.sprites.size())
         .arg(imgW).arg(imgH)
-        .arg(knownOffsets).arg(col.sprites.size())
+        .arg(addrInfo)
         .arg(palLineMap.size());
     if (!palInfo.isEmpty())
         info += "\n" + palInfo.join("\n");
@@ -2284,7 +2327,7 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
 
         // Set editor palette to line 0 (middle-click sprite to switch)
         thePaletteGrid->setPalette(pals[0]);
-        ui->theEditorPalette->setPalette(pals[0]);
+        theEditorPaletteHidden->setPalette(pals[0]);
 
         // Enable save if any sprite has a ROM offset
         bool canSave = false;
@@ -2362,7 +2405,7 @@ void MainWindow::onCollectionSpriteClicked(int spriteIndex)
 
     // Set palette display
     thePaletteGrid->setPalette(pal);
-    ui->theEditorPalette->setPalette(pal);
+    theEditorPaletteHidden->setPalette(pal);
 
     // Update info label
     bool canSaveTiles = !sprite.romOffset.isEmpty() && theRom.isOpen();
@@ -2397,7 +2440,7 @@ void MainWindow::onEditorGroupPaletteLineChanged(int paletteLine)
     theEditorActivePaletteLine = paletteLine;
     thePaletteGrid->setPalette(
         ui->theSpritePixelEditor->groupPalette(paletteLine));
-    ui->theEditorPalette->setPalette(
+    theEditorPaletteHidden->setPalette(
         ui->theSpritePixelEditor->groupPalette(paletteLine));
 
     // Update save palette button based on whether this palette has a ROM offset
@@ -2415,12 +2458,12 @@ void MainWindow::onEditorGroupPaletteLineChanged(int paletteLine)
 void MainWindow::onEditorPaletteSelected(int index)
 {
     ui->theSpritePixelEditor->setPenIndex(index);
-    ui->theEditorPalette->setSelectedIndex(index);
+    theEditorPaletteHidden->setSelectedIndex(index);
     thePaletteGrid->setSelectedIndex(index);
     statusBar()->showMessage(
         QString("Pen color: index %1  CRAM: 0x%2")
         .arg(index)
-        .arg(ui->theEditorPalette->selectedCramWord(), 4, 16, QChar('0')).toUpper());
+        .arg(theEditorPaletteHidden->selectedCramWord(), 4, 16, QChar('0')).toUpper());
 }
 
 void MainWindow::onEditorPaletteEditRequested(int index)
@@ -2509,14 +2552,14 @@ void MainWindow::onEditorPaletteEditRequested(int index)
                 .arg(totalRefs));
         }
 
-        QColor current = ui->theEditorPalette->palette()[index];
+        QColor current = theEditorPaletteHidden->palette()[index];
         GenesisColorDialog dlg(current, index, this);
         if (dlg.exec() != QDialog::Accepted)
             return;
 
-        ui->theEditorPalette->setColorAt(index, dlg.selectedColor());
+        theEditorPaletteHidden->setColorAt(index, dlg.selectedColor());
         ui->theSpritePixelEditor->updateGroupPalette(
-            theEditorActivePaletteLine, ui->theEditorPalette->palette());
+            theEditorActivePaletteLine, theEditorPaletteHidden->palette());
 
         statusBar()->showMessage(
             QString("Color %1 changed to CRAM 0x%2")
@@ -2537,13 +2580,13 @@ void MainWindow::onEditorPaletteEditRequested(int index)
         return;
     }
 
-    QColor current = ui->theEditorPalette->palette()[index];
+    QColor current = theEditorPaletteHidden->palette()[index];
     GenesisColorDialog dlg(current, index, this);
     if (dlg.exec() != QDialog::Accepted)
         return;
 
-    ui->theEditorPalette->setColorAt(index, dlg.selectedColor());
-    ui->theSpritePixelEditor->updatePalette(ui->theEditorPalette->palette());
+    theEditorPaletteHidden->setColorAt(index, dlg.selectedColor());
+    ui->theSpritePixelEditor->updatePalette(theEditorPaletteHidden->palette());
 
     statusBar()->showMessage(
         QString("Color %1 changed to CRAM 0x%2")
@@ -2697,7 +2740,7 @@ void MainWindow::onEditorSavePalette()
         }
 
         uint32_t offset = palPool[palId].romOffset;
-        QByteArray palData = TileDecoder::encodePalette(ui->theEditorPalette->palette());
+        QByteArray palData = TileDecoder::encodePalette(theEditorPaletteHidden->palette());
         if (!theRom.writeBytes(offset, palData))
         {
             QMessageBox::critical(this, "Error",
@@ -2774,7 +2817,7 @@ void MainWindow::onEditorSavePalette()
         return;
     }
 
-    QByteArray palData = TileDecoder::encodePalette(ui->theEditorPalette->palette());
+    QByteArray palData = TileDecoder::encodePalette(theEditorPaletteHidden->palette());
     if (!theRom.writeBytes(offset, palData))
     {
         QMessageBox::critical(this, "Error",
@@ -2844,8 +2887,74 @@ void MainWindow::onBrushSizeChanged(int size)
 void MainWindow::onColorPicked(int paletteIndex)
 {
     ui->theSpritePixelEditor->setPenIndex(paletteIndex);
-    ui->theEditorPalette->setSelectedIndex(paletteIndex);
+    theEditorPaletteHidden->setSelectedIndex(paletteIndex);
     thePaletteGrid->setSelectedIndex(paletteIndex);
+}
+
+void MainWindow::onGroupSpriteSelected(int spriteIndex)
+{
+    theSelectedGroupSpriteIndex = spriteIndex;
+    theDeleteSpriteButton->setEnabled(spriteIndex >= 0);
+
+    if (!ui->theSpritePixelEditor->isGroupMode() || spriteIndex < 0)
+        return;
+
+    const EditorSprite & es = ui->theSpritePixelEditor->groupSprite(spriteIndex);
+    QString info = QString("Sprite %1: %2x%3 tiles | ROM: %4 | Palette: %5")
+        .arg(spriteIndex)
+        .arg(es.widthTiles).arg(es.heightTiles)
+        .arg(es.romOffset.isEmpty() ? "embedded" : es.romOffset)
+        .arg(es.paletteLine);
+    ui->theEditorInfoLabel->setText(info);
+}
+
+void MainWindow::onDeleteSpriteFromGroup()
+{
+    if (theSelectedGroupSpriteIndex < 0 || !theDef.isNormalized())
+        return;
+
+    int colIndex = theEditCollectionIndex;
+    const auto & normCols = theDef.normalizedCollections();
+    if (colIndex < 0 || colIndex >= normCols.size())
+        return;
+
+    NormalizedCollection norm = normCols[colIndex];
+    if (theSelectedGroupSpriteIndex >= norm.sprites.size())
+        return;
+
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Delete Sprite from Group",
+        QString("Remove sprite %1 from group '%2'?")
+            .arg(theSelectedGroupSpriteIndex).arg(norm.name),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes)
+        return;
+
+    norm.sprites.removeAt(theSelectedGroupSpriteIndex);
+
+    // Replace the collection in the definition
+    theDef.removeNormalizedCollection(colIndex);
+    // Re-insert at the same position
+    // (insertAt would be cleaner but we use remove + add approach)
+    // For now, add at end and move back
+    theDef.addNormalizedCollection(norm);
+    int newIdx = theDef.normalizedCollections().size() - 1;
+    if (newIdx != colIndex)
+        theDef.moveNormalizedCollection(newIdx, colIndex);
+
+    theDef.saveToFile(QString());
+
+    // Refresh
+    theSelectedGroupSpriteIndex = -1;
+    theDeleteSpriteButton->setEnabled(false);
+    populateCollectionGrid();
+
+    // Re-open the editor with the updated group
+    theSelectedCollectionIndex = colIndex;
+    onEditFromViewer();
+
+    statusBar()->showMessage("Sprite removed from group");
 }
 
 // ---------------------------------------------------------------------------
@@ -3286,7 +3395,7 @@ void MainWindow::onEditFromViewer()
         theEditPalLineToId[it.value()] = it.key();
 
     thePaletteGrid->setPalette(pals[0]);
-    ui->theEditorPalette->setPalette(pals[0]);
+    theEditorPaletteHidden->setPalette(pals[0]);
 
     bool canSave = false;
     for (const EditorSprite & es : edSprites)

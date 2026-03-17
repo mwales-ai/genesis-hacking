@@ -17,6 +17,7 @@
 #include "TileDecoder.h"
 #include "CompressionHandler.h"
 #include "PaletteGridWidget.h"
+#include "PaletteWidget.h"
 #include "SpritePixelEditor.h"
 
 #define AppDebug if(0) std::cout
@@ -96,6 +97,8 @@ private slots:
     void onEditorToolChanged(int toolId);
     void onBrushSizeChanged(int size);
     void onColorPicked(int paletteIndex);
+    void onGroupSpriteSelected(int spriteIndex);
+    void onDeleteSpriteFromGroup();
 
     // Capture workflow
     void onCaptureSpriteGroup();
@@ -207,6 +210,9 @@ private:
     QLabel                *theBrushSizeLabel;
     QSpinBox              *theBrushSizeSpin;
     PaletteGridWidget     *thePaletteGrid;
+    PaletteWidget         *theEditorPaletteHidden;  // hidden, used for color data/editing
+    int                    theSelectedGroupSpriteIndex;  // middle-click selected sprite in editor
+    QPushButton           *theDeleteSpriteButton;
 
     void setupEditorToolPanel();
     void setupCapToolPanel();

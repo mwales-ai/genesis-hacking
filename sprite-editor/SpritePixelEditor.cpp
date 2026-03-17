@@ -767,7 +767,7 @@ void SpritePixelEditor::mousePressEvent(QMouseEvent *event)
     }
     else if (event->button() == Qt::MiddleButton && theHasSprite && theGroupMode)
     {
-        // Middle-click: switch active palette line to the clicked sprite's line
+        // Middle-click: select sprite and switch active palette line
         int px = event->pos().x() / theZoom;
         int py = event->pos().y() / theZoom;
         int sprIdx = findSpriteAtPixel(px, py);
@@ -777,9 +777,10 @@ void SpritePixelEditor::mousePressEvent(QMouseEvent *event)
             if (newLine != theActiveGroupPaletteLine)
             {
                 theActiveGroupPaletteLine = newLine;
-                update();   // repaint to update outline styling
+                update();
                 emit groupPaletteLineChanged(newLine);
             }
+            emit groupSpriteSelected(sprIdx);
         }
     }
     else if (event->button() == Qt::RightButton && theHasSprite)

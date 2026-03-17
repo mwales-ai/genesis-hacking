@@ -100,6 +100,7 @@ signals:
     void pixelPainted(int x, int y, int paletteIndex);
     void groupPaletteLineChanged(int paletteLine);
     void colorPicked(int paletteIndex);
+    void groupSpriteSelected(int spriteIndex);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

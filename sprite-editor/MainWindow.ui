@@ -859,27 +859,20 @@
         <!-- Main area: canvas on left, tool panel on right -->
         <item>
          <layout class="QHBoxLayout" name="editorMainLayout">
-          <!-- Left: canvas + 1x16 palette -->
+          <!-- Left: canvas -->
           <item>
-           <layout class="QVBoxLayout" name="editorCanvasLayout">
-            <item>
-             <widget class="QScrollArea" name="theEditorScrollArea">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>1</horstretch>
-                <verstretch>1</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="widgetResizable">
-               <bool>false</bool>
-              </property>
-              <widget class="SpritePixelEditor" name="theSpritePixelEditor"/>
-             </widget>
-            </item>
-            <item>
-             <widget class="PaletteWidget" name="theEditorPalette"/>
-            </item>
-           </layout>
+           <widget class="QScrollArea" name="theEditorScrollArea">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="widgetResizable">
+             <bool>false</bool>
+            </property>
+            <widget class="SpritePixelEditor" name="theSpritePixelEditor"/>
+           </widget>
           </item>
           <!-- Right: tool panel (built programmatically) -->
           <item>
