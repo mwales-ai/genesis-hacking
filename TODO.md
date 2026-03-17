@@ -15,13 +15,13 @@ Tasks for Claude:
         * [X] When a sprite from a group is middle clicked, display sprite info (ROM address, dimensions, palette addr)
         * [X] Provide a button to delete the selected sprite from the sprite group (like accidentally capturing sprite from a neighboring character)
 
-* [ ]  BN-Genesis Plugin 
+* [ ]  BN-Genesis Plugin
 
-    * [ ] Load a game definition file when a ROM is loaded and label all sprites at their ROM addresses
-    * [ ] Give each sprite a proper structure at its memory location (you will need to define a structure for sprite data and make sure it is loaded into the bndb file)
-    * [ ] Label each palette in the ROM with an appropriate structure
-    * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet) 
-    * [ ] Write a small document about how we can get code flow info from blastem into binary ninja.  I'm thinking about watching for jump instructions / targets and then making a list of those addresses to send to our binja plugin so that it can mark all target addresses as code addresses.  Don't check into git, just tell me where you wrote it when you are done
+    * [X] Load a game definition file when a ROM is loaded and label all sprites at their ROM addresses
+    * [X] Give each sprite a proper structure at its memory location (you will need to define a structure for sprite data and make sure it is loaded into the bndb file)
+    * [X] Label each palette in the ROM with an appropriate structure
+    * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet)
+    * [X] Write a small document about how we can get code flow info from blastem into binary ninja
 
 # Completed Tasks
 
