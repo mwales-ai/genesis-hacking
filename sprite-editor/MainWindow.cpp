@@ -29,8 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     , theCurrentFrameIndex(0)
     , theSelectedCollectionIndex(-1)
     , theShowSpriteBorders(false)
-    , theRawSelectedTileIndex(-1)
-    , theRawSelectedRomOffset(0)
+    // theRawSelectedTileIndex/Offset moved to RawTileBrowserPanel
     , theCollectionCount(0)
     , theAnimationCount(0)
     , theActiveAnimIndex(-1)
@@ -42,6 +41,25 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setupEditorToolPanel();
+
+    // Initialize data service
+    theDataService.setRom(&theRom);
+    theDataService.setDefinition(&theDef);
+    theDataService.setCompressor(&theCompressor);
+
+    // Replace the Raw Tile Browser tab with the new panel
+    theRawBrowserPanel = new RawTileBrowserPanel();
+    theRawBrowserPanel->setDataService(&theDataService);
+    int rawTabIdx = ui->theTabWidget->indexOf(ui->tabRawBrowser);
+    if (rawTabIdx >= 0)
+    {
+        ui->theTabWidget->removeTab(rawTabIdx);
+        ui->theTabWidget->insertTab(rawTabIdx, theRawBrowserPanel, "Raw Tile Browser");
+    }
+    else
+    {
+        ui->theTabWidget->addTab(theRawBrowserPanel, "Raw Tile Browser");
+    }
 
     // Replace the Screen Captures tab with the new panel
     theScreenCapPanel = new ScreenCapturePanel();
@@ -219,8 +237,8 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
     {
         if (theDef.isLoaded())
             populateCollectionGrid();
-        populateRawRanges();
-        populateRawPalettes();
+        theRawBrowserPanel->populateRanges();
+        theRawBrowserPanel->populatePalettes();
     }
     if (theDef.isLoaded() || !theSpriteRecordings.isEmpty())
     {
@@ -256,26 +274,11 @@ void MainWindow::setupConnections()
     connect(ui->theViewerBordersCheck, &QCheckBox::toggled,
             this,               &MainWindow::onViewerBordersToggled);
 
-    connect(ui->theRawRangeCombo,   SIGNAL(currentIndexChanged(int)),
-            this,                   SLOT(onRawRangeChanged(int)));
-    connect(ui->theRawPaletteCombo, SIGNAL(currentIndexChanged(int)),
-            this,                   SLOT(onRawPaletteChanged(int)));
-    connect(ui->theRawZoomSpin,     SIGNAL(valueChanged(int)),
-            this,                   SLOT(onRawZoomChanged(int)));
-    connect(ui->theRawBrowser,      &RawTileBrowserWidget::tileClicked,
-            this,                   &MainWindow::onRawTileClicked);
-    connect(ui->theJumpButton,      &QPushButton::clicked,
-            this,                   &MainWindow::onJumpToOffset);
-    connect(ui->theJumpOffsetEdit,  &QLineEdit::returnPressed,
-            this,                   &MainWindow::onJumpToOffset);
-    connect(ui->theRawSpriteWSpin,  SIGNAL(valueChanged(int)),
-            this,                   SLOT(onRawSpriteSizeChanged(int)));
-    connect(ui->theRawSpriteHSpin,  SIGNAL(valueChanged(int)),
-            this,                   SLOT(onRawSpriteSizeChanged(int)));
-    connect(ui->theAssemblyStartButton, &QPushButton::clicked,
-            this,                       &MainWindow::onSetAssemblyStart);
-    connect(ui->theRawExportButton, &QPushButton::clicked,
-            this,                   &MainWindow::onRawExportPng);
+    // Raw Tile Browser panel (self-contained)
+    connect(theRawBrowserPanel, &RawTileBrowserPanel::statusMessage,
+            this,               [this](const QString & msg){ statusBar()->showMessage(msg); });
+    connect(theRawBrowserPanel, &RawTileBrowserPanel::exportPngRequested,
+            this,               &MainWindow::onRawExportPngRequested);
 
     // Screen Captures panel (self-contained, just wire host signals)
     theScreenCapPanel->setRomFile(&theRom);
@@ -403,8 +406,8 @@ void MainWindow::openRom()
         populateCollectionGrid();
 
     // Enable raw browser with default range even without a definition
-    populateRawRanges();
-    populateRawPalettes();
+    theRawBrowserPanel->populateRanges();
+    theRawBrowserPanel->populatePalettes();
 
     statusBar()->showMessage("ROM loaded: " + theRom.gameTitle());
 }
@@ -449,8 +452,8 @@ void MainWindow::openGameDefinition()
     if (theRom.isOpen())
     {
         populateCollectionGrid();
-        populateRawRanges();
-        populateRawPalettes();
+        theRawBrowserPanel->populateRanges();
+        theRawBrowserPanel->populatePalettes();
     }
     theScreenCapPanel->populateCaptures();
     populateSpriteCollections();
@@ -917,10 +920,27 @@ void MainWindow::onViewerSpriteReordered(int fromIndex, int toIndex)
 
 
 // ---------------------------------------------------------------------------
-// Raw Tile Browser tab
+// Raw Tile Browser tab (moved to RawTileBrowserPanel)
 // ---------------------------------------------------------------------------
 
-void MainWindow::populateRawRanges()
+void MainWindow::onRawExportPngRequested(const QImage & image, const QString & suggestedName)
+{
+    QString path = QFileDialog::getSaveFileName(
+        this, "Export Sprite as PNG", suggestedName,
+        "PNG Images (*.png);;All Files (*)");
+    if (path.isEmpty())
+        return;
+    if (!image.save(path, "PNG"))
+    {
+        QMessageBox::critical(this, "Export Failed", "Could not save PNG to: " + path);
+        return;
+    }
+    statusBar()->showMessage("Exported sprite to: " + path);
+}
+
+#if 0  // BEGIN REMOVED RAW BROWSER CODE
+
+void MainWindow::theRawBrowserPanel->populateRanges()
 {
     ui->theRawRangeCombo->blockSignals(true);
     ui->theRawRangeCombo->clear();
@@ -950,7 +970,7 @@ void MainWindow::populateRawRanges()
         refreshRawBrowser();
 }
 
-void MainWindow::populateRawPalettes()
+void MainWindow::theRawBrowserPanel->populatePalettes()
 {
     ui->theRawPaletteCombo->blockSignals(true);
     ui->theRawPaletteCombo->clear();
@@ -1274,6 +1294,8 @@ void MainWindow::refreshRawBrowser()
         .arg(startOffset + tileData.size(), 6, 16, QChar('0')).toUpper());
 }
 
+#endif  // END REMOVED RAW BROWSER CODE
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -1480,9 +1502,9 @@ void MainWindow::onScreenCapSaveRomRequested()
 // onCapTileHovered — all now in ScreenCapturePanel
 
 // Old screen capture slot bodies deleted — now in ScreenCapturePanel
-// (onScreenCaptureSelected through onCapTileHovered)
-
-#if 0  // BEGIN REMOVED SCREEN CAPTURE CODE
+// Screen capture slots moved to ScreenCapturePanel
+// See git history (Phase 1 commit) for original implementations
+#if 0
 void REMOVED_onScreenCaptureSelected(int index)
 {
     if (index < 0)
@@ -3449,22 +3471,11 @@ void MainWindow::onDetailDoubleClicked(int spriteX, int spriteY)
         }
     }
 
-    // Set W and H spinners — don't block signals so the browser refreshes
-    ui->theRawSpriteWSpin->setValue(cs.widthTiles);
-    ui->theRawSpriteHSpin->setValue(cs.heightTiles);
-
-    // Set palette combo
-    if (palComboIndex > 0 && palComboIndex < ui->theRawPaletteCombo->count())
-        ui->theRawPaletteCombo->setCurrentIndex(palComboIndex);
-
-    // Set jump offset and jump
-    ui->theJumpOffsetEdit->setText(QString("0x%1").arg(romOffset, 6, 16, QChar('0')).toUpper());
+    // Jump to the tile in the Raw Browser panel
+    theRawBrowserPanel->jumpToAddress(romOffset, cs.widthTiles, cs.heightTiles, palComboIndex);
 
     // Switch to Raw Tile Browser tab
-    ui->theTabWidget->setCurrentWidget(ui->tabRawBrowser);
-
-    // Trigger the jump
-    onJumpToOffset();
+    ui->theTabWidget->setCurrentWidget(theRawBrowserPanel);
 
     statusBar()->showMessage(
         QString("Jumped to sprite at 0x%1 (%2x%3 tiles)")

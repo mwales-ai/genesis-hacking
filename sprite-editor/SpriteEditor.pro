@@ -29,7 +29,8 @@ SOURCES += \
     PaletteGridWidget.cpp \
     RomDataService.cpp \
     PaintToolPanel.cpp \
-    ScreenCapturePanel.cpp
+    ScreenCapturePanel.cpp \
+    RawTileBrowserPanel.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -53,7 +54,8 @@ HEADERS += \
     GenesisTypes.h \
     RomDataService.h \
     PaintToolPanel.h \
-    ScreenCapturePanel.h
+    ScreenCapturePanel.h \
+    RawTileBrowserPanel.h
 
 FORMS += \
     MainWindow.ui \

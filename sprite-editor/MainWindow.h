@@ -20,6 +20,8 @@
 #include "PaletteWidget.h"
 #include "SpritePixelEditor.h"
 #include "ScreenCapturePanel.h"
+#include "RawTileBrowserPanel.h"
+#include "RomDataService.h"
 
 #define AppDebug if(0) std::cout
 
@@ -53,15 +55,8 @@ private slots:
     void onViewerNameEditFinished();
     void onViewerBordersToggled(bool checked);
 
-    // Raw Tile Browser tab
-    void onRawRangeChanged(int index);
-    void onRawPaletteChanged(int index);
-    void onRawZoomChanged(int value);
-    void onRawSpriteSizeChanged(int value);
-    void onRawTileClicked(int tileIndex, uint32_t romOffset);
-    void onJumpToOffset();
-    void onSetAssemblyStart();
-    void onRawExportPng();
+    // Raw Tile Browser (delegated to RawTileBrowserPanel)
+    void onRawExportPngRequested(const QImage & image, const QString & suggestedName);
 
     // Screen Captures tab (delegated to ScreenCapturePanel)
     void onScreenCapLoadRequested();
@@ -127,9 +122,7 @@ private:
     void displaySpriteGroup(int groupIndex);
     void displaySpriteDetail(int groupIndex, int spriteIndex, int frameIndex = 0);
 
-    void populateRawRanges();
-    void populateRawPalettes();
-    void refreshRawBrowser();
+    // populateRawRanges/Palettes/refreshRawBrowser moved to RawTileBrowserPanel
     // populateScreenCaptures() moved to ScreenCapturePanel
     void populateSpriteCollections();
     void displayAnimationFrame(int animIndex, int frameIndex);
@@ -160,9 +153,7 @@ private:
     int                   theSelectedCollectionIndex;
     bool                  theShowSpriteBorders;
 
-    // Raw tile browser selection state
-    int                   theRawSelectedTileIndex;
-    uint32_t              theRawSelectedRomOffset;
+    // Raw tile browser state moved to RawTileBrowserPanel
 
     // Sprite Collections tab: track combo segments
     // [0, theCollectionCount) = regular collections or normalized collections
@@ -187,8 +178,10 @@ private:
     // Auto-incrementing counter for captured sprite groups
     int                   theCaptureCounter;
 
-    // Screen Capture panel (replaces old tab)
+    // Extracted panels
     ScreenCapturePanel    *theScreenCapPanel;
+    RawTileBrowserPanel   *theRawBrowserPanel;
+    RomDataService         theDataService;
 
     // Editor tool selection (built programmatically)
     QButtonGroup          *theToolButtonGroup;
