@@ -26,7 +26,9 @@ SOURCES += \
     GenesisColorDialog.cpp \
     SpriteCollectionWidget.cpp \
     SpritePixelEditor.cpp \
-    PaletteGridWidget.cpp
+    PaletteGridWidget.cpp \
+    RomDataService.cpp \
+    PaintToolPanel.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -46,7 +48,10 @@ HEADERS += \
     GenesisColorDialog.h \
     SpriteCollectionWidget.h \
     SpritePixelEditor.h \
-    PaletteGridWidget.h
+    PaletteGridWidget.h \
+    GenesisTypes.h \
+    RomDataService.h \
+    PaintToolPanel.h
 
 FORMS += \
     MainWindow.ui \
