@@ -38,12 +38,24 @@ MainWindow::MainWindow(QWidget *parent)
     , theEditCollectionIndex(-1)
     , theEditSpriteIndex(-1)
     , theEditorActivePaletteLine(0)
-    , theDefCaptureCount(0)
     , theCaptureCounter(0)
 {
     ui->setupUi(this);
     setupEditorToolPanel();
-    setupCapToolPanel();
+
+    // Replace the Screen Captures tab with the new panel
+    theScreenCapPanel = new ScreenCapturePanel();
+    int capTabIdx = ui->theTabWidget->indexOf(ui->tabScreenCaptures);
+    if (capTabIdx >= 0)
+    {
+        ui->theTabWidget->removeTab(capTabIdx);
+        ui->theTabWidget->insertTab(capTabIdx, theScreenCapPanel, "Screen Captures");
+    }
+    else
+    {
+        ui->theTabWidget->addTab(theScreenCapPanel, "Screen Captures");
+    }
+
     setupMenus();
     setupConnections();
     loadSettings();
@@ -135,71 +147,6 @@ void MainWindow::setupEditorToolPanel()
     theSelectedGroupSpriteIndex = -1;
 }
 
-void MainWindow::setupCapToolPanel()
-{
-    QVBoxLayout *toolLayout = new QVBoxLayout(ui->theCapToolPanel);
-    toolLayout->setContentsMargins(4, 4, 4, 4);
-    toolLayout->setSpacing(4);
-
-    QGridLayout *toolGrid = new QGridLayout();
-    toolGrid->setSpacing(2);
-
-    int btnSize = 36;
-    int iconSize = 28;
-
-    theCapToolPencilButton = new QPushButton();
-    theCapToolPencilButton->setIcon(QPixmap(":/painticons/icons/pencil.png"));
-    theCapToolPencilButton->setIconSize(QSize(iconSize, iconSize));
-    theCapToolPencilButton->setFixedSize(btnSize, btnSize);
-    theCapToolPencilButton->setCheckable(true);
-    theCapToolPencilButton->setChecked(true);
-    theCapToolPencilButton->setToolTip("Pencil");
-    toolGrid->addWidget(theCapToolPencilButton, 0, 0);
-
-    theCapToolBucketButton = new QPushButton();
-    theCapToolBucketButton->setIcon(QPixmap(":/painticons/icons/fill.png"));
-    theCapToolBucketButton->setIconSize(QSize(iconSize, iconSize));
-    theCapToolBucketButton->setFixedSize(btnSize, btnSize);
-    theCapToolBucketButton->setCheckable(true);
-    theCapToolBucketButton->setToolTip("Fill");
-    toolGrid->addWidget(theCapToolBucketButton, 0, 1);
-
-    theCapToolEyedropperButton = new QPushButton();
-    theCapToolEyedropperButton->setIcon(QPixmap(":/painticons/icons/dropper.png"));
-    theCapToolEyedropperButton->setIconSize(QSize(iconSize, iconSize));
-    theCapToolEyedropperButton->setFixedSize(btnSize, btnSize);
-    theCapToolEyedropperButton->setCheckable(true);
-    theCapToolEyedropperButton->setToolTip("Eyedropper");
-    toolGrid->addWidget(theCapToolEyedropperButton, 1, 0);
-
-    theCapToolBrushButton = new QPushButton();
-    theCapToolBrushButton->setIcon(QPixmap(":/painticons/icons/brush.png"));
-    theCapToolBrushButton->setIconSize(QSize(iconSize, iconSize));
-    theCapToolBrushButton->setFixedSize(btnSize, btnSize);
-    theCapToolBrushButton->setCheckable(true);
-    theCapToolBrushButton->setToolTip("Brush");
-    toolGrid->addWidget(theCapToolBrushButton, 1, 1);
-
-    toolLayout->addLayout(toolGrid);
-
-    QHBoxLayout *brushRow = new QHBoxLayout();
-    theCapBrushSizeLabel = new QLabel("Size:");
-    theCapBrushSizeSpin = new QSpinBox();
-    theCapBrushSizeSpin->setMinimum(1);
-    theCapBrushSizeSpin->setMaximum(16);
-    theCapBrushSizeSpin->setValue(3);
-    brushRow->addWidget(theCapBrushSizeLabel);
-    brushRow->addWidget(theCapBrushSizeSpin);
-    toolLayout->addLayout(brushRow);
-    theCapBrushSizeLabel->setVisible(false);
-    theCapBrushSizeSpin->setVisible(false);
-
-    theCapPaletteGrid = new PaletteGridWidget();
-    toolLayout->addWidget(theCapPaletteGrid);
-
-    toolLayout->addStretch(1);
-}
-
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -277,7 +224,7 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
     }
     if (theDef.isLoaded() || !theSpriteRecordings.isEmpty())
     {
-        populateScreenCaptures();
+        theScreenCapPanel->populateCaptures();
         populateSpriteCollections();
     }
 }
@@ -330,41 +277,17 @@ void MainWindow::setupConnections()
     connect(ui->theRawExportButton, &QPushButton::clicked,
             this,                   &MainWindow::onRawExportPng);
 
-    // Screen Captures tab
-    connect(ui->theScreenCapCombo,    SIGNAL(currentIndexChanged(int)),
-            this,                     SLOT(onScreenCaptureSelected(int)));
-    connect(ui->theScreenCapZoomSpin, SIGNAL(valueChanged(int)),
-            this,                     SLOT(onScreenCapZoomChanged(int)));
-    connect(ui->theLoadCapButton,     &QPushButton::clicked,
-            this,                     &MainWindow::onLoadScreenCapture);
-    connect(ui->theAddCapToDefButton, &QPushButton::clicked,
-            this,                     &MainWindow::onAddScreenCaptureToDef);
-    connect(ui->theRemoveCapButton,   &QPushButton::clicked,
-            this,                     &MainWindow::onRemoveScreenCapture);
-    connect(ui->theCapEditButton,     &QPushButton::toggled,
-            this,                     &MainWindow::onCapEditToggled);
-    connect(ui->theTileMapWidget,     &TileMapWidget::colorPicked,
-            this,                     &MainWindow::onCapColorPicked);
-    connect(ui->theCapSaveRomButton,  &QPushButton::clicked,
-            this,                     &MainWindow::onCapSaveToRom);
-    connect(ui->theCapRevertButton,   &QPushButton::clicked,
-            this,                     &MainWindow::onCapRevert);
-
-    // Screen capture tool panel connections
-    theCapToolButtonGroup = new QButtonGroup(this);
-    theCapToolButtonGroup->setExclusive(true);
-    theCapToolButtonGroup->addButton(theCapToolPencilButton, TOOL_PENCIL);
-    theCapToolButtonGroup->addButton(theCapToolBucketButton, TOOL_BUCKET);
-    theCapToolButtonGroup->addButton(theCapToolEyedropperButton, TOOL_EYEDROPPER);
-    theCapToolButtonGroup->addButton(theCapToolBrushButton, TOOL_BRUSH);
-    connect(theCapToolButtonGroup, SIGNAL(idClicked(int)),
-            this,                  SLOT(onCapToolChanged(int)));
-    connect(theCapBrushSizeSpin, SIGNAL(valueChanged(int)),
-            this,                SLOT(onCapBrushSizeChanged(int)));
-    connect(theCapPaletteGrid, &PaletteGridWidget::colorSelected,
-            this,              &MainWindow::onCapPaletteSelected);
-    connect(ui->theTileMapWidget, &TileMapWidget::tileHovered,
-            this,                 &MainWindow::onCapTileHovered);
+    // Screen Captures panel (self-contained, just wire host signals)
+    theScreenCapPanel->setRomFile(&theRom);
+    theScreenCapPanel->setGameDefinition(&theDef);
+    connect(theScreenCapPanel, &ScreenCapturePanel::statusMessage,
+            this,              [this](const QString & msg){ statusBar()->showMessage(msg); });
+    connect(theScreenCapPanel, &ScreenCapturePanel::loadCaptureRequested,
+            this,              &MainWindow::onScreenCapLoadRequested);
+    connect(theScreenCapPanel, &ScreenCapturePanel::removeCaptureRequested,
+            this,              &MainWindow::onScreenCapRemoveRequested);
+    connect(theScreenCapPanel, &ScreenCapturePanel::saveRomRequested,
+            this,              &MainWindow::onScreenCapSaveRomRequested);
 
     // Sprite Collections tab
     connect(ui->theSpriteColCombo,    SIGNAL(currentIndexChanged(int)),
@@ -529,7 +452,7 @@ void MainWindow::openGameDefinition()
         populateRawRanges();
         populateRawPalettes();
     }
-    populateScreenCaptures();
+    theScreenCapPanel->populateCaptures();
     populateSpriteCollections();
 
     statusBar()->showMessage("Game definition loaded: " + theDef.gameName());
@@ -1506,32 +1429,61 @@ void MainWindow::showAbout()
 // Screen Captures tab
 // ---------------------------------------------------------------------------
 
-void MainWindow::populateScreenCaptures()
+// Old screen capture methods removed — now in ScreenCapturePanel
+
+void MainWindow::onScreenCapLoadRequested()
 {
-    ui->theScreenCapCombo->blockSignals(true);
-    ui->theScreenCapCombo->clear();
-
-    const auto & defCaptures = theDef.screenCaptures();
-    theDefCaptureCount = defCaptures.size();
-
-    for (const auto & cap : defCaptures)
-        ui->theScreenCapCombo->addItem(cap.name);
-
-    // Add externally loaded captures (not yet in game def)
-    for (const auto & cap : theLoadedCaptures)
-        ui->theScreenCapCombo->addItem(QString("[ext] %1").arg(cap.name));
-
-    bool hasEntries = (theDefCaptureCount + theLoadedCaptures.size()) > 0;
-    ui->theScreenCapCombo->setEnabled(hasEntries);
-    ui->theScreenCapCombo->blockSignals(false);
-
-    if (hasEntries)
-        onScreenCaptureSelected(0);
-    else
-        ui->theTileMapWidget->clearCapture();
+    QString lastPath = theSettings.value("lastDefPath", "").toString();
+    QString path = QFileDialog::getOpenFileName(
+        this, "Load Screen Capture", lastPath,
+        "Screen Capture JSON (*.json);;All Files (*)");
+    if (!path.isEmpty())
+        theScreenCapPanel->loadCaptureFile(path);
 }
 
-void MainWindow::onScreenCaptureSelected(int index)
+void MainWindow::onScreenCapRemoveRequested(int defIndex, const QString & name)
+{
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Remove Screen Capture",
+        QString("Remove screen capture '%1' from the game definition?").arg(name),
+        QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes)
+        theScreenCapPanel->confirmRemoveCapture(defIndex);
+}
+
+void MainWindow::onScreenCapSaveRomRequested()
+{
+    if (!theRom.isOpen())
+    {
+        statusBar()->showMessage("No ROM open");
+        return;
+    }
+    if (!theRom.isModified())
+    {
+        statusBar()->showMessage("No ROM changes to save");
+        return;
+    }
+    if (promptSaveAsIfOriginal())
+        return;
+    if (!theRom.saveRom())
+    {
+        QMessageBox::critical(this, "Error", "Failed to save ROM.");
+        return;
+    }
+    statusBar()->showMessage("Tile changes saved to ROM");
+}
+
+// Removed old methods: onScreenCaptureSelected, onScreenCapZoomChanged,
+// onLoadScreenCapture, onAddScreenCaptureToDef, onRemoveScreenCapture,
+// onCapEditToggled, onCapColorPicked, onCapSaveToRom, onCapRevert,
+// onCapToolChanged, onCapBrushSizeChanged, onCapPaletteSelected,
+// onCapTileHovered — all now in ScreenCapturePanel
+
+// Old screen capture slot bodies deleted — now in ScreenCapturePanel
+// (onScreenCaptureSelected through onCapTileHovered)
+
+#if 0  // BEGIN REMOVED SCREEN CAPTURE CODE
+void REMOVED_onScreenCaptureSelected(int index)
 {
     if (index < 0)
     {
@@ -1641,7 +1593,7 @@ void MainWindow::onLoadScreenCapture()
     }
 
     theLoadedCaptures.append(caps);
-    populateScreenCaptures();
+    theScreenCapPanel->populateCaptures();
 
     // Select the first newly loaded capture
     int firstNew = theDefCaptureCount + theLoadedCaptures.size() - caps.size();
@@ -1672,7 +1624,7 @@ void MainWindow::onAddScreenCaptureToDef()
     ScreenCapture cap = theLoadedCaptures.takeAt(extIdx);
     theDef.addScreenCapture(cap);
     theDef.saveToFile(QString());
-    populateScreenCaptures();
+    theScreenCapPanel->populateCaptures();
 
     // Select the newly added def capture (it's the last def capture)
     ui->theScreenCapCombo->setCurrentIndex(theDefCaptureCount - 1);
@@ -1702,7 +1654,7 @@ void MainWindow::onRemoveScreenCapture()
 
     theDef.removeScreenCapture(index);
     theDef.saveToFile(QString());
-    populateScreenCaptures();
+    theScreenCapPanel->populateCaptures();
     statusBar()->showMessage(QString("Removed screen capture '%1'").arg(name));
 }
 
@@ -1810,6 +1762,7 @@ void MainWindow::onCapTileHovered(int row, int col, const QString & romOffset,
         .arg(romOffset.isEmpty() ? "N/A" : romOffset);
     ui->theCapStatusLabel->setText(info);
 }
+#endif  // END REMOVED SCREEN CAPTURE CODE
 
 // ---------------------------------------------------------------------------
 // Sprite Collections tab

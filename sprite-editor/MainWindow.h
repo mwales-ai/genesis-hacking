@@ -19,6 +19,7 @@
 #include "PaletteGridWidget.h"
 #include "PaletteWidget.h"
 #include "SpritePixelEditor.h"
+#include "ScreenCapturePanel.h"
 
 #define AppDebug if(0) std::cout
 
@@ -62,21 +63,10 @@ private slots:
     void onSetAssemblyStart();
     void onRawExportPng();
 
-    // Screen Captures tab
-    void onScreenCaptureSelected(int index);
-    void onScreenCapZoomChanged(int value);
-    void onLoadScreenCapture();
-    void onAddScreenCaptureToDef();
-    void onRemoveScreenCapture();
-    void onCapEditToggled(bool checked);
-    void onCapColorPicked(int paletteIndex);
-    void onCapSaveToRom();
-    void onCapRevert();
-    void onCapToolChanged(int toolId);
-    void onCapBrushSizeChanged(int size);
-    void onCapPaletteSelected(int index);
-    void onCapTileHovered(int row, int col, const QString & romOffset,
-                          int pattern, int paletteLine, const QString & source);
+    // Screen Captures tab (delegated to ScreenCapturePanel)
+    void onScreenCapLoadRequested();
+    void onScreenCapRemoveRequested(int defIndex, const QString & name);
+    void onScreenCapSaveRomRequested();
 
     // Sprite Collections tab
     void onSpriteCollectionSelected(int index);
@@ -140,7 +130,7 @@ private:
     void populateRawRanges();
     void populateRawPalettes();
     void refreshRawBrowser();
-    void populateScreenCaptures();
+    // populateScreenCaptures() moved to ScreenCapturePanel
     void populateSpriteCollections();
     void displayAnimationFrame(int animIndex, int frameIndex);
     void displayRecordingFrame(int recIndex, int frameIndex);
@@ -197,9 +187,8 @@ private:
     // Auto-incrementing counter for captured sprite groups
     int                   theCaptureCounter;
 
-    // Standalone screen captures loaded from external JSON files
-    QVector<ScreenCapture> theLoadedCaptures;
-    int                    theDefCaptureCount;  // how many captures are from the game def
+    // Screen Capture panel (replaces old tab)
+    ScreenCapturePanel    *theScreenCapPanel;
 
     // Editor tool selection (built programmatically)
     QButtonGroup          *theToolButtonGroup;
@@ -215,18 +204,7 @@ private:
     QPushButton           *theDeleteSpriteButton;
 
     void setupEditorToolPanel();
-    void setupCapToolPanel();
     bool promptSaveAsIfOriginal();
-
-    // Screen capture tool panel (built programmatically)
-    QButtonGroup          *theCapToolButtonGroup;
-    QPushButton           *theCapToolPencilButton;
-    QPushButton           *theCapToolBucketButton;
-    QPushButton           *theCapToolEyedropperButton;
-    QPushButton           *theCapToolBrushButton;
-    QLabel                *theCapBrushSizeLabel;
-    QSpinBox              *theCapBrushSizeSpin;
-    PaletteGridWidget     *theCapPaletteGrid;
 };
 
 #endif // MAINWINDOW_H

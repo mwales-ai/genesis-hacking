@@ -28,7 +28,8 @@ SOURCES += \
     SpritePixelEditor.cpp \
     PaletteGridWidget.cpp \
     RomDataService.cpp \
-    PaintToolPanel.cpp
+    PaintToolPanel.cpp \
+    ScreenCapturePanel.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -51,7 +52,8 @@ HEADERS += \
     PaletteGridWidget.h \
     GenesisTypes.h \
     RomDataService.h \
-    PaintToolPanel.h
+    PaintToolPanel.h \
+    ScreenCapturePanel.h
 
 FORMS += \
     MainWindow.ui \
