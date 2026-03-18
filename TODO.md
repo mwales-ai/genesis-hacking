@@ -2,6 +2,33 @@ Tasks for Claude:
 
 # Incomplete Tasks
 
+* [ ] Sprite Editor Refactoring
+    * [ ] We have too much code in a single super class MainWindow.  I want to break this up into smaller classes / QWidgets to allow us to use them in other applications.  So we want to make sure the functions are easy to interface with for for each of them, minimal complexity, minimal cross-dependencies.
+    * [ ] Raw Tile Browser
+        * [ ] All the controls on the top of the of the tab (range, zoom, w, h, palette, addr) and the big canvas of sprite graphics should be continaed in a reusabel QWidget
+            * [ ] Slot to jump this widget to different addresses
+            * [ ] Slot to change the range
+            * [ ] Slot ot change the sprite WxH dimensions
+            * [ ] Signal emitted for left, middle, and double clicking a tile
+            * [ ] Slot for a ROM data update
+            * [ ] Right click menu
+                * [ ] Export to PNG
+                * [ ] Copy hex data to clipboard
+            * [ ] Are there any other signals / slots that would be useful to have for this widget?
+    * Sprite Editting Tools
+        * [ ] Pen / editor types
+        * [ ] Palette tool
+        * [ ] Slot for when changes are being committed, so the palette if changed can be saved / emitted
+        * [ ] Slot for palette changes (different sprite in group is clicked, or tile in screen editor)
+    * [ ] Sprite Editor
+        * [ ] Since the editor can work on a sprite group, we will need to have a well defined structure as part of API for class (that is shared with other classes and / or applications) that specifies a collection of sprites, the different types of data (ROM, embedded), palette data (ROM, embedded), relative positions when rendered on screen
+        * [ ] Slot to change editor to new sprite group, ask to commit changes to ROM if data has been changed
+        * [ ] Signal to change ROM data based on user edits committed
+        * [ ] Slot for zoom level
+        * [ ] Slot for palette update
+    * [ ] When all of that is complete, make an attempt at updating this todo list yourself with the SpriteViewer, Screen Captures, and Animations tab plan
+    
+
 * [X] BlastEm updates
     * [X] If I don't specify a file extenstion, put a default extension of .sprec on sprite recordings
     * [X] Do a code review of the sprite recording logic, particularly if a sprite isn't DMA-ed from ROM, have we correctly copied the sprite and palette data from VRAM into the sprec file
