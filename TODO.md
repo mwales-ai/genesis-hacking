@@ -24,10 +24,10 @@ Tasks for Claude:
         * [X] Extract populateSpriteCollections, recording loading, frame navigation
         * [X] Extract capture workflow (capture group, hide/unhide)
         * [ ] Wire sprite click to open SpriteEditorPanel (pending full integration)
-    * [ ] Sprite Viewer → SpriteViewerPanel (Phase 5)
-        * [ ] Extract collection grid, detail view, reorder, rename, delete
-        * [ ] Wire edit button to SpriteEditorPanel
-        * [ ] Wire double-click to RawTileBrowserPanel
+    * [X] Sprite Viewer → SpriteViewerPanel (Phase 5 complete)
+        * [X] Extract collection grid, detail view, reorder, rename, delete
+        * [X] Wire edit button to SpriteEditorPanel
+        * [X] Wire double-click to RawTileBrowserPanel
     * [ ] Final cleanup (Phase 6)
         * [ ] Remove all #if 0 dead code blocks from MainWindow.cpp
         * [ ] Remove unused tabs from MainWindow.ui

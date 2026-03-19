@@ -27,8 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     , theCurrentGroupIndex(-1)
     , theCurrentSpriteIndex(-1)
     , theCurrentFrameIndex(0)
-    , theSelectedCollectionIndex(-1)
-    , theShowSpriteBorders(false)
+    // theSelectedCollectionIndex, theShowSpriteBorders moved to SpriteViewerPanel
     // theRawSelectedTileIndex/Offset moved to RawTileBrowserPanel
     // theCollectionCount, theAnimationCount, theActiveAnimIndex, theActiveRecIndex moved
     // theEditCollectionIndex, theEditSpriteIndex, theEditorActivePaletteLine moved
@@ -40,6 +39,21 @@ MainWindow::MainWindow(QWidget *parent)
     theDataService.setRom(&theRom);
     theDataService.setDefinition(&theDef);
     theDataService.setCompressor(&theCompressor);
+
+    // Replace the Sprite Viewer tab with the new panel
+    theViewerPanel = new SpriteViewerPanel();
+    theViewerPanel->setDataService(&theDataService);
+    theViewerPanel->setGameDefinition(&theDef);
+    int viewerTabIdx = ui->theTabWidget->indexOf(ui->tabSpriteViewer);
+    if (viewerTabIdx >= 0)
+    {
+        ui->theTabWidget->removeTab(viewerTabIdx);
+        ui->theTabWidget->insertTab(viewerTabIdx, theViewerPanel, "Sprite Viewer");
+    }
+    else
+    {
+        ui->theTabWidget->addTab(theViewerPanel, "Sprite Viewer");
+    }
 
     // Replace the Raw Tile Browser tab with the new panel
     theRawBrowserPanel = new RawTileBrowserPanel();
@@ -176,7 +190,7 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
     if (theRom.isOpen())
     {
         if (theDef.isLoaded())
-            populateCollectionGrid();
+            theViewerPanel->populateGrid();
         theRawBrowserPanel->populateRanges();
         theRawBrowserPanel->populatePalettes();
     }
@@ -200,19 +214,15 @@ void MainWindow::setupMenus()
 
 void MainWindow::setupConnections()
 {
-    // Sprite Viewer: collection grid + detail
-    connect(ui->theSpriteSheet, &SpriteSheetWidget::spriteSelected,
-            this,               &MainWindow::onCollectionGridSelected);
-    connect(ui->theZoomSpin,    SIGNAL(valueChanged(int)),
-            this,               SLOT(onZoomChanged(int)));
-    connect(ui->theThumbZoomSpin, SIGNAL(valueChanged(int)),
-            this,                 SLOT(onThumbZoomChanged(int)));
-    connect(ui->theSpriteSheet, &SpriteSheetWidget::spriteReordered,
-            this,               &MainWindow::onViewerSpriteReordered);
-    connect(ui->theViewerNameEdit, &QLineEdit::editingFinished,
-            this,               &MainWindow::onViewerNameEditFinished);
-    connect(ui->theViewerBordersCheck, &QCheckBox::toggled,
-            this,               &MainWindow::onViewerBordersToggled);
+    // Sprite Viewer panel (self-contained)
+    connect(theViewerPanel, &SpriteViewerPanel::statusMessage,
+            this,           [this](const QString & msg){ statusBar()->showMessage(msg); });
+    connect(theViewerPanel, &SpriteViewerPanel::editRequested,
+            this,           &MainWindow::onViewerEditRequested);
+    connect(theViewerPanel, &SpriteViewerPanel::jumpToRawBrowser,
+            this,           &MainWindow::onViewerJumpToRaw);
+    connect(theViewerPanel, &SpriteViewerPanel::collectionDeleted,
+            this,           [this](){ /* nothing extra needed */ });
 
     // Raw Tile Browser panel (self-contained)
     connect(theRawBrowserPanel, &RawTileBrowserPanel::statusMessage,
@@ -238,17 +248,9 @@ void MainWindow::setupConnections()
     connect(theAnimationPanel, &SpriteAnimationPanel::loadRecordingRequested,
             this,              &MainWindow::onAnimLoadRecordingRequested);
     connect(theAnimationPanel, &SpriteAnimationPanel::collectionsCaptured,
-            this,              [this](){ populateCollectionGrid(); });
+            this,              [this](){ theViewerPanel->populateGrid(); });
 
-    // Sprite Viewer: edit, double-click
-    connect(ui->theEditFromViewerButton, &QPushButton::clicked,
-            this,                       &MainWindow::onEditFromViewer);
-    connect(ui->theDeleteCollectionButton, &QPushButton::clicked,
-            this,                          &MainWindow::onDeleteCollection);
-    connect(ui->theSpriteSheet,         &SpriteSheetWidget::spriteDoubleClicked,
-            this,                       &MainWindow::onViewerSpriteDoubleClicked);
-    connect(ui->theSpriteDetail,        &TileCanvasWidget::doubleClicked,
-            this,                       &MainWindow::onDetailDoubleClicked);
+    // Viewer edit/double-click handled internally by SpriteViewerPanel
 
     // Sprite Editor panel (self-contained)
     theEditorPanel->setRomFile(&theRom);
@@ -297,7 +299,7 @@ void MainWindow::openRom()
     updateStatusLabel();
 
     if (theDef.isLoaded())
-        populateCollectionGrid();
+        theViewerPanel->populateGrid();
 
     // Enable raw browser with default range even without a definition
     theRawBrowserPanel->populateRanges();
@@ -345,7 +347,7 @@ void MainWindow::openGameDefinition()
 
     if (theRom.isOpen())
     {
-        populateCollectionGrid();
+        theViewerPanel->populateGrid();
         theRawBrowserPanel->populateRanges();
         theRawBrowserPanel->populatePalettes();
     }
@@ -428,11 +430,24 @@ void MainWindow::populateSpriteGroups()
     // Sprite groups are still accessible via the Sprite Collections tab.
 }
 
-// ---------------------------------------------------------------------------
-// Sprite Viewer: Collection Grid
-// ---------------------------------------------------------------------------
+// Viewer slots (new thin wiring)
+void MainWindow::onViewerEditRequested(int collectionIndex, const QMap<int, QString> & palLineToId)
+{
+    theEditorPanel->editNormalizedCollection(collectionIndex, palLineToId);
+    ui->theTabWidget->setCurrentWidget(theEditorPanel);
+}
 
-void MainWindow::populateCollectionGrid()
+void MainWindow::onViewerJumpToRaw(uint32_t romOffset, int widthTiles, int heightTiles, int palComboIdx)
+{
+    theRawBrowserPanel->jumpToAddress(romOffset, widthTiles, heightTiles, palComboIdx);
+    ui->theTabWidget->setCurrentWidget(theRawBrowserPanel);
+}
+
+// ---------------------------------------------------------------------------
+// REMOVED: Sprite Viewer (moved to SpriteViewerPanel)
+// ---------------------------------------------------------------------------
+#if 0  // BEGIN REMOVED VIEWER CODE
+void REMOVED_populateCollectionGrid()
 {
     theSelectedCollectionIndex = -1;
 
@@ -808,10 +823,10 @@ void MainWindow::onViewerSpriteReordered(int fromIndex, int toIndex)
     AppDebug << "Reorder collection: " << fromIndex << " -> " << toIndex << std::endl;
     theDef.moveNormalizedCollection(fromIndex, toIndex);
     theDef.saveToFile(QString());
-    populateCollectionGrid();
+    theViewerPanel->populateGrid();
     statusBar()->showMessage(QString("Moved collection from position %1 to %2").arg(fromIndex).arg(toIndex));
 }
-
+#endif  // END REMOVED VIEWER CODE
 
 // ---------------------------------------------------------------------------
 // Raw Tile Browser tab (moved to RawTileBrowserPanel)
@@ -2845,7 +2860,7 @@ void MainWindow::onDeleteSpriteFromGroup()
     // Refresh
     theSelectedGroupSpriteIndex = -1;
     theDeleteSpriteButton->setEnabled(false);
-    populateCollectionGrid();
+    theViewerPanel->populateGrid();
 
     // Re-open the editor with the updated group
     theSelectedCollectionIndex = colIndex;
@@ -3078,7 +3093,7 @@ void MainWindow::onCaptureSpriteGroup()
     }
 
     // Refresh the Sprite Viewer grid to show the new collection immediately
-    populateCollectionGrid();
+    theViewerPanel->populateGrid();
 
     statusBar()->showMessage(
         QString("Captured %1 sprites as '%2'")
@@ -3158,11 +3173,9 @@ void MainWindow::onSaveGameDefinition()
     statusBar()->showMessage("Game definition saved: " + path);
 }
 
-// ---------------------------------------------------------------------------
-// Sprite Viewer: Name Edit, Borders, Edit, Double-click
-// ---------------------------------------------------------------------------
-
-void MainWindow::onViewerNameEditFinished()
+// Viewer methods moved to SpriteViewerPanel
+#if 0  // BEGIN REMOVED VIEWER CODE 2
+void REMOVED_onViewerNameEditFinished()
 {
     if (theSelectedCollectionIndex < 0 || !theDef.isNormalized())
         return;
@@ -3179,7 +3192,7 @@ void MainWindow::onViewerNameEditFinished()
     theDef.saveToFile(QString());
 
     // Refresh grid to show new name
-    populateCollectionGrid();
+    theViewerPanel->populateGrid();
 
     statusBar()->showMessage(QString("Renamed to '%1'").arg(newName));
 }
@@ -3212,7 +3225,7 @@ void MainWindow::onDeleteCollection()
     theDef.removeNormalizedCollection(theSelectedCollectionIndex);
     theDef.saveToFile(QString());
     theSelectedCollectionIndex = -1;
-    populateCollectionGrid();
+    theViewerPanel->populateGrid();
     statusBar()->showMessage(QString("Deleted sprite group '%1'").arg(name));
 }
 
@@ -3246,6 +3259,8 @@ void MainWindow::onEditFromViewer()
         QString("Editing sprite group \"%1\"").arg(norm.name));
 }
 
+#endif  // END REMOVED VIEWER CODE 2
+
 void MainWindow::onEditorColorEditRequested(int paletteIndex, const QColor & current,
                                               bool hasRomOffset, uint32_t romOffset, int refCount)
 {
@@ -3263,10 +3278,11 @@ void MainWindow::onEditorColorEditRequested(int paletteIndex, const QColor & cur
 void MainWindow::onEditorSpriteDeleted(int collectionIndex)
 {
     Q_UNUSED(collectionIndex);
-    populateCollectionGrid();
+    theViewerPanel->populateGrid();
 }
 
-void MainWindow::onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex)
+#if 0  // REMOVED viewer double-click
+void REMOVED_onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex)
 {
     (void)spriteIndex;
     (void)frameIndex;
@@ -3355,3 +3371,4 @@ void MainWindow::onDetailDoubleClicked(int spriteX, int spriteY)
         .arg(romOffset, 6, 16, QChar('0')).toUpper()
         .arg(cs.widthTiles).arg(cs.heightTiles));
 }
+#endif  // END REMOVED viewer double-click

@@ -23,6 +23,7 @@
 #include "RawTileBrowserPanel.h"
 #include "SpriteEditorPanel.h"
 #include "SpriteAnimationPanel.h"
+#include "SpriteViewerPanel.h"
 #include "RomDataService.h"
 
 #define AppDebug if(0) std::cout
@@ -49,13 +50,9 @@ private slots:
     void saveRom();
     void saveRomAs();
 
-    // Sprite Viewer tab (collection grid)
-    void onCollectionGridSelected(int groupIndex, int spriteIndex, int frameIndex);
-    void onZoomChanged(int value);
-    void onThumbZoomChanged(int value);
-    void onViewerSpriteReordered(int fromIndex, int toIndex);
-    void onViewerNameEditFinished();
-    void onViewerBordersToggled(bool checked);
+    // Sprite Viewer (delegated to SpriteViewerPanel)
+    void onViewerEditRequested(int collectionIndex, const QMap<int, QString> & palLineToId);
+    void onViewerJumpToRaw(uint32_t romOffset, int widthTiles, int heightTiles, int palComboIdx);
 
     // Raw Tile Browser (delegated to RawTileBrowserPanel)
     void onRawExportPngRequested(const QImage & image, const QString & suggestedName);
@@ -76,11 +73,7 @@ private slots:
     // Capture workflow moved to SpriteAnimationPanel
     void onSaveGameDefinition();
 
-    // Sprite Viewer: edit, double-click
-    void onEditFromViewer();
-    void onDeleteCollection();
-    void onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex);
-    void onDetailDoubleClicked(int spriteX, int spriteY);
+    // Viewer edit/delete/double-click moved to SpriteViewerPanel
 
     // Help
     void showAbout();
@@ -93,10 +86,7 @@ private:
     void updateWindowTitle();
     void updateStatusLabel();
 
-    // Sprite Viewer (collection grid)
-    void populateCollectionGrid();
-    void updateCollectionDetail(int collectionIndex);
-    QImage renderCollectionComposite(const NormalizedCollection & norm, bool showBorders);
+    // populateCollectionGrid, updateCollectionDetail, renderCollectionComposite moved to SpriteViewerPanel
 
     // Legacy display helpers (still used by editor paths)
     void populateSpriteGroups();
@@ -130,9 +120,7 @@ private:
     int                   theCurrentSpriteIndex;
     int                   theCurrentFrameIndex;
 
-    // Sprite Viewer: selected collection in grid
-    int                   theSelectedCollectionIndex;
-    bool                  theShowSpriteBorders;
+    // Viewer state moved to SpriteViewerPanel
 
     // Raw tile browser state moved to RawTileBrowserPanel
 
@@ -143,10 +131,11 @@ private:
     // Hidden sprites and capture counter moved to SpriteAnimationPanel
 
     // Extracted panels
-    ScreenCapturePanel    *theScreenCapPanel;
+    SpriteViewerPanel     *theViewerPanel;
     RawTileBrowserPanel   *theRawBrowserPanel;
-    SpriteEditorPanel     *theEditorPanel;
+    ScreenCapturePanel    *theScreenCapPanel;
     SpriteAnimationPanel  *theAnimationPanel;
+    SpriteEditorPanel     *theEditorPanel;
     RomDataService         theDataService;
 
     // Editor tool members moved to SpriteEditorPanel

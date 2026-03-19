@@ -32,7 +32,8 @@ SOURCES += \
     ScreenCapturePanel.cpp \
     RawTileBrowserPanel.cpp \
     SpriteEditorPanel.cpp \
-    SpriteAnimationPanel.cpp
+    SpriteAnimationPanel.cpp \
+    SpriteViewerPanel.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -59,7 +60,8 @@ HEADERS += \
     ScreenCapturePanel.h \
     RawTileBrowserPanel.h \
     SpriteEditorPanel.h \
-    SpriteAnimationPanel.h
+    SpriteAnimationPanel.h \
+    SpriteViewerPanel.h
 
 FORMS += \
     MainWindow.ui \
