@@ -22,6 +22,7 @@
 #include "ScreenCapturePanel.h"
 #include "RawTileBrowserPanel.h"
 #include "SpriteEditorPanel.h"
+#include "SpriteAnimationPanel.h"
 #include "RomDataService.h"
 
 #define AppDebug if(0) std::cout
@@ -64,26 +65,16 @@ private slots:
     void onScreenCapRemoveRequested(int defIndex, const QString & name);
     void onScreenCapSaveRomRequested();
 
-    // Sprite Collections tab
-    void onSpriteCollectionSelected(int index);
-    void onSpriteCollectionZoomChanged(int value);
-    void onAnimationFrameChanged(int frameIndex);
-    void onLoadRecording();
+    // Sprite Animations (delegated to SpriteAnimationPanel)
+    void onAnimLoadRecordingRequested();
 
     // Sprite Editor (delegated to SpriteEditorPanel)
     void onEditorColorEditRequested(int paletteIndex, const QColor & current,
                                      bool hasRomOffset, uint32_t romOffset, int refCount);
     void onEditorSpriteDeleted(int collectionIndex);
 
-    // Capture workflow
-    void onCaptureSpriteGroup();
-    void onHideSelectedSprites();
-    void onUnhideSelectedSprites();
-    void onCollectionSelectionChanged(const QSet<int> & selectedIndices);
+    // Capture workflow moved to SpriteAnimationPanel
     void onSaveGameDefinition();
-
-    // Unhide only selected hidden sprites
-    void onUnhideSelectedOnly();
 
     // Sprite Viewer: edit, double-click
     void onEditFromViewer();
@@ -145,29 +136,17 @@ private:
 
     // Raw tile browser state moved to RawTileBrowserPanel
 
-    // Sprite Collections tab: track combo segments
-    // [0, theCollectionCount) = regular collections or normalized collections
-    // [theCollectionCount, theCollectionCount + theAnimationCount) = .sprec recordings
-    int                   theCollectionCount;
-    int                   theAnimationCount;     // number of .sprec recording entries
-    int                   theActiveAnimIndex;    // which animation is selected (-1 if none)
-    int                   theActiveRecIndex;     // which recording is selected (-1 if none)
-
-    // .sprec recordings loaded separately from game definition
-    QVector<SpriteRecording> theSpriteRecordings;
+    // Animation state moved to SpriteAnimationPanel
 
     // Editor state moved to SpriteEditorPanel
 
-    // Hidden sprites by ROM offset (persists across frames)
-    QSet<QString>         theHiddenRomOffsets;
-
-    // Auto-incrementing counter for captured sprite groups
-    int                   theCaptureCounter;
+    // Hidden sprites and capture counter moved to SpriteAnimationPanel
 
     // Extracted panels
     ScreenCapturePanel    *theScreenCapPanel;
     RawTileBrowserPanel   *theRawBrowserPanel;
     SpriteEditorPanel     *theEditorPanel;
+    SpriteAnimationPanel  *theAnimationPanel;
     RomDataService         theDataService;
 
     // Editor tool members moved to SpriteEditorPanel

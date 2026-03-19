@@ -20,10 +20,10 @@ Tasks for Claude:
         * [X] editNormalizedCollection() / editLegacySprite() entry points
         * [X] Save tiles/palette signals, colorEditRequested signal
         * [X] Zoom, grid, tool panel all self-contained
-    * [ ] Sprite Animations → SpriteAnimationPanel (Phase 4)
-        * [ ] Extract populateSpriteCollections, recording loading, frame navigation
-        * [ ] Extract capture workflow (capture group, hide/unhide)
-        * [ ] Wire sprite click to open SpriteEditorPanel
+    * [X] Sprite Animations → SpriteAnimationPanel (Phase 4 complete)
+        * [X] Extract populateSpriteCollections, recording loading, frame navigation
+        * [X] Extract capture workflow (capture group, hide/unhide)
+        * [ ] Wire sprite click to open SpriteEditorPanel (pending full integration)
     * [ ] Sprite Viewer → SpriteViewerPanel (Phase 5)
         * [ ] Extract collection grid, detail view, reorder, rename, delete
         * [ ] Wire edit button to SpriteEditorPanel

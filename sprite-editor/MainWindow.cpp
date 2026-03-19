@@ -30,12 +30,9 @@ MainWindow::MainWindow(QWidget *parent)
     , theSelectedCollectionIndex(-1)
     , theShowSpriteBorders(false)
     // theRawSelectedTileIndex/Offset moved to RawTileBrowserPanel
-    , theCollectionCount(0)
-    , theAnimationCount(0)
-    , theActiveAnimIndex(-1)
-    , theActiveRecIndex(-1)
+    // theCollectionCount, theAnimationCount, theActiveAnimIndex, theActiveRecIndex moved
     // theEditCollectionIndex, theEditSpriteIndex, theEditorActivePaletteLine moved
-    , theCaptureCounter(0)
+    // theCaptureCounter moved to SpriteAnimationPanel
 {
     ui->setupUi(this);
 
@@ -71,6 +68,22 @@ MainWindow::MainWindow(QWidget *parent)
     else
     {
         ui->theTabWidget->addTab(theEditorPanel, "Sprite Editor");
+    }
+
+    // Replace the Sprite Animations tab with the new panel
+    theAnimationPanel = new SpriteAnimationPanel();
+    theAnimationPanel->setDataService(&theDataService);
+    theAnimationPanel->setRomFile(&theRom);
+    theAnimationPanel->setGameDefinition(&theDef);
+    int animTabIdx = ui->theTabWidget->indexOf(ui->tabSpriteCollections);
+    if (animTabIdx >= 0)
+    {
+        ui->theTabWidget->removeTab(animTabIdx);
+        ui->theTabWidget->insertTab(animTabIdx, theAnimationPanel, "Sprite Animations");
+    }
+    else
+    {
+        ui->theTabWidget->addTab(theAnimationPanel, "Sprite Animations");
     }
 
     // Replace the Screen Captures tab with the new panel
@@ -151,7 +164,7 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
         SpriteRecording rec;
         if (rec.loadFromFile(sp))
         {
-            theSpriteRecordings.append(rec);
+            theAnimationPanel->addRecording(rec);
             statusBar()->showMessage("Recording loaded: " + rec.gameName());
         }
         else
@@ -167,10 +180,10 @@ void MainWindow::loadFromCommandLine(const QStringList & args)
         theRawBrowserPanel->populateRanges();
         theRawBrowserPanel->populatePalettes();
     }
-    if (theDef.isLoaded() || !theSpriteRecordings.isEmpty())
+    if (theDef.isLoaded())
     {
         theScreenCapPanel->populateCaptures();
-        populateSpriteCollections();
+        theAnimationPanel->populateCollections();
     }
 }
 
@@ -219,32 +232,13 @@ void MainWindow::setupConnections()
     connect(theScreenCapPanel, &ScreenCapturePanel::saveRomRequested,
             this,              &MainWindow::onScreenCapSaveRomRequested);
 
-    // Sprite Collections tab
-    connect(ui->theSpriteColCombo,    SIGNAL(currentIndexChanged(int)),
-            this,                     SLOT(onSpriteCollectionSelected(int)));
-    connect(ui->theSpriteColZoomSpin, SIGNAL(valueChanged(int)),
-            this,                     SLOT(onSpriteCollectionZoomChanged(int)));
-    // TODO Phase 4: spriteClicked will be handled by SpriteAnimationPanel
-    // For now, just ignore sprite clicks in the collection widget
-    // connect(ui->theSpriteColWidget, &SpriteCollectionWidget::spriteClicked, ...);
-    connect(ui->theSpriteColWidget,   &SpriteCollectionWidget::selectionChanged,
-            this,                     &MainWindow::onCollectionSelectionChanged);
-    connect(ui->theColFrameSpin,      SIGNAL(valueChanged(int)),
-            this,                     SLOT(onAnimationFrameChanged(int)));
-
-    // Load recording button on Sprite Animations tab
-    connect(ui->theLoadRecordingButton, &QPushButton::clicked,
-            this,                       &MainWindow::onLoadRecording);
-
-    // Capture workflow buttons
-    connect(ui->theCaptureGroupButton,  &QPushButton::clicked,
-            this,                       &MainWindow::onCaptureSpriteGroup);
-    connect(ui->theHideSpritesButton,   &QPushButton::clicked,
-            this,                       &MainWindow::onHideSelectedSprites);
-    connect(ui->theUnhideSpritesButton, &QPushButton::clicked,
-            this,                       &MainWindow::onUnhideSelectedSprites);
-    connect(ui->theUnhideSelectedButton, &QPushButton::clicked,
-            this,                       &MainWindow::onUnhideSelectedOnly);
+    // Sprite Animations panel (self-contained)
+    connect(theAnimationPanel, &SpriteAnimationPanel::statusMessage,
+            this,              [this](const QString & msg){ statusBar()->showMessage(msg); });
+    connect(theAnimationPanel, &SpriteAnimationPanel::loadRecordingRequested,
+            this,              &MainWindow::onAnimLoadRecordingRequested);
+    connect(theAnimationPanel, &SpriteAnimationPanel::collectionsCaptured,
+            this,              [this](){ populateCollectionGrid(); });
 
     // Sprite Viewer: edit, double-click
     connect(ui->theEditFromViewerButton, &QPushButton::clicked,
@@ -332,8 +326,8 @@ void MainWindow::openGameDefinition()
                 "Failed to load sprite recording:\n" + rec.lastError());
             return;
         }
-        theSpriteRecordings.append(rec);
-        populateSpriteCollections();
+        theAnimationPanel->addRecording(rec);
+        theAnimationPanel->populateCollections();
         statusBar()->showMessage("Sprite recording loaded: " + rec.gameName());
         return;
     }
@@ -356,7 +350,7 @@ void MainWindow::openGameDefinition()
         theRawBrowserPanel->populatePalettes();
     }
     theScreenCapPanel->populateCaptures();
-    populateSpriteCollections();
+    theAnimationPanel->populateCollections();
 
     statusBar()->showMessage("Game definition loaded: " + theDef.gameName());
 }
@@ -1686,11 +1680,34 @@ void MainWindow::onCapTileHovered(int row, int col, const QString & romOffset,
 }
 #endif  // END REMOVED SCREEN CAPTURE CODE
 
-// ---------------------------------------------------------------------------
-// Sprite Collections tab
-// ---------------------------------------------------------------------------
+// Animation tab slots moved to SpriteAnimationPanel
 
-void MainWindow::populateSpriteCollections()
+void MainWindow::onAnimLoadRecordingRequested()
+{
+    QString lastPath = theSettings.value("lastDefPath", "").toString();
+    QString path = QFileDialog::getOpenFileName(
+        this, "Load Sprite Recording", lastPath,
+        "Sprite Recording (*.sprec);;All Files (*)");
+    if (path.isEmpty())
+        return;
+
+    SpriteRecording rec;
+    if (!rec.loadFromFile(path))
+    {
+        QMessageBox::critical(this, "Error",
+            "Failed to load sprite recording:\n" + rec.lastError());
+        return;
+    }
+    theAnimationPanel->addRecording(rec);
+    theAnimationPanel->populateCollections();
+    statusBar()->showMessage("Recording loaded: " + rec.gameName());
+}
+
+// ---------------------------------------------------------------------------
+// REMOVED: Sprite Collections tab (moved to SpriteAnimationPanel)
+// ---------------------------------------------------------------------------
+#if 0  // BEGIN REMOVED ANIMATION CODE
+void REMOVED_populateSpriteCollections()
 {
     ui->theSpriteColCombo->blockSignals(true);
     ui->theSpriteColCombo->clear();
@@ -1843,8 +1860,8 @@ void MainWindow::onLoadRecording()
         return;
     }
 
-    theSpriteRecordings.append(rec);
-    populateSpriteCollections();
+    theAnimationPanel->addRecording(rec);
+    theAnimationPanel->populateCollections();
     statusBar()->showMessage("Sprite recording loaded: " + rec.gameName());
 
     // Select the newly added recording in the combo
@@ -1937,6 +1954,7 @@ SpriteCollection MainWindow::buildCollectionFromRecording(const SpriteRecording 
 
     return col;
 }
+#endif  // PAUSE removed animation code to keep buildFromNormalized active
 
 SpriteCollection MainWindow::buildFromNormalized(const NormalizedCollection & norm)
 {
@@ -2057,6 +2075,8 @@ SpriteCollection MainWindow::buildFromNormalized(const NormalizedCollection & no
     return col;
 }
 
+// applyPersistentHidden moved to SpriteAnimationPanel
+#if 0  // RESUME removed animation code
 void MainWindow::applyPersistentHidden()
 {
     const SpriteCollection & col = ui->theSpriteColWidget->collection();
@@ -2070,6 +2090,8 @@ void MainWindow::applyPersistentHidden()
     ui->theSpriteColWidget->setHiddenSprites(indexSet);
     ui->theUnhideSpritesButton->setEnabled(!theHiddenRomOffsets.isEmpty());
 }
+
+#endif  // END REMOVED ANIMATION CODE
 
 // ---------------------------------------------------------------------------
 // Sprite Editor tab (moved to SpriteEditorPanel)
@@ -2834,11 +2856,9 @@ void MainWindow::onDeleteSpriteFromGroup()
 
 #endif  // END REMOVED EDITOR CODE
 
-// ---------------------------------------------------------------------------
-// Capture workflow
-// ---------------------------------------------------------------------------
-
-void MainWindow::onCollectionSelectionChanged(const QSet<int> & selectedIndices)
+// Capture workflow moved to SpriteAnimationPanel
+#if 0  // BEGIN REMOVED CAPTURE CODE
+void REMOVED_onCollectionSelectionChanged(const QSet<int> & selectedIndices)
 {
     int count = selectedIndices.size();
     if (count == 0)
@@ -3109,6 +3129,7 @@ void MainWindow::onUnhideSelectedOnly()
         QString("Unhid %1 sprite(s), %2 still hidden")
         .arg(count).arg(theHiddenRomOffsets.size()));
 }
+#endif  // END REMOVED CAPTURE CODE
 
 void MainWindow::onSaveGameDefinition()
 {
