@@ -30,8 +30,9 @@ public:
     void populateRanges();
     void populatePalettes();
 
-    /** Refresh the tile display from current settings. */
-    void refresh();
+    /** Refresh the tile display from current settings.
+     *  If focusOffset != 0, center the browse window on that address. */
+    void refresh(uint32_t focusOffset = 0);
 
     /** Jump to an address with specific W/H and palette (cross-tab nav). */
     void jumpToAddress(uint32_t romOffset, int widthTiles, int heightTiles,

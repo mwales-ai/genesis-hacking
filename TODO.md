@@ -32,6 +32,7 @@ Tasks for Claude:
         * [ ] Remove all #if 0 dead code blocks from MainWindow.cpp
         * [ ] Remove unused tabs from MainWindow.ui
         * [ ] MainWindow should be under 400 lines
+    * [X] When I click on a spirte and go to the Raw Viewer, there are often sprites that are addressed out of range (but the range should go to the end?)
     
 
 * [X] BlastEm updates

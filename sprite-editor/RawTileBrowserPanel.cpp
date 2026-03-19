@@ -181,7 +181,7 @@ void RawTileBrowserPanel::populatePalettes()
     thePaletteCombo->blockSignals(false);
 }
 
-void RawTileBrowserPanel::refresh()
+void RawTileBrowserPanel::refresh(uint32_t focusOffset)
 {
     if (!theDataService)
         return;
@@ -191,23 +191,42 @@ void RawTileBrowserPanel::refresh()
     if (!rom || !rom->isOpen())
         return;
 
-    uint32_t startOffset = 0x200;
-    uint32_t endOffset = (uint32_t)rom->romSize();
+    uint32_t rangeStart = 0x200;
+    uint32_t rangeEnd = (uint32_t)rom->romSize();
 
     int rangeIdx = theRangeCombo->currentIndex();
     if (def && def->isLoaded() && rangeIdx >= 0 &&
         rangeIdx < def->tileRanges().size())
     {
         const TileRange & r = def->tileRanges()[rangeIdx];
-        startOffset = r.startOffset;
-        endOffset = qMin(r.endOffset, (uint32_t)rom->romSize());
+        rangeStart = r.startOffset;
+        rangeEnd = qMin(r.endOffset, (uint32_t)rom->romSize());
     }
 
-    if (endOffset <= startOffset)
+    if (rangeEnd <= rangeStart)
         return;
 
-    uint32_t length = endOffset - startOffset;
     const uint32_t MAX_BROWSE_BYTES = 256 * 1024;
+    uint32_t startOffset = rangeStart;
+    uint32_t length = rangeEnd - rangeStart;
+
+    // If the range is bigger than our browse window and we have a focus
+    // offset, center the window on that offset
+    if (length > MAX_BROWSE_BYTES && focusOffset >= rangeStart && focusOffset < rangeEnd)
+    {
+        // Put the focus offset 1/4 into the window so there's context before it
+        uint32_t windowBefore = MAX_BROWSE_BYTES / 4;
+        if (focusOffset - rangeStart > windowBefore)
+            startOffset = focusOffset - windowBefore;
+        else
+            startOffset = rangeStart;
+
+        // Align to tile boundary
+        startOffset = (startOffset / 32) * 32;
+
+        length = qMin(MAX_BROWSE_BYTES, rangeEnd - startOffset);
+    }
+
     if (length > MAX_BROWSE_BYTES)
         length = MAX_BROWSE_BYTES;
     length = (length / 32) * 32;
@@ -335,12 +354,30 @@ void RawTileBrowserPanel::onJumpToOffset()
 
     uint32_t byteOffset = targetOffset - rangeStart;
     int tileIndex = int(byteOffset / 32);
+
+    // If target is beyond the currently loaded browse window, re-center on it
     if (tileIndex >= theBrowser->tileCount())
     {
-        theInfoLabel->setText(
-            QString("0x%1 is beyond the current range end.")
-            .arg(targetOffset, 6, 16, QChar('0')).toUpper());
-        return;
+        refresh(targetOffset);
+
+        // Recalculate tile index relative to the new browse window start
+        uint32_t newStart = theBrowser->startOffset();
+        if (targetOffset < newStart)
+        {
+            theInfoLabel->setText(
+                QString("0x%1 is beyond the browseable range.")
+                .arg(targetOffset, 6, 16, QChar('0')).toUpper());
+            return;
+        }
+        byteOffset = targetOffset - newStart;
+        tileIndex = int(byteOffset / 32);
+        if (tileIndex >= theBrowser->tileCount())
+        {
+            theInfoLabel->setText(
+                QString("0x%1 is beyond the browseable range.")
+                .arg(targetOffset, 6, 16, QChar('0')).toUpper());
+            return;
+        }
     }
 
     theBrowser->scrollToTile(tileIndex);

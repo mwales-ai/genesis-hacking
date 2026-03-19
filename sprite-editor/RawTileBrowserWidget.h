@@ -41,6 +41,9 @@ public:
     // Always returns the number of raw 8x8 tiles (theTileData.size() / 32).
     int tileCount() const { return theTileData.size() / 32; }
 
+    // ROM offset where the currently loaded tile data starts.
+    uint32_t startOffset() const { return theRomBaseOffset; }
+
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
