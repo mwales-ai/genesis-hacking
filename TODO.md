@@ -15,13 +15,23 @@ Tasks for Claude:
         * [X] 2x2 icon tool buttons + 4x4 palette grid
         * [X] toolChanged, brushSizeChanged, colorSelected signals
         * [X] deleteRequested signal for sprite removal
-    * [ ] Sprite Editor
-        * [ ] Since the editor can work on a sprite group, we will need to have a well defined structure as part of API for class (that is shared with other classes and / or applications) that specifies a collection of sprites, the different types of data (ROM, embedded), palette data (ROM, embedded), relative positions when rendered on screen
-        * [ ] Slot to change editor to new sprite group, ask to commit changes to ROM if data has been changed
-        * [ ] Signal to change ROM data based on user edits committed
-        * [ ] Slot for zoom level
-        * [ ] Slot for palette update
-    * [ ] When all of that is complete, make an attempt at updating this todo list yourself with the SpriteViewer, Screen Captures, and Animations tab plan
+    * [X] Sprite Editor → SpriteEditorPanel (Phase 3 complete)
+        * [X] TileBlockGroup shared structure (GenesisTypes.h)
+        * [X] editNormalizedCollection() / editLegacySprite() entry points
+        * [X] Save tiles/palette signals, colorEditRequested signal
+        * [X] Zoom, grid, tool panel all self-contained
+    * [ ] Sprite Animations → SpriteAnimationPanel (Phase 4)
+        * [ ] Extract populateSpriteCollections, recording loading, frame navigation
+        * [ ] Extract capture workflow (capture group, hide/unhide)
+        * [ ] Wire sprite click to open SpriteEditorPanel
+    * [ ] Sprite Viewer → SpriteViewerPanel (Phase 5)
+        * [ ] Extract collection grid, detail view, reorder, rename, delete
+        * [ ] Wire edit button to SpriteEditorPanel
+        * [ ] Wire double-click to RawTileBrowserPanel
+    * [ ] Final cleanup (Phase 6)
+        * [ ] Remove all #if 0 dead code blocks from MainWindow.cpp
+        * [ ] Remove unused tabs from MainWindow.ui
+        * [ ] MainWindow should be under 400 lines
     
 
 * [X] BlastEm updates
