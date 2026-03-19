@@ -30,7 +30,8 @@ SOURCES += \
     RomDataService.cpp \
     PaintToolPanel.cpp \
     ScreenCapturePanel.cpp \
-    RawTileBrowserPanel.cpp
+    RawTileBrowserPanel.cpp \
+    SpriteEditorPanel.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -55,7 +56,8 @@ HEADERS += \
     RomDataService.h \
     PaintToolPanel.h \
     ScreenCapturePanel.h \
-    RawTileBrowserPanel.h
+    RawTileBrowserPanel.h \
+    SpriteEditorPanel.h
 
 FORMS += \
     MainWindow.ui \

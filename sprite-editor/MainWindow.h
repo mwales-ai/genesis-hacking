@@ -21,6 +21,7 @@
 #include "SpritePixelEditor.h"
 #include "ScreenCapturePanel.h"
 #include "RawTileBrowserPanel.h"
+#include "SpriteEditorPanel.h"
 #include "RomDataService.h"
 
 #define AppDebug if(0) std::cout
@@ -69,21 +70,10 @@ private slots:
     void onAnimationFrameChanged(int frameIndex);
     void onLoadRecording();
 
-    // Sprite Editor tab
-    void onCollectionSpriteClicked(int spriteIndex);
-    void onEditorGroupPaletteLineChanged(int paletteLine);
-    void onEditorPaletteSelected(int index);
-    void onEditorPaletteEditRequested(int index);
-    void onEditorSave();
-    void onEditorSavePalette();
-    void onEditorClose();
-    void onEditorZoomChanged(int value);
-    void onEditorGridToggled(bool checked);
-    void onEditorToolChanged(int toolId);
-    void onBrushSizeChanged(int size);
-    void onColorPicked(int paletteIndex);
-    void onGroupSpriteSelected(int spriteIndex);
-    void onDeleteSpriteFromGroup();
+    // Sprite Editor (delegated to SpriteEditorPanel)
+    void onEditorColorEditRequested(int paletteIndex, const QColor & current,
+                                     bool hasRomOffset, uint32_t romOffset, int refCount);
+    void onEditorSpriteDeleted(int collectionIndex);
 
     // Capture workflow
     void onCaptureSpriteGroup();
@@ -166,11 +156,7 @@ private:
     // .sprec recordings loaded separately from game definition
     QVector<SpriteRecording> theSpriteRecordings;
 
-    // Editor state: which collection + sprite is being edited
-    int                   theEditCollectionIndex;
-    int                   theEditSpriteIndex;
-    int                   theEditorActivePaletteLine;
-    QMap<int, QString>    theEditPalLineToId;  // palette line -> palette pool ID for current group
+    // Editor state moved to SpriteEditorPanel
 
     // Hidden sprites by ROM offset (persists across frames)
     QSet<QString>         theHiddenRomOffsets;
@@ -181,22 +167,12 @@ private:
     // Extracted panels
     ScreenCapturePanel    *theScreenCapPanel;
     RawTileBrowserPanel   *theRawBrowserPanel;
+    SpriteEditorPanel     *theEditorPanel;
     RomDataService         theDataService;
 
-    // Editor tool selection (built programmatically)
-    QButtonGroup          *theToolButtonGroup;
-    QPushButton           *theToolPencilButton;
-    QPushButton           *theToolBucketButton;
-    QPushButton           *theToolEyedropperButton;
-    QPushButton           *theToolBrushButton;
-    QLabel                *theBrushSizeLabel;
-    QSpinBox              *theBrushSizeSpin;
-    PaletteGridWidget     *thePaletteGrid;
-    PaletteWidget         *theEditorPaletteHidden;  // hidden, used for color data/editing
-    int                    theSelectedGroupSpriteIndex;  // middle-click selected sprite in editor
-    QPushButton           *theDeleteSpriteButton;
+    // Editor tool members moved to SpriteEditorPanel
 
-    void setupEditorToolPanel();
+    // setupEditorToolPanel moved to SpriteEditorPanel
     bool promptSaveAsIfOriginal();
 };
 

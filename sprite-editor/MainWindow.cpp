@@ -34,13 +34,10 @@ MainWindow::MainWindow(QWidget *parent)
     , theAnimationCount(0)
     , theActiveAnimIndex(-1)
     , theActiveRecIndex(-1)
-    , theEditCollectionIndex(-1)
-    , theEditSpriteIndex(-1)
-    , theEditorActivePaletteLine(0)
+    // theEditCollectionIndex, theEditSpriteIndex, theEditorActivePaletteLine moved
     , theCaptureCounter(0)
 {
     ui->setupUi(this);
-    setupEditorToolPanel();
 
     // Initialize data service
     theDataService.setRom(&theRom);
@@ -61,6 +58,21 @@ MainWindow::MainWindow(QWidget *parent)
         ui->theTabWidget->addTab(theRawBrowserPanel, "Raw Tile Browser");
     }
 
+    // Replace the Sprite Editor tab with the new panel
+    theEditorPanel = new SpriteEditorPanel();
+    theEditorPanel->setRomFile(&theRom);
+    theEditorPanel->setGameDefinition(&theDef);
+    int editorTabIdx = ui->theTabWidget->indexOf(ui->tabSpriteEditor);
+    if (editorTabIdx >= 0)
+    {
+        ui->theTabWidget->removeTab(editorTabIdx);
+        ui->theTabWidget->insertTab(editorTabIdx, theEditorPanel, "Sprite Editor");
+    }
+    else
+    {
+        ui->theTabWidget->addTab(theEditorPanel, "Sprite Editor");
+    }
+
     // Replace the Screen Captures tab with the new panel
     theScreenCapPanel = new ScreenCapturePanel();
     int capTabIdx = ui->theTabWidget->indexOf(ui->tabScreenCaptures);
@@ -78,91 +90,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupConnections();
     loadSettings();
     updateWindowTitle();
-}
-
-void MainWindow::setupEditorToolPanel()
-{
-    // Build the right-side tool panel inside theEditorToolPanel placeholder
-    QVBoxLayout *toolLayout = new QVBoxLayout(ui->theEditorToolPanel);
-    toolLayout->setContentsMargins(4, 4, 4, 4);
-    toolLayout->setSpacing(4);
-
-    // 2x2 grid of icon tool buttons
-    QGridLayout *toolGrid = new QGridLayout();
-    toolGrid->setSpacing(2);
-
-    int btnSize = 36;
-    int iconSize = 28;
-
-    theToolPencilButton = new QPushButton();
-    theToolPencilButton->setIcon(QPixmap(":/painticons/icons/pencil.png"));
-    theToolPencilButton->setIconSize(QSize(iconSize, iconSize));
-    theToolPencilButton->setFixedSize(btnSize, btnSize);
-    theToolPencilButton->setCheckable(true);
-    theToolPencilButton->setChecked(true);
-    theToolPencilButton->setToolTip("Pencil — draw one pixel (P)");
-    toolGrid->addWidget(theToolPencilButton, 0, 0);
-
-    theToolBucketButton = new QPushButton();
-    theToolBucketButton->setIcon(QPixmap(":/painticons/icons/fill.png"));
-    theToolBucketButton->setIconSize(QSize(iconSize, iconSize));
-    theToolBucketButton->setFixedSize(btnSize, btnSize);
-    theToolBucketButton->setCheckable(true);
-    theToolBucketButton->setToolTip("Fill — flood fill same color (F)");
-    toolGrid->addWidget(theToolBucketButton, 0, 1);
-
-    theToolEyedropperButton = new QPushButton();
-    theToolEyedropperButton->setIcon(QPixmap(":/painticons/icons/dropper.png"));
-    theToolEyedropperButton->setIconSize(QSize(iconSize, iconSize));
-    theToolEyedropperButton->setFixedSize(btnSize, btnSize);
-    theToolEyedropperButton->setCheckable(true);
-    theToolEyedropperButton->setToolTip("Eyedropper — pick color (E)");
-    toolGrid->addWidget(theToolEyedropperButton, 1, 0);
-
-    theToolBrushButton = new QPushButton();
-    theToolBrushButton->setIcon(QPixmap(":/painticons/icons/brush.png"));
-    theToolBrushButton->setIconSize(QSize(iconSize, iconSize));
-    theToolBrushButton->setFixedSize(btnSize, btnSize);
-    theToolBrushButton->setCheckable(true);
-    theToolBrushButton->setToolTip("Brush — adjustable size (B)");
-    toolGrid->addWidget(theToolBrushButton, 1, 1);
-
-    toolLayout->addLayout(toolGrid);
-
-    // Brush size (shown/hidden based on active tool)
-    QHBoxLayout *brushRow = new QHBoxLayout();
-    theBrushSizeLabel = new QLabel("Size:");
-    theBrushSizeSpin = new QSpinBox();
-    theBrushSizeSpin->setMinimum(1);
-    theBrushSizeSpin->setMaximum(16);
-    theBrushSizeSpin->setValue(3);
-    theBrushSizeSpin->setToolTip("Brush size in pixels");
-    brushRow->addWidget(theBrushSizeLabel);
-    brushRow->addWidget(theBrushSizeSpin);
-    toolLayout->addLayout(brushRow);
-
-    // Hide brush size by default (pencil is active)
-    theBrushSizeLabel->setVisible(false);
-    theBrushSizeSpin->setVisible(false);
-
-    // 4x4 palette grid
-    thePaletteGrid = new PaletteGridWidget();
-    toolLayout->addWidget(thePaletteGrid);
-
-    // Hidden PaletteWidget for color data management (editing, CRAM encoding)
-    theEditorPaletteHidden = new PaletteWidget();
-    theEditorPaletteHidden->setVisible(false);
-
-    // Delete sprite from group button
-    theDeleteSpriteButton = new QPushButton("Delete Sprite");
-    theDeleteSpriteButton->setToolTip("Remove the middle-clicked sprite from this group");
-    theDeleteSpriteButton->setEnabled(false);
-    toolLayout->addWidget(theDeleteSpriteButton);
-
-    // Stretch at bottom
-    toolLayout->addStretch(1);
-
-    theSelectedGroupSpriteIndex = -1;
 }
 
 MainWindow::~MainWindow()
@@ -297,8 +224,9 @@ void MainWindow::setupConnections()
             this,                     SLOT(onSpriteCollectionSelected(int)));
     connect(ui->theSpriteColZoomSpin, SIGNAL(valueChanged(int)),
             this,                     SLOT(onSpriteCollectionZoomChanged(int)));
-    connect(ui->theSpriteColWidget,   &SpriteCollectionWidget::spriteClicked,
-            this,                     &MainWindow::onCollectionSpriteClicked);
+    // TODO Phase 4: spriteClicked will be handled by SpriteAnimationPanel
+    // For now, just ignore sprite clicks in the collection widget
+    // connect(ui->theSpriteColWidget, &SpriteCollectionWidget::spriteClicked, ...);
     connect(ui->theSpriteColWidget,   &SpriteCollectionWidget::selectionChanged,
             this,                     &MainWindow::onCollectionSelectionChanged);
     connect(ui->theColFrameSpin,      SIGNAL(valueChanged(int)),
@@ -328,45 +256,17 @@ void MainWindow::setupConnections()
     connect(ui->theSpriteDetail,        &TileCanvasWidget::doubleClicked,
             this,                       &MainWindow::onDetailDoubleClicked);
 
-    // Sprite Editor tab
-    connect(ui->theSpritePixelEditor,      &SpritePixelEditor::groupPaletteLineChanged,
-            this,                          &MainWindow::onEditorGroupPaletteLineChanged);
-    connect(theEditorPaletteHidden,          &PaletteWidget::colorSelected,
-            this,                          &MainWindow::onEditorPaletteSelected);
-    connect(theEditorPaletteHidden,          &PaletteWidget::colorEditRequested,
-            this,                          &MainWindow::onEditorPaletteEditRequested);
-    connect(ui->theEditorSaveButton,       &QPushButton::clicked,
-            this,                          &MainWindow::onEditorSave);
-    connect(ui->theEditorSavePaletteButton, &QPushButton::clicked,
-            this,                          &MainWindow::onEditorSavePalette);
-    connect(ui->theEditorCloseButton,      &QPushButton::clicked,
-            this,                          &MainWindow::onEditorClose);
-    connect(ui->theEditorZoomSpin,  SIGNAL(valueChanged(int)),
-            this,                   SLOT(onEditorZoomChanged(int)));
-    connect(ui->theEditorGridCheck, &QCheckBox::toggled,
-            this,                   &MainWindow::onEditorGridToggled);
-
-    // Editor tool buttons (programmatic — created in setupEditorToolPanel)
-    theToolButtonGroup = new QButtonGroup(this);
-    theToolButtonGroup->setExclusive(true);
-    theToolButtonGroup->addButton(theToolPencilButton, TOOL_PENCIL);
-    theToolButtonGroup->addButton(theToolBucketButton, TOOL_BUCKET);
-    theToolButtonGroup->addButton(theToolEyedropperButton, TOOL_EYEDROPPER);
-    theToolButtonGroup->addButton(theToolBrushButton, TOOL_BRUSH);
-    connect(theToolButtonGroup, SIGNAL(idClicked(int)),
-            this,               SLOT(onEditorToolChanged(int)));
-    connect(theBrushSizeSpin, SIGNAL(valueChanged(int)),
-            this,              SLOT(onBrushSizeChanged(int)));
-    connect(ui->theSpritePixelEditor, &SpritePixelEditor::colorPicked,
-            this,                     &MainWindow::onColorPicked);
-    connect(ui->theSpritePixelEditor, &SpritePixelEditor::groupSpriteSelected,
-            this,                     &MainWindow::onGroupSpriteSelected);
-    connect(theDeleteSpriteButton,    &QPushButton::clicked,
-            this,                     &MainWindow::onDeleteSpriteFromGroup);
-
-    // 4x4 palette grid
-    connect(thePaletteGrid, &PaletteGridWidget::colorSelected,
-            this,           &MainWindow::onEditorPaletteSelected);
+    // Sprite Editor panel (self-contained)
+    theEditorPanel->setRomFile(&theRom);
+    theEditorPanel->setGameDefinition(&theDef);
+    connect(theEditorPanel, &SpriteEditorPanel::statusMessage,
+            this,           [this](const QString & msg){ statusBar()->showMessage(msg); });
+    connect(theEditorPanel, &SpriteEditorPanel::editorClosed,
+            this,           [this](){ ui->theTabWidget->setCurrentIndex(0); });
+    connect(theEditorPanel, &SpriteEditorPanel::colorEditRequested,
+            this,           &MainWindow::onEditorColorEditRequested);
+    connect(theEditorPanel, &SpriteEditorPanel::spriteDeletedFromGroup,
+            this,           &MainWindow::onEditorSpriteDeleted);
 }
 
 // ---------------------------------------------------------------------------
@@ -2172,10 +2072,10 @@ void MainWindow::applyPersistentHidden()
 }
 
 // ---------------------------------------------------------------------------
-// Sprite Editor tab
+// Sprite Editor tab (moved to SpriteEditorPanel)
 // ---------------------------------------------------------------------------
-
-void MainWindow::onCollectionSpriteClicked(int spriteIndex)
+#if 0  // BEGIN REMOVED EDITOR CODE
+void REMOVED_onCollectionSpriteClicked(int spriteIndex)
 {
     int comboIndex = ui->theSpriteColCombo->currentIndex();
     if (comboIndex < 0)
@@ -2932,6 +2832,8 @@ void MainWindow::onDeleteSpriteFromGroup()
     statusBar()->showMessage("Sprite removed from group");
 }
 
+#endif  // END REMOVED EDITOR CODE
+
 // ---------------------------------------------------------------------------
 // Capture workflow
 // ---------------------------------------------------------------------------
@@ -3305,60 +3207,7 @@ void MainWindow::onEditFromViewer()
     if (colIndex >= normCols.size())
         return;
 
-    SpriteCollection col = buildFromNormalized(normCols[colIndex]);
-
-    theEditCollectionIndex = colIndex;
-    theEditSpriteIndex = 0;
-
-    // Build EditorSprite list
-    QVector<EditorSprite> edSprites;
-    for (int i = 0; i < col.sprites.size(); ++i)
-    {
-        const CollectionSprite & cs = col.sprites[i];
-        EditorSprite es;
-        es.widthTiles = cs.widthTiles;
-        es.heightTiles = cs.heightTiles;
-        es.x = cs.x;
-        es.y = cs.y;
-        es.hFlip = cs.hFlip;
-        es.vFlip = cs.vFlip;
-        es.paletteLine = cs.paletteLine;
-        es.romOffset = cs.romOffset;
-
-        if (cs.source == "embedded" && !cs.tileData.isEmpty())
-            es.tileData = cs.tileData;
-        else if (!cs.romOffset.isEmpty() && theRom.isOpen())
-        {
-            bool ok = false;
-            QString offsetStr = cs.romOffset;
-            if (offsetStr.startsWith("0x") || offsetStr.startsWith("0X"))
-                offsetStr = offsetStr.mid(2);
-            uint32_t offset = offsetStr.toUInt(&ok, 16);
-            if (ok)
-                es.tileData = theRom.readBytes(offset,
-                    cs.widthTiles * cs.heightTiles * 32);
-        }
-        if (es.tileData.isEmpty())
-            es.tileData = QByteArray(cs.widthTiles * cs.heightTiles * 32, '\0');
-
-        edSprites.append(es);
-    }
-
-    GenesisPalette pals[4];
-    for (int i = 0; i < 4; ++i)
-    {
-        if (i < col.palettes.size() && !col.palettes[i].cramValues.isEmpty())
-            pals[i] = TileDecoder::decodePaletteFromCram(col.palettes[i].cramValues);
-        else
-            pals[i] = TileDecoder::greyPalette();
-    }
-
-    ui->theSpritePixelEditor->loadSpriteGroup(edSprites, pals);
-    ui->theSpritePixelEditor->setZoom(ui->theEditorZoomSpin->value());
-    ui->theSpritePixelEditor->setShowGrid(ui->theEditorGridCheck->isChecked());
-
-    theEditorActivePaletteLine = 0;
-    theEditPalLineToId.clear();
+    // Build palette line -> ID mapping
     const NormalizedCollection & norm = normCols[colIndex];
     QMap<QString, int> palLineMap;
     for (const auto & ns : norm.sprites)
@@ -3366,31 +3215,34 @@ void MainWindow::onEditFromViewer()
         if (!palLineMap.contains(ns.paletteId) && palLineMap.size() < 4)
             palLineMap.insert(ns.paletteId, palLineMap.size());
     }
+    QMap<int, QString> palLineToId;
     for (auto it = palLineMap.begin(); it != palLineMap.end(); ++it)
-        theEditPalLineToId[it.value()] = it.key();
+        palLineToId[it.value()] = it.key();
 
-    thePaletteGrid->setPalette(pals[0]);
-    theEditorPaletteHidden->setPalette(pals[0]);
-
-    bool canSave = false;
-    for (const EditorSprite & es : edSprites)
-        if (!es.romOffset.isEmpty()) { canSave = true; break; }
-    ui->theEditorSaveButton->setEnabled(canSave && theRom.isOpen());
-
-    bool canSavePal = false;
-    QString firstPalId = theEditPalLineToId.value(0);
-    if (!firstPalId.isEmpty() && theDef.palettePool().contains(firstPalId))
-        canSavePal = theDef.palettePool()[firstPalId].romOffset != 0;
-    ui->theEditorSavePaletteButton->setEnabled(canSavePal && theRom.isOpen());
-
-    ui->theEditorInfoLabel->setText(
-        QString("Group: %1 | %2 sprites | Click to edit")
-        .arg(col.name).arg(col.sprites.size()));
-
-    ui->theTabWidget->setCurrentWidget(ui->tabSpriteEditor);
+    theEditorPanel->editNormalizedCollection(colIndex, palLineToId);
+    ui->theTabWidget->setCurrentWidget(theEditorPanel);
     statusBar()->showMessage(
-        QString("Editing sprite group \"%1\" (%2 sprites)")
-        .arg(col.name).arg(col.sprites.size()));
+        QString("Editing sprite group \"%1\"").arg(norm.name));
+}
+
+void MainWindow::onEditorColorEditRequested(int paletteIndex, const QColor & current,
+                                              bool hasRomOffset, uint32_t romOffset, int refCount)
+{
+    Q_UNUSED(hasRomOffset);
+    Q_UNUSED(romOffset);
+    Q_UNUSED(refCount);
+
+    GenesisColorDialog dlg(current, paletteIndex, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    theEditorPanel->applyColorEdit(paletteIndex, dlg.selectedColor(), dlg.selectedCramWord());
+}
+
+void MainWindow::onEditorSpriteDeleted(int collectionIndex)
+{
+    Q_UNUSED(collectionIndex);
+    populateCollectionGrid();
 }
 
 void MainWindow::onViewerSpriteDoubleClicked(int groupIndex, int spriteIndex, int frameIndex)
