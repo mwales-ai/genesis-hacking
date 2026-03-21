@@ -451,7 +451,7 @@ bool GameDefinition::parseJson(const QByteArray & jsonData)
         TileRange defaultRange;
         defaultRange.label               = "Full ROM (0x200 - end)";
         defaultRange.startOffset         = 0x200;
-        defaultRange.endOffset           = 0x80000;
+        defaultRange.endOffset           = 0x400000;  // 4MB max Genesis ROM
         defaultRange.defaultPaletteGroup = -1;
         theTileRanges.append(defaultRange);
     }

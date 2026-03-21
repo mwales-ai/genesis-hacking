@@ -191,8 +191,9 @@ void RawTileBrowserPanel::refresh(uint32_t focusOffset)
     if (!rom || !rom->isOpen())
         return;
 
+    uint32_t romSize = (uint32_t)rom->romSize();
     uint32_t rangeStart = 0x200;
-    uint32_t rangeEnd = (uint32_t)rom->romSize();
+    uint32_t rangeEnd = romSize;
 
     int rangeIdx = theRangeCombo->currentIndex();
     if (def && def->isLoaded() && rangeIdx >= 0 &&
@@ -200,7 +201,11 @@ void RawTileBrowserPanel::refresh(uint32_t focusOffset)
     {
         const TileRange & r = def->tileRanges()[rangeIdx];
         rangeStart = r.startOffset;
-        rangeEnd = qMin(r.endOffset, (uint32_t)rom->romSize());
+        // Use actual ROM size if the range end exceeds it or seems like a
+        // placeholder default (0x80000 is the old hardcoded default)
+        rangeEnd = qMin(r.endOffset, romSize);
+        if (rangeEnd < romSize && r.endOffset <= 0x80000)
+            rangeEnd = romSize;  // Override stale default
     }
 
     if (rangeEnd <= rangeStart)
