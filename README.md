@@ -46,7 +46,65 @@ Enter the debugger during emulation by pressing backtick. Run `help` to see all 
 
 ### bn-genesis (`../bn-genesis/`)
 
-Binary Ninja plugin for Genesis ROM analysis. Parses ROM headers, maps memory segments, decodes VDP register writes, and provides M68K assembly patching.
+Binary Ninja plugin for Genesis ROM analysis. Provides two components:
+
+**Python plugin** (master branch) — ROM loader, VDP analysis, and game definition support:
+- Parses ROM headers, maps memory segments (ROM, RAM, Z80, VDP, I/O)
+- `genesis: load game definition` — labels all sprites and palettes at their ROM addresses with proper struct types
+- `genesis: comment VDP inst` — annotates VDP register writes in disassembly
+- `genesis: assemble and patch` — compile M68K assembly and patch into ROM
+- `genesis: fixup ROM checksum` — recalculate and write ROM checksum
+
+**C++ sprite viewer** (sprite-viewer-cpp branch) — native sidebar widget:
+- Visual tile rendering at cursor address using Genesis 4bpp format
+- Configurable sprite grid (W x H tiles) with column-major ordering
+- Palette loading from game definition JSON or directly from ROM
+- Adjustable zoom (1-16x)
+
+#### Installing the Python Plugin
+
+```bash
+# Symlink the plugin directory into Binary Ninja's plugin folder
+ln -s /path/to/bn-genesis ~/.binaryninja/plugins/genesis
+
+# Dependencies
+sudo apt install gcc-m68k-linux-gnu    # for assemble and patch
+```
+
+The plugin requires the `binaryninja-m68k` processor module for M68K disassembly.
+
+#### Building the C++ Sprite Viewer
+
+The C++ sidebar widget requires the Binary Ninja API headers and Qt6.
+
+```bash
+# Clone the Binary Ninja API (if not already done)
+git clone https://github.com/Vector35/binaryninja-api.git bn-api
+cd bn-api && git submodule update --init vendor/fmt && cd ..
+
+# Checkout the C++ branch
+cd bn-genesis
+git checkout sprite-viewer-cpp
+
+# Build
+cd cpp_ui
+mkdir -p build && cd build
+cmake .. \
+    -DBN_API_PATH=/path/to/bn-api \
+    -DBN_INSTALL_DIR=/path/to/binaryninja
+make
+
+# Install — copy the built library to Binary Ninja's plugin directory
+cp libgenesis_sprite_viewer.so ~/.binaryninja/plugins/
+```
+
+**Build requirements:**
+- Qt6 development libraries (`qt6-base-dev`)
+- CMake 3.13+
+- Binary Ninja API headers (cloned from GitHub)
+- Binary Ninja installation (for linking against `libbinaryninjacore.so` and `libbinaryninjaui.so`)
+
+After installation, the "Sprite Viewer" sidebar appears in Binary Ninja when viewing a Genesis ROM.
 
 ## ROM Analysis
 
@@ -70,13 +128,36 @@ Target ROM: Michael Jackson's Moonwalker (USA, JUE, checksum 0x38B2).
 ## Project Structure
 
 ```
-genesis-hacking/
-  sprite-editor/       Qt6/C++ sprite editor
-    examples/          Game definition JSON files
-    docs/              User guide and screenshots
-  docs/                Genesis hardware documentation
-  tools/               BlastEm trace analysis scripts
-  roms/                ROM files (gitignored)
+genesis-hacking/           Main repository
+  sprite-editor/           Qt6/C++ sprite editor application
+    SpriteViewerPanel.*    Collection browser with drag-reorder
+    RawTileBrowserPanel.*  ROM tile data exploration
+    ScreenCapturePanel.*   BlastEm screen capture viewer/editor
+    SpriteAnimationPanel.* Recording playback and capture workflow
+    SpriteEditorPanel.*    Pixel-level painting editor
+    PaintToolPanel.*       Reusable 2x2 tool buttons + 4x4 palette
+    RomDataService.*       Data resolution bridge (definition -> display)
+    GenesisTypes.h         Shared TileBlock/TileBlockGroup types
+    MainWindow.*           Thin shell (~680 lines) wiring panels together
+    examples/              Game definition JSON files + recordings
+    docs/                  User guide and screenshots
+  docs/                    Genesis hardware documentation
+  tools/                   BlastEm trace analysis scripts
+  roms/                    ROM files (gitignored)
+
+bn-genesis/                Binary Ninja plugin (separate repo)
+  genesis/                 Python plugin modules
+    loader.py              ROM loader, memory mapping, header parsing
+    game_definition.py     Label sprites/palettes from JSON definitions
+    vdp_analysis.py        VDP register write annotations
+    assemble.py            M68K assembly and ROM patching
+    checksum.py            ROM checksum calculator
+  cpp_ui/                  C++ sprite viewer sidebar widget
+    GenesisSpriteViewer.*  Native Qt6 sidebar for tile visualization
+
+blastem/                   Forked Genesis emulator (separate repo)
+  debug.c                  Debugger: spritecap, spriterecord, screencap
+  vdp.c                    VDP with DMA history tracking
 ```
 
 ## Documentation
