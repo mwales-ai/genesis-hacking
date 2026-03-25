@@ -59,9 +59,9 @@ Tasks for Claude:
     * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet)
     * [X] Write a small document about how we can get code flow info from blastem into binary ninja
     * [ ] May not neccessarily need to be part of the plugin itself, but need a way to import the jump and branch targets file we are going to build from blastem
-    * [ ] Can we have the plugin create a bunch of structures, like sprite_1x1, sprite_2x2, etc so we can label memory addresses where the sprite data is
-    * [ ] Want a way to import the sprites from the JSON file we are using with the sprite editor, and create instances of the structures at the proper ROM addresses, names from the names in the JSON file
-    * [ ] Move (or create) the instructions on how to build, install, and use the plugin in the bn-genesis repo, not just the genesis-hacking repo.  Update documentation in the genesis hacking repo to point user to the bn-genesis plugin if they want to try it
+    * [X] Can we have the plugin create a bunch of structures, like sprite_1x1, sprite_2x2, etc so we can label memory addresses where the sprite data is (done — game_definition.py creates SpriteTiles_WxH structs)
+    * [X] Want a way to import the sprites from the JSON file we are using with the sprite editor, and create instances of the structures at the proper ROM addresses, names from the names in the JSON file (done — "genesis: load game definition" command)
+    * [X] Move (or create) the instructions on how to build, install, and use the plugin in the bn-genesis repo, not just the genesis-hacking repo.  Update documentation in the genesis hacking repo to point user to the bn-genesis plugin if they want to try it
 
 # Completed Tasks
 

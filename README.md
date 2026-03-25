@@ -106,6 +106,8 @@ cp libgenesis_sprite_viewer.so ~/.binaryninja/plugins/
 
 After installation, the "Sprite Viewer" sidebar appears in Binary Ninja when viewing a Genesis ROM.
 
+See the [bn-genesis README](https://github.com/mwales-ai/bn-genesis) for full documentation.
+
 ## ROM Analysis
 
 ### Aladdin (`sprite-editor/examples/aladdin_sprite_def.json`)
