@@ -11,6 +11,7 @@ Tasks for Claude:
         * [X] tileSelected signal for click events
         * [X] exportPngRequested signal (host provides file dialog)
         * [ ] Right click context menu (Export PNG, Copy hex) — future
+        * [ ] When we "Go" to a sprite, highlight it the same we it looks when we mouse click it
     * [X] Sprite Editing Tools → PaintToolPanel (Phase 0 complete)
         * [X] 2x2 icon tool buttons + 4x4 palette grid
         * [X] toolChanged, brushSizeChanged, colorSelected signals
@@ -38,6 +39,8 @@ Tasks for Claude:
 * [X] BlastEm updates
     * [X] If I don't specify a file extenstion, put a default extension of .sprec on sprite recordings
     * [X] Do a code review of the sprite recording logic, particularly if a sprite isn't DMA-ed from ROM, have we correctly copied the sprite and palette data from VRAM into the sprec file
+    * [ ] Want a way to record instruction jump and branch targets to a file, so that we can import into binary ninja and know which parts of the ROM are definitely code
+
 
 * [X] Sprite Editor
     * [X] Sprite Viewer
@@ -55,6 +58,10 @@ Tasks for Claude:
     * [X] Label each palette in the ROM with an appropriate structure
     * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet)
     * [X] Write a small document about how we can get code flow info from blastem into binary ninja
+    * [ ] May not neccessarily need to be part of the plugin itself, but need a way to import the jump and branch targets file we are going to build from blastem
+    * [ ] Can we have the plugin create a bunch of structures, like sprite_1x1, sprite_2x2, etc so we can label memory addresses where the sprite data is
+    * [ ] Want a way to import the sprites from the JSON file we are using with the sprite editor, and create instances of the structures at the proper ROM addresses, names from the names in the JSON file
+    * [ ] Move (or create) the instructions on how to build, install, and use the plugin in the bn-genesis repo, not just the genesis-hacking repo.  Update documentation in the genesis hacking repo to point user to the bn-genesis plugin if they want to try it
 
 # Completed Tasks
 
