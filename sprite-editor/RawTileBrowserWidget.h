@@ -38,6 +38,10 @@ public:
     // tileIndex is always a raw tile index (byte_offset / 32).
     void scrollToTile(int tileIndex);
 
+    // Programmatically select and highlight the item containing tileIndex.
+    // Also scrolls into view and emits tileClicked.
+    void selectTile(int tileIndex);
+
     // Always returns the number of raw 8x8 tiles (theTileData.size() / 32).
     int tileCount() const { return theTileData.size() / 32; }
 

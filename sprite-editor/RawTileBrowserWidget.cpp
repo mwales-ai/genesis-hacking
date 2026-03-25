@@ -282,3 +282,23 @@ void RawTileBrowserWidget::scrollToTile(int tileIndex)
         w = w->parentWidget();
     }
 }
+
+void RawTileBrowserWidget::selectTile(int tileIndex)
+{
+    if (theCellW <= 0 || theCellH <= 0 || theTilesPerRow <= 0) return;
+
+    int tilesPerSprite = theSpriteW * theSpriteH;
+    int adjustedTile   = tileIndex - theAssemblySkip;
+    if (adjustedTile < 0) adjustedTile = 0;
+    int itemIndex      = adjustedTile / tilesPerSprite;
+
+    if (itemIndex < 0 || itemIndex >= theDecodedTiles.size()) return;
+
+    theSelectedItem = itemIndex;
+    update();
+    scrollToTile(tileIndex);
+
+    // Emit the same signal as a mouse click
+    uint32_t romOffset = theRomBaseOffset + (uint32_t)tileIndex * 32;
+    emit tileClicked(tileIndex, romOffset);
+}

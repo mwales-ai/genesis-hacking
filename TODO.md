@@ -11,7 +11,7 @@ Tasks for Claude:
         * [X] tileSelected signal for click events
         * [X] exportPngRequested signal (host provides file dialog)
         * [ ] Right click context menu (Export PNG, Copy hex) — future
-        * [ ] When we "Go" to a sprite, highlight it the same we it looks when we mouse click it
+        * [X] When we "Go" to a sprite, highlight it the same we it looks when we mouse click it
     * [X] Sprite Editing Tools → PaintToolPanel (Phase 0 complete)
         * [X] 2x2 icon tool buttons + 4x4 palette grid
         * [X] toolChanged, brushSizeChanged, colorSelected signals

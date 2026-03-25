@@ -385,7 +385,7 @@ void RawTileBrowserPanel::onJumpToOffset()
         }
     }
 
-    theBrowser->scrollToTile(tileIndex);
+    theBrowser->selectTile(tileIndex);
     uint32_t actualOffset = rangeStart + uint32_t(tileIndex) * 32;
     theInfoLabel->setText(
         QString("Jumped to tile %1  |  ROM offset: 0x%2")
@@ -434,7 +434,7 @@ void RawTileBrowserPanel::onSetAssemblyStart()
     }
 
     theBrowser->setAssemblyStart(tileIndex);
-    theBrowser->scrollToTile(tileIndex);
+    theBrowser->selectTile(tileIndex);
     uint32_t actualOffset = rangeStart + uint32_t(tileIndex) * 32;
     theInfoLabel->setText(
         QString("Assembly starts at tile %1  |  ROM offset: 0x%2")
