@@ -10,7 +10,7 @@ Tasks for Claude:
     * [X] Sprite Editor: in the Sprite Viewer info panel, show VRAM addresses for each sprite in the group
     * [X] Sprite Editor: in the Sprite Animations tab, show VRAM and CRAM addresses when hovering or selecting sprites
     * [X] Game definition JSON: preserve VRAM address when capturing sprite groups from recordings (NormalizedSprite now has vramAddr field)
-    * [ ] Consider adding a "Copy VRAM address" context menu action so user can quickly paste into Binary Ninja search
+    * [X] Consider adding a "Copy VRAM address" context menu action so user can quickly paste into Binary Ninja search (info labels are now selectable + Raw Browser has right-click copy)
 
 * [ ] Sprite Editor Refactoring (remaining items)
     * [X] Right click context menu on Raw Tile Browser (Export PNG, Copy hex, Copy ROM offset)

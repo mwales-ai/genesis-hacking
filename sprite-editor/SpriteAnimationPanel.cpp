@@ -63,6 +63,7 @@ void SpriteAnimationPanel::buildUi()
     QHBoxLayout *selRow = new QHBoxLayout();
 
     theSelectionLabel = new QLabel("No sprites selected");
+    theSelectionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     selRow->addWidget(theSelectionLabel);
     selRow->addStretch(1);
 

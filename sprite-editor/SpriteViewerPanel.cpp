@@ -91,6 +91,7 @@ void SpriteViewerPanel::buildUi()
     theInfoLabel = new QLabel("No collection selected");
     theInfoLabel->setWordWrap(true);
     theInfoLabel->setFrameShape(QFrame::StyledPanel);
+    theInfoLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     rightLayout->addWidget(theInfoLabel);
 
     theSplitter->addWidget(rightPanel);

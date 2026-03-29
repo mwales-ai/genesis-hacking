@@ -26,9 +26,10 @@ void SpriteEditorPanel::buildUi()
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(4, 4, 4, 4);
 
-    // Info label
+    // Info label — selectable text so user can copy addresses
     theInfoLabel = new QLabel("No sprite selected");
     theInfoLabel->setWordWrap(true);
+    theInfoLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     mainLayout->addWidget(theInfoLabel);
 
     // Main area: canvas on left, tool panel on right
