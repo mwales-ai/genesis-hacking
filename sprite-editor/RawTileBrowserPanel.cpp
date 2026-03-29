@@ -1,6 +1,9 @@
 #include "RawTileBrowserPanel.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QMenu>
+#include <QClipboard>
+#include <QApplication>
 #include <iostream>
 
 RawTileBrowserPanel::RawTileBrowserPanel(QWidget *parent)
@@ -81,6 +84,7 @@ void RawTileBrowserPanel::buildUi()
     theScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     theScrollArea->setWidgetResizable(true);
     theBrowser = new RawTileBrowserWidget();
+    theBrowser->setContextMenuPolicy(Qt::CustomContextMenu);
     theScrollArea->setWidget(theBrowser);
     mainLayout->addWidget(theScrollArea);
 
@@ -119,6 +123,8 @@ void RawTileBrowserPanel::buildUi()
             this,                   &RawTileBrowserPanel::onSetAssemblyStart);
     connect(theExportButton, &QPushButton::clicked,
             this,            &RawTileBrowserPanel::onExportPng);
+    connect(theBrowser, &QWidget::customContextMenuRequested,
+            this,       &RawTileBrowserPanel::onContextMenu);
 }
 
 void RawTileBrowserPanel::setDataService(RomDataService *service)
@@ -485,4 +491,50 @@ void RawTileBrowserPanel::onExportPng()
         .arg(w).arg(h);
 
     emit exportPngRequested(img, suggestedName);
+}
+
+void RawTileBrowserPanel::onContextMenu(const QPoint & pos)
+{
+    if (theSelectedTileIndex < 0 || !theDataService)
+        return;
+
+    QMenu menu(this);
+    QAction *exportAction = menu.addAction("Export as PNG...");
+    QAction *copyHexAction = menu.addAction("Copy hex data to clipboard");
+    QAction *copyOffsetAction = menu.addAction("Copy ROM offset to clipboard");
+
+    QAction *chosen = menu.exec(theBrowser->mapToGlobal(pos));
+    if (chosen == exportAction)
+        onExportPng();
+    else if (chosen == copyHexAction)
+        onCopyHexData();
+    else if (chosen == copyOffsetAction)
+    {
+        QString offset = QString("0x%1")
+            .arg(theSelectedRomOffset, 6, 16, QChar('0')).toUpper();
+        QApplication::clipboard()->setText(offset);
+        emit statusMessage("Copied ROM offset: " + offset);
+    }
+}
+
+void RawTileBrowserPanel::onCopyHexData()
+{
+    if (theSelectedTileIndex < 0 || !theDataService)
+        return;
+
+    RomFile *rom = theDataService->rom();
+    if (!rom || !rom->isOpen())
+        return;
+
+    int w = theSpriteWSpin->value();
+    int h = theSpriteHSpin->value();
+    int bytesNeeded = w * h * 32;
+
+    QByteArray data = rom->readBytes(theSelectedRomOffset, bytesNeeded);
+    if (data.isEmpty())
+        return;
+
+    QString hexStr = data.toHex(' ').toUpper();
+    QApplication::clipboard()->setText(hexStr);
+    emit statusMessage(QString("Copied %1 bytes of hex data to clipboard").arg(data.size()));
 }

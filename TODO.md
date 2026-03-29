@@ -8,13 +8,13 @@ Tasks for Claude:
     * [X] BlastEm: record RAM-sourced DMA sprites separately (source="ram" with dma_source address)
     * [X] Sprite Editor: when middle-clicking a sprite in the editor, show VRAM address alongside ROM/RAM address and dimensions
     * [X] Sprite Editor: in the Sprite Viewer info panel, show VRAM addresses for each sprite in the group
-    * [ ] Sprite Editor: in the Sprite Animations tab, show VRAM and CRAM addresses when hovering or selecting sprites
+    * [X] Sprite Editor: in the Sprite Animations tab, show VRAM and CRAM addresses when hovering or selecting sprites
     * [X] Game definition JSON: preserve VRAM address when capturing sprite groups from recordings (NormalizedSprite now has vramAddr field)
     * [ ] Consider adding a "Copy VRAM address" context menu action so user can quickly paste into Binary Ninja search
 
 * [ ] Sprite Editor Refactoring (remaining items)
-    * [ ] Right click context menu on Raw Tile Browser (Export PNG, Copy hex) — future
-    * [ ] Wire sprite click in Animations tab to open SpriteEditorPanel (pending full integration)
+    * [X] Right click context menu on Raw Tile Browser (Export PNG, Copy hex, Copy ROM offset)
+    * [ ] Wire sprite click in Animations tab to open SpriteEditorPanel (pending full integration — currently shows sprite info in status bar)
 
 * [ ] BN-Genesis Plugin
     * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet)

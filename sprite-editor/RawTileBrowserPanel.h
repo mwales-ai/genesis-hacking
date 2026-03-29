@@ -54,6 +54,8 @@ private slots:
     void onJumpToOffset();
     void onSetAssemblyStart();
     void onExportPng();
+    void onContextMenu(const QPoint & pos);
+    void onCopyHexData();
 
 private:
     void buildUi();

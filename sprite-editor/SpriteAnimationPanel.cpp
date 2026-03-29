@@ -231,31 +231,74 @@ void SpriteAnimationPanel::onLoadRecordingClicked()
 
 void SpriteAnimationPanel::onSpriteClicked(int spriteIndex)
 {
-    // When user clicks a sprite, we want to open it in the editor
-    // Build palette mapping from the current recording frame
-    if (theActiveRecIndex < 0 || theActiveRecIndex >= theRecordings.size())
-        return;
-
-    const SpriteRecording & rec = theRecordings[theActiveRecIndex];
-    int frameIndex = theFrameSpin->value();
-    if (frameIndex < 0 || frameIndex >= rec.frames().size())
-        return;
-
     Q_UNUSED(spriteIndex);
-    // For now, emit signal for host to open the editor
-    // The host will need to resolve the recording frame to a collection
-    // and open SpriteEditorPanel
-    emit statusMessage(QString("Sprite %1 clicked — editor integration pending").arg(spriteIndex));
+
+    // Show sprite info in status for quick reference
+    const SpriteCollection & col = theSpriteColWidget->collection();
+    if (spriteIndex >= 0 && spriteIndex < col.sprites.size())
+    {
+        const CollectionSprite & cs = col.sprites[spriteIndex];
+        QString info = QString("Sprite %1: %2x%3 | VRAM: %4 | %5")
+            .arg(spriteIndex)
+            .arg(cs.widthTiles).arg(cs.heightTiles)
+            .arg(cs.vramAddr.isEmpty() ? "?" : cs.vramAddr)
+            .arg(cs.romOffset.isEmpty() ? cs.source : cs.romOffset);
+        emit statusMessage(info);
+    }
 }
 
 void SpriteAnimationPanel::onSelectionChanged(const QSet<int> & selectedIndices)
 {
     int count = selectedIndices.size();
     if (count == 0)
+    {
         theSelectionLabel->setText("No sprites selected");
+    }
+    else if (count == 1)
+    {
+        // Single sprite selected — show detailed address info
+        int idx = *selectedIndices.begin();
+        const SpriteCollection & col = theSpriteColWidget->collection();
+        if (idx >= 0 && idx < col.sprites.size())
+        {
+            const CollectionSprite & cs = col.sprites[idx];
+            QString info = QString("Sprite %1: %2x%3 tiles")
+                .arg(idx).arg(cs.widthTiles).arg(cs.heightTiles);
+            if (!cs.vramAddr.isEmpty())
+                info += QString(" | VRAM: %1").arg(cs.vramAddr);
+            if (!cs.romOffset.isEmpty())
+            {
+                bool isRam = false;
+                QString offStr = cs.romOffset;
+                if (offStr.startsWith("0x") || offStr.startsWith("0X"))
+                    offStr = offStr.mid(2);
+                uint32_t addr = offStr.toUInt(&isRam, 16);
+                Q_UNUSED(addr);
+                info += QString(" | %1: %2")
+                    .arg(addr >= 0xFF0000 ? "RAM" : "ROM")
+                    .arg(cs.romOffset);
+            }
+            info += QString(" | Palette: %1").arg(cs.paletteLine);
+
+            // Show CRAM address for the palette line
+            if (cs.paletteLine >= 0 && cs.paletteLine < col.palettes.size())
+            {
+                const ScreenCapturePalette & pal = col.palettes[cs.paletteLine];
+                if (!pal.dmaSource.isEmpty())
+                    info += QString(" (CRAM DMA: %1)").arg(pal.dmaSource);
+            }
+
+            theSelectionLabel->setText(info);
+        }
+        else
+        {
+            theSelectionLabel->setText("1 sprite selected");
+        }
+    }
     else
-        theSelectionLabel->setText(QString("%1 sprite%2 selected")
-            .arg(count).arg(count == 1 ? "" : "s"));
+    {
+        theSelectionLabel->setText(QString("%1 sprites selected").arg(count));
+    }
 
     bool hasSelection = count > 0;
     theCaptureButton->setEnabled(hasSelection);
