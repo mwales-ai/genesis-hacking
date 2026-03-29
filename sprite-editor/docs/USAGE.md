@@ -436,8 +436,7 @@ The tool panel on the right side of the editor provides:
   (pick color), and Brush (adjustable size square)
 - **Brush Size** spinner — appears below the tools only when the Brush is active
 - **4x4 palette grid** — quick color selection showing all 16 palette colors
-- **1x16 palette strip** — below the canvas, showing the full palette with
-  pen indicator and CRAM value
+- **Delete Sprite** button — remove a sprite from a group (visible after middle-click)
 
 **Right-click** anywhere to eyedrop (pick color) regardless of the active tool.
 
@@ -457,6 +456,56 @@ This is essential for editing characters that span multiple hardware sprites.
 - **CRAM palette format**: 16 colors per palette, 2 bytes each (big-endian): `---- bbb- ggg- rrr-` (3 bits per channel, values 0-7 mapped to 0-252 brightness)
 - **Sprite tile order**: Column-major. For a W x H sprite, tile at column `c`, row `r` is stored at index `c * H + r`
 - **ROM storage**: Tiles are stored as a contiguous byte stream. A 2x4 sprite = 8 tiles = 256 bytes
+
+## VRAM/CRAM Address Tracking
+
+When sprites are captured from BlastEm, their VDP memory addresses are preserved
+for reverse engineering:
+
+- **VRAM address** — where the tile data was stored in VDP memory at capture time
+- **CRAM address** — where the palette data was in color RAM (palette line x 32)
+- **DMA source** — the 68K address that DMA transferred data from (ROM or RAM)
+
+These addresses appear in:
+- **Sprite Viewer** info panel — shows VRAM address for each sprite in a group
+- **Sprite Editor** middle-click — shows VRAM address, DMA source, and dimensions
+- **Game definition JSON** — `vram_addr` field preserved during capture normalization
+
+### Why VRAM/CRAM Addresses Matter
+
+When a sprite's tile data was DMA'd from RAM (not ROM), the ROM offset is unknown.
+The VRAM address tells you where the VDP stored the data, and the DMA source tells
+you which RAM address the data came from. You can then search Binary Ninja for code
+that writes to that RAM address to trace the data's origin.
+
+## BlastEm Code Trace Workflow
+
+BlastEm can record branch and jump targets during emulation, which Binary Ninja
+can import to improve its auto-analysis of the ROM.
+
+### Recording Branch Targets
+
+1. Run your ROM in BlastEm with the debugger: `blastem -d rom.bin`
+2. Enter the debugger (press backtick)
+3. Start recording: `codetrace output.json`
+4. Resume emulation and play through the sections you want to analyze
+5. Re-enter the debugger and stop: `codetracestop`
+
+The output JSON contains every unique JSR, JMP, BSR, and Bcc target address
+encountered during execution.
+
+### Importing into Binary Ninja
+
+1. Open the ROM in Binary Ninja with the bn-genesis plugin
+2. Run **Plugins > genesis: import code trace**
+3. Select the `.json` file from BlastEm
+4. JSR/BSR targets become new functions, JMP targets become functions,
+   Bcc targets get branch labels
+
+This is especially valuable for:
+- Indirect jumps through registers or memory (jump tables)
+- Computed branch targets that static analysis can't resolve
+- Code that's only reached through specific game state
 
 ## Keyboard Shortcuts
 
