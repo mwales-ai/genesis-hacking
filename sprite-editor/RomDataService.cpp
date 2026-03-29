@@ -228,6 +228,7 @@ TileBlockGroup RomDataService::resolveLegacy(const SpriteCollection & col)
         block.romOffset = cs.romOffset;
         block.source = cs.source;
         block.tileData = cs.tileData;
+        block.vramAddr = cs.vramAddr;
 
         // If ROM-sourced and no embedded data, read from ROM
         if (block.tileData.isEmpty() && !block.romOffset.isEmpty() &&

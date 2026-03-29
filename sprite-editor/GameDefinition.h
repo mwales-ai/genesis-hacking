@@ -41,6 +41,7 @@ struct NormalizedSprite
     int     x, y;         // position relative to collection origin
     bool    hFlip, vFlip;
     bool    priority;
+    QString vramAddr;     // VRAM address at capture time (for reverse engineering)
 };
 
 struct NormalizedCollection

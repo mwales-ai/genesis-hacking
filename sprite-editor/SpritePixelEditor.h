@@ -30,6 +30,8 @@ struct EditorSprite
     bool hFlip, vFlip;
     int paletteLine;     // 0-3
     QString romOffset;   // hex string for saving back to ROM
+    QString vramAddr;    // VRAM address hex string (for reverse engineering)
+    QString dmaSource;   // DMA source address (ROM or RAM) if known
 };
 
 /**

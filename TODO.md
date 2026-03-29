@@ -3,12 +3,13 @@ Tasks for Claude:
 # Incomplete Tasks
 
 * [ ] VRAM/CRAM address tracking for reverse engineering
-    * [ ] BlastEm sprite recorder: ensure VRAM address and CRAM address (palette_line * 32) are written to the .sprec JSON for every sprite
-    * [ ] BlastEm sprite recorder: for each palette line, record the CRAM byte address (line * 32) and any DMA source that wrote to that CRAM range
-    * [ ] Sprite Editor: when middle-clicking a sprite in the editor, show VRAM address alongside ROM/RAM address and dimensions
-    * [ ] Sprite Editor: in the Sprite Viewer info panel, show VRAM addresses for each sprite in the group
+    * [X] BlastEm sprite recorder: ensure VRAM address and CRAM address (palette_line * 32) are written to the .sprec JSON for every sprite
+    * [X] BlastEm sprite recorder: for each palette line, record the CRAM byte address (line * 32) and any DMA source that wrote to that CRAM range
+    * [X] BlastEm: record RAM-sourced DMA sprites separately (source="ram" with dma_source address)
+    * [X] Sprite Editor: when middle-clicking a sprite in the editor, show VRAM address alongside ROM/RAM address and dimensions
+    * [X] Sprite Editor: in the Sprite Viewer info panel, show VRAM addresses for each sprite in the group
     * [ ] Sprite Editor: in the Sprite Animations tab, show VRAM and CRAM addresses when hovering or selecting sprites
-    * [ ] Game definition JSON: preserve VRAM address when capturing sprite groups from recordings (currently lost during normalization)
+    * [X] Game definition JSON: preserve VRAM address when capturing sprite groups from recordings (NormalizedSprite now has vramAddr field)
     * [ ] Consider adding a "Copy VRAM address" context menu action so user can quickly paste into Binary Ninja search
 
 * [ ] Sprite Editor Refactoring (remaining items)

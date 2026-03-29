@@ -505,10 +505,15 @@ void SpriteEditorPanel::onGroupSpriteSelected(int spriteIndex)
         return;
 
     const EditorSprite & es = thePixelEditor->groupSprite(spriteIndex);
-    QString info = QString("Sprite %1: %2x%3 tiles | ROM: %4 | Palette: %5")
+    QString addrInfo = es.romOffset.isEmpty() ? "embedded" : es.romOffset;
+    if (!es.vramAddr.isEmpty())
+        addrInfo += QString(" | VRAM: %1").arg(es.vramAddr);
+    if (!es.dmaSource.isEmpty())
+        addrInfo += QString(" | DMA src: %1").arg(es.dmaSource);
+    QString info = QString("Sprite %1: %2x%3 tiles | %4 | Palette: %5")
         .arg(spriteIndex)
         .arg(es.widthTiles).arg(es.heightTiles)
-        .arg(es.romOffset.isEmpty() ? "embedded" : es.romOffset)
+        .arg(addrInfo)
         .arg(es.paletteLine);
     theInfoLabel->setText(info);
 }

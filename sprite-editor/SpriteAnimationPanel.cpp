@@ -439,6 +439,7 @@ void SpriteAnimationPanel::onCaptureGroup()
         ns.hFlip = s.hFlip;
         ns.vFlip = s.vFlip;
         ns.priority = s.priority;
+        ns.vramAddr = s.vramAddr;
         normCol.sprites.append(ns);
     }
 

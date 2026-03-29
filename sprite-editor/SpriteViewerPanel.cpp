@@ -479,6 +479,17 @@ void SpriteViewerPanel::updateDetail(int collectionIndex)
         }
     }
 
+    // Collect VRAM addresses for display
+    QStringList vramInfo;
+    for (int i = 0; i < group.blocks.size() && i < norm.sprites.size(); ++i)
+    {
+        QString vram = norm.sprites[i].vramAddr;
+        if (vram.isEmpty() && !group.blocks[i].vramAddr.isEmpty())
+            vram = group.blocks[i].vramAddr;
+        if (!vram.isEmpty())
+            vramInfo.append(QString("  Spr %1: VRAM %2").arg(i).arg(vram));
+    }
+
     QString info = QString("%1 sprites | %2x%3 pixels\n"
                            "Addresses: %4\n"
                            "Palettes: %5 used")
@@ -488,6 +499,8 @@ void SpriteViewerPanel::updateDetail(int collectionIndex)
         .arg(palLineMap.size());
     if (!palInfo.isEmpty())
         info += "\n" + palInfo.join("\n");
+    if (!vramInfo.isEmpty())
+        info += "\nVRAM:\n" + vramInfo.join("\n");
 
     theInfoLabel->setText(info);
     theEditButton->setEnabled(true);

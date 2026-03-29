@@ -22,7 +22,9 @@ struct TileBlock
     bool        priority;
     int         paletteLine;    // 0-3
     QString     romOffset;      // hex string like "0x1234", empty if embedded-only
-    QString     source;         // "dma", "search", "embedded"
+    QString     source;         // "dma", "search", "embedded", "ram"
+    QString     vramAddr;       // VRAM address where tile data was at capture time
+    QString     dmaSource;      // DMA source address (ROM or RAM), empty if unknown
 };
 
 /**

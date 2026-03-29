@@ -684,6 +684,7 @@ void GameDefinition::parseNormalizedFormat(const QJsonObject & root)
             ns.hFlip     = so["h_flip"].toBool(false);
             ns.vFlip     = so["v_flip"].toBool(false);
             ns.priority  = so["priority"].toBool(false);
+            ns.vramAddr  = so["vram_addr"].toString();
             col.sprites.append(ns);
         }
 
@@ -843,6 +844,7 @@ QJsonObject GameDefinition::toJson() const
             if (ns.hFlip)    so["h_flip"]   = true;
             if (ns.vFlip)    so["v_flip"]   = true;
             if (ns.priority) so["priority"] = true;
+            if (!ns.vramAddr.isEmpty()) so["vram_addr"] = ns.vramAddr;
             spritesArr.append(so);
         }
         co["sprites"] = spritesArr;
