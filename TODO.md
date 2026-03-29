@@ -12,7 +12,7 @@ Tasks for Claude:
     * [X] Game definition JSON: preserve VRAM address when capturing sprite groups from recordings (NormalizedSprite now has vramAddr field)
     * [X] Consider adding a "Copy VRAM address" context menu action so user can quickly paste into Binary Ninja search (info labels are now selectable + Raw Browser has right-click copy)
 
-* [ ] Sprite Editor Refactoring (remaining items)
+* [X] Sprite Editor Refactoring (remaining items)
     * [X] Right click context menu on Raw Tile Browser (Export PNG, Copy hex, Copy ROM offset)
     * [X] Wire sprite click in Animations tab to open SpriteEditorPanel
 
