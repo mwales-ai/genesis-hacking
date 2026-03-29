@@ -20,10 +20,10 @@ Tasks for Claude:
     * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet)
 
 * [ ] Documentation updates
-    * [ ] Update USAGE.md to document the codetrace workflow (BlastEm codetrace → BN import)
-    * [ ] Update USAGE.md to reflect the refactored panel architecture (panels are now independent widgets)
-    * [ ] Add a section to USAGE.md about the VRAM/CRAM address display features (once implemented)
-    * [ ] Update bn-genesis README with codetrace import documentation
+    * [X] Update USAGE.md to document the codetrace workflow (BlastEm codetrace → BN import)
+    * [X] Update USAGE.md to reflect the refactored panel architecture (fixed stale palette strip reference)
+    * [X] Add a section to USAGE.md about the VRAM/CRAM address display features
+    * [X] Update bn-genesis README with codetrace import documentation
     * [ ] Review all screenshots in docs/ — some may be outdated after the refactoring (tool panel layout changed, palette strip removed, etc.)
 
 # Completed Tasks
