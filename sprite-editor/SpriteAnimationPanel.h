@@ -36,6 +36,7 @@ public:
 signals:
     void statusMessage(const QString & msg);
     void editSpriteRequested(int collectionIndex, const QMap<int, QString> & palLineToId);
+    void editRecordingSpriteRequested(const SpriteCollection & col, int spriteIndex);
     void collectionsCaptured();
 
     /** Request host to show file dialog for recording. */

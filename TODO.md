@@ -2,7 +2,7 @@ Tasks for Claude:
 
 # Incomplete Tasks
 
-* [ ] VRAM/CRAM address tracking for reverse engineering
+* [X] VRAM/CRAM address tracking for reverse engineering
     * [X] BlastEm sprite recorder: ensure VRAM address and CRAM address (palette_line * 32) are written to the .sprec JSON for every sprite
     * [X] BlastEm sprite recorder: for each palette line, record the CRAM byte address (line * 32) and any DMA source that wrote to that CRAM range
     * [X] BlastEm: record RAM-sourced DMA sprites separately (source="ram" with dma_source address)
@@ -14,7 +14,7 @@ Tasks for Claude:
 
 * [ ] Sprite Editor Refactoring (remaining items)
     * [X] Right click context menu on Raw Tile Browser (Export PNG, Copy hex, Copy ROM offset)
-    * [ ] Wire sprite click in Animations tab to open SpriteEditorPanel (pending full integration — currently shows sprite info in status bar)
+    * [X] Wire sprite click in Animations tab to open SpriteEditorPanel
 
 * [ ] BN-Genesis Plugin
     * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet)

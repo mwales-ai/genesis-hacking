@@ -242,6 +242,11 @@ void MainWindow::setupConnections()
             this,              &MainWindow::onAnimLoadRecordingRequested);
     connect(theAnimationPanel, &SpriteAnimationPanel::collectionsCaptured,
             this,              [this](){ theViewerPanel->populateGrid(); });
+    connect(theAnimationPanel, &SpriteAnimationPanel::editRecordingSpriteRequested,
+            this,              [this](const SpriteCollection & col, int spriteIndex) {
+                theEditorPanel->editLegacySprite(col, -1, spriteIndex);
+                ui->theTabWidget->setCurrentWidget(theEditorPanel);
+            });
 
     // Viewer edit/double-click handled internally by SpriteViewerPanel
 

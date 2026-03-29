@@ -232,20 +232,21 @@ void SpriteAnimationPanel::onLoadRecordingClicked()
 
 void SpriteAnimationPanel::onSpriteClicked(int spriteIndex)
 {
-    Q_UNUSED(spriteIndex);
-
-    // Show sprite info in status for quick reference
     const SpriteCollection & col = theSpriteColWidget->collection();
-    if (spriteIndex >= 0 && spriteIndex < col.sprites.size())
-    {
-        const CollectionSprite & cs = col.sprites[spriteIndex];
-        QString info = QString("Sprite %1: %2x%3 | VRAM: %4 | %5")
-            .arg(spriteIndex)
-            .arg(cs.widthTiles).arg(cs.heightTiles)
-            .arg(cs.vramAddr.isEmpty() ? "?" : cs.vramAddr)
-            .arg(cs.romOffset.isEmpty() ? cs.source : cs.romOffset);
-        emit statusMessage(info);
-    }
+    if (spriteIndex < 0 || spriteIndex >= col.sprites.size())
+        return;
+
+    // Show sprite info in status bar
+    const CollectionSprite & cs = col.sprites[spriteIndex];
+    QString info = QString("Sprite %1: %2x%3 | VRAM: %4 | %5")
+        .arg(spriteIndex)
+        .arg(cs.widthTiles).arg(cs.heightTiles)
+        .arg(cs.vramAddr.isEmpty() ? "?" : cs.vramAddr)
+        .arg(cs.romOffset.isEmpty() ? cs.source : cs.romOffset);
+    emit statusMessage(info);
+
+    // Emit signal so host can open the editor
+    emit editRecordingSpriteRequested(col, spriteIndex);
 }
 
 void SpriteAnimationPanel::onSelectionChanged(const QSet<int> & selectedIndices)
