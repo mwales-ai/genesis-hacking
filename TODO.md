@@ -2,66 +2,53 @@ Tasks for Claude:
 
 # Incomplete Tasks
 
-* [ ] Sprite Editor Refactoring
-    * [ ] We have too much code in a single super class MainWindow.  I want to break this up into smaller classes / QWidgets to allow us to use them in other applications.  So we want to make sure the functions are easy to interface with for for each of them, minimal complexity, minimal cross-dependencies.
-    * [X] Raw Tile Browser → RawTileBrowserPanel (Phase 2 complete)
-        * [X] Self-contained QWidget with all controls + canvas
-        * [X] jumpToAddress() slot for cross-tab navigation
-        * [X] populateRanges()/populatePalettes()/refresh() slots
-        * [X] tileSelected signal for click events
-        * [X] exportPngRequested signal (host provides file dialog)
-        * [ ] Right click context menu (Export PNG, Copy hex) — future
-        * [X] When we "Go" to a sprite, highlight it the same we it looks when we mouse click it
-    * [X] Sprite Editing Tools → PaintToolPanel (Phase 0 complete)
-        * [X] 2x2 icon tool buttons + 4x4 palette grid
-        * [X] toolChanged, brushSizeChanged, colorSelected signals
-        * [X] deleteRequested signal for sprite removal
-    * [X] Sprite Editor → SpriteEditorPanel (Phase 3 complete)
-        * [X] TileBlockGroup shared structure (GenesisTypes.h)
-        * [X] editNormalizedCollection() / editLegacySprite() entry points
-        * [X] Save tiles/palette signals, colorEditRequested signal
-        * [X] Zoom, grid, tool panel all self-contained
-    * [X] Sprite Animations → SpriteAnimationPanel (Phase 4 complete)
-        * [X] Extract populateSpriteCollections, recording loading, frame navigation
-        * [X] Extract capture workflow (capture group, hide/unhide)
-        * [ ] Wire sprite click to open SpriteEditorPanel (pending full integration)
-    * [X] Sprite Viewer → SpriteViewerPanel (Phase 5 complete)
-        * [X] Extract collection grid, detail view, reorder, rename, delete
-        * [X] Wire edit button to SpriteEditorPanel
-        * [X] Wire double-click to RawTileBrowserPanel
-    * [X] Final cleanup (Phase 6 complete)
-        * [X] Remove all #if 0 dead code blocks from MainWindow.cpp
-        * [X] Remove unused helper methods (fetchTileData, buildFromNormalized, etc.)
-        * [X] Clean up MainWindow.h (88 lines) and MainWindow.cpp (683 lines)
-    * [X] When I click on a spirte and go to the Raw Viewer, there are often sprites that are addressed out of range (but the range should go to the end?)
-    
+* [ ] VRAM/CRAM address tracking for reverse engineering
+    * [ ] BlastEm sprite recorder: ensure VRAM address and CRAM address (palette_line * 32) are written to the .sprec JSON for every sprite
+    * [ ] BlastEm sprite recorder: for each palette line, record the CRAM byte address (line * 32) and any DMA source that wrote to that CRAM range
+    * [ ] Sprite Editor: when middle-clicking a sprite in the editor, show VRAM address alongside ROM/RAM address and dimensions
+    * [ ] Sprite Editor: in the Sprite Viewer info panel, show VRAM addresses for each sprite in the group
+    * [ ] Sprite Editor: in the Sprite Animations tab, show VRAM and CRAM addresses when hovering or selecting sprites
+    * [ ] Game definition JSON: preserve VRAM address when capturing sprite groups from recordings (currently lost during normalization)
+    * [ ] Consider adding a "Copy VRAM address" context menu action so user can quickly paste into Binary Ninja search
 
-* [X] BlastEm updates
-    * [X] If I don't specify a file extenstion, put a default extension of .sprec on sprite recordings
-    * [X] Do a code review of the sprite recording logic, particularly if a sprite isn't DMA-ed from ROM, have we correctly copied the sprite and palette data from VRAM into the sprec file
-    * [X] Want a way to record instruction jump and branch targets to a file, so that we can import into binary ninja and know which parts of the ROM are definitely code
+* [ ] Sprite Editor Refactoring (remaining items)
+    * [ ] Right click context menu on Raw Tile Browser (Export PNG, Copy hex) — future
+    * [ ] Wire sprite click in Animations tab to open SpriteEditorPanel (pending full integration)
 
-
-* [X] Sprite Editor
-    * [X] Sprite Viewer
-        * [X] Sprites captured in RAM indicate they are from ROM but at the RAM address, change the text to say ROM as well
-    * [X] Sprite Editor tab
-        * [X] Remove the palette at the bottom of the screen since we have one on the right side
-        * [X] Want middle click to select a sprite in the sprite group (would be important if sprites in the group had different palettes)
-        * [X] When a sprite from a group is middle clicked, display sprite info (ROM address, dimensions, palette addr)
-        * [X] Provide a button to delete the selected sprite from the sprite group (like accidentally capturing sprite from a neighboring character)
-
-* [ ]  BN-Genesis Plugin
-
-    * [X] Load a game definition file when a ROM is loaded and label all sprites at their ROM addresses
-    * [X] Give each sprite a proper structure at its memory location (you will need to define a structure for sprite data and make sure it is loaded into the bndb file)
-    * [X] Label each palette in the ROM with an appropriate structure
+* [ ] BN-Genesis Plugin
     * [ ] Show a sprite in a custom Binja pane with palette selection (future task - don't do this one yet)
-    * [X] Write a small document about how we can get code flow info from blastem into binary ninja
-    * [X] May not neccessarily need to be part of the plugin itself, but need a way to import the jump and branch targets file we are going to build from blastem
-    * [X] Can we have the plugin create a bunch of structures, like sprite_1x1, sprite_2x2, etc so we can label memory addresses where the sprite data is (done — game_definition.py creates SpriteTiles_WxH structs)
-    * [X] Want a way to import the sprites from the JSON file we are using with the sprite editor, and create instances of the structures at the proper ROM addresses, names from the names in the JSON file (done — "genesis: load game definition" command)
-    * [X] Move (or create) the instructions on how to build, install, and use the plugin in the bn-genesis repo, not just the genesis-hacking repo.  Update documentation in the genesis hacking repo to point user to the bn-genesis plugin if they want to try it
+
+* [ ] Documentation updates
+    * [ ] Update USAGE.md to document the codetrace workflow (BlastEm codetrace → BN import)
+    * [ ] Update USAGE.md to reflect the refactored panel architecture (panels are now independent widgets)
+    * [ ] Add a section to USAGE.md about the VRAM/CRAM address display features (once implemented)
+    * [ ] Update bn-genesis README with codetrace import documentation
+    * [ ] Review all screenshots in docs/ — some may be outdated after the refactoring (tool panel layout changed, palette strip removed, etc.)
 
 # Completed Tasks
 
+* [X] Sprite Editor Refactoring (Phases 0-6)
+    * [X] GenesisTypes.h, RomDataService, PaintToolPanel (Phase 0)
+    * [X] ScreenCapturePanel (Phase 1)
+    * [X] RawTileBrowserPanel (Phase 2) — with Go-highlight and range fix
+    * [X] SpriteEditorPanel (Phase 3)
+    * [X] SpriteAnimationPanel (Phase 4)
+    * [X] SpriteViewerPanel (Phase 5)
+    * [X] Final cleanup — MainWindow 683 lines (Phase 6)
+* [X] BlastEm updates
+    * [X] Default .sprec extension
+    * [X] Sprite recording code review + stability fixes
+    * [X] Code trace recording (codetrace/codetracestop commands)
+* [X] Sprite Editor features
+    * [X] 2x2 icon tool buttons + 4x4 palette grid
+    * [X] Screen capture editing with shared tile highlighting
+    * [X] Drag-to-reorder, rename, delete sprite groups
+    * [X] Border overlays (1px regardless of zoom)
+    * [X] ROM overwrite protection
+    * [X] Middle-click sprite info + delete from group
+    * [X] RAM vs ROM address distinction
+* [X] BN-Genesis Plugin
+    * [X] Game definition loader (struct types + labels)
+    * [X] C++ sprite viewer sidebar widget
+    * [X] Code trace import command
+    * [X] Build/install documentation
